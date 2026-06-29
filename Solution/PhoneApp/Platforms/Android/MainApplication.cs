@@ -1,7 +1,7 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-namespace PhoneApp
+namespace MicroVue
 {
     [Application]
     public class MainApplication : MauiApplication

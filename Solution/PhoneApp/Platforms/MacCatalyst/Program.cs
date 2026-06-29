@@ -1,7 +1,7 @@
 ﻿using ObjCRuntime;
 using UIKit;
 
-namespace PhoneApp
+namespace MicroVue
 {
     public class Program
     {

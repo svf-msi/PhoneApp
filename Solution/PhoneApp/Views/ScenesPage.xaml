@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MicroVue.Views.ScenesPage"
+             xmlns:vm="clr-namespace:MicroVue.ViewModels"
+             xmlns:m="clr-namespace:MicroVue.Models"
+             Title="Scenes"
+             x:Name="scenesPage"
+             x:DataType="vm:ScenesViewModel">
+
+    <Grid RowDefinitions="Auto, *">
+        <ScrollView Grid.Row="1">
+            <CollectionView ItemsSource="{Binding Scenes}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="{x:Type m:SceneItem}">
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItemView 
+                                        Command="{Binding Source={x:Reference scenesPage}, Path=BindingContext.DeleteCommand}"
+                                        CommandParameter="{Binding .}">
+                                        <Border BackgroundColor="Red" Margin="5,0">
+                                            <Label Text="Delete" TextColor="White" FontAttributes="Bold" VerticalTextAlignment="Center"/>
+                                        </Border>
+                                    </SwipeItemView>
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <Border StrokeThickness="1" Stroke="Gray" Margin="10, 5">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer 
+                                        Command="{Binding Source={x:Reference scenesPage}, Path=BindingContext.TapCommand}"
+                                        CommandParameter="{Binding .}"/>
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="Auto, *, Auto">
+                                    <Label Grid.Column="0" Text="{Binding Name}"/>
+                                    <Label Grid.Column="2" Text="{Binding Date, StringFormat='{0:MM/dd/yyyy}'}"/>
+                                </Grid>
+                            </Border>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </ScrollView>
+    </Grid>
+
+</ContentPage>

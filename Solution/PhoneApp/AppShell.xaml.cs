@@ -1,4 +1,4 @@
-﻿namespace PhoneApp
+﻿namespace MicroVue
 {
     public partial class AppShell : Shell
     {

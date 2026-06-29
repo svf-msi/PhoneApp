@@ -1,15 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell
-    x:Class="PhoneApp.AppShell"
+    x:Class="MicroVue.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:PhoneApp"
-    Shell.FlyoutBehavior="Flyout"
-    Title="PhoneApp">
+    xmlns:v="clr-namespace:MicroVue.Views"
+    Title="MicroVue">
+
+    <Shell.Resources>
+        <Style Class="FlyoutItemLabelStyle" TargetType="Label">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="DarkBlue" />
+        </Style>
+    </Shell.Resources>
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
+        Title="Scenes"
+        ContentTemplate="{DataTemplate v:ScenesPage}"
         Route="MainPage" />
+
+    <ShellContent
+        Title="Import"
+        ContentTemplate="{DataTemplate v:ImportPage}"
+        Route="ImportPage" />
+
+    <ShellContent
+        Title="About"
+        ContentTemplate="{DataTemplate v:AboutPage}"
+        Route="AboutPage" />
 
 </Shell>

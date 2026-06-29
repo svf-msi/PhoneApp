@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MicroVue.Views.AnalysisPage"
+             xmlns:f="clr-namespace:Fonts"
+             xmlns:tabView="clr-namespace:Syncfusion.Maui.Toolkit.TabView;assembly=Syncfusion.Maui.Toolkit"
+             xmlns:vm="clr-namespace:MicroVue.ViewModels"
+             xmlns:v="clr-namespace:MicroVue.Views"
+             x:DataType="vm:AnalysisViewModel"
+             Shell.NavBarIsVisible="False"
+             Title="{Binding SceneItem.Name}">
+
+    <ContentPage.Resources>
+
+        <ControlTemplate x:Key="TabControlTemplate" x:DataType="RadioButton">
+            <Grid Margin="0.5">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup x:Name="CheckedStates">
+                        <VisualState x:Name="Checked">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="LightBlue"/>
+                            </VisualState.Setters>
+                        </VisualState>
+
+                        <VisualState x:Name="Unchecked">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="LightGray"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+                <Label Text="{TemplateBinding Content}" FontFamily="{x:Static f:FluentUI.FontFamily}"
+                       FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+            </Grid>
+        </ControlTemplate>
+
+    </ContentPage.Resources>
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid x:Name="topTabs" Grid.Row="0" Grid.Column="1" IsVisible="True">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <RadioButton ControlTemplate="{StaticResource Key=TabControlTemplate}" IsChecked="{Binding Back}"
+                         Grid.Column="0" Content="{x:Static f:FluentUI.arrow_left_24_regular}" CornerRadius="0" Margin="0" />
+            <RadioButton ControlTemplate="{StaticResource Key=TabControlTemplate}" IsChecked="{Binding OnMainView}"
+                         Grid.Column="1" Content="{x:Static f:FluentUI.home_24_regular}" CornerRadius="0" Margin="0" />
+            <RadioButton ControlTemplate="{StaticResource Key=TabControlTemplate}" IsChecked="{Binding OnChartView}"
+                         Grid.Column="2" Content="{x:Static f:FluentUI.arrow_trending_lines_24_regular}" CornerRadius="0" Margin="0"/>
+            <RadioButton ControlTemplate="{StaticResource Key=TabControlTemplate}" IsChecked="{Binding OnVideoView}"
+                         Grid.Column="3" Content="{x:Static f:FluentUI.video_clip_24_regular}" CornerRadius="0" Margin="0"/>
+
+        </Grid>
+
+        <Grid x:Name="leftTabs" Grid.Row="1" Grid.Column="0" IsVisible="False">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <RadioButton ControlTemplate="{StaticResource Key=TabControlTemplate}" IsChecked="{Binding Back}"
+                         Grid.Row="0" Content="{x:Static f:FluentUI.arrow_left_24_regular}" CornerRadius="0" Margin="0" />
+            <RadioButton ControlTemplate="{StaticResource Key=TabControlTemplate}" IsChecked="{Binding OnMainView}"
+                         Grid.Row="1" Content="{x:Static f:FluentUI.home_24_regular}" CornerRadius="0" Margin="0"/>
+            <RadioButton ControlTemplate="{StaticResource Key=TabControlTemplate}" IsChecked="{Binding OnChartView}"
+                         Grid.Row="2" Content="{x:Static f:FluentUI.arrow_trending_lines_24_regular}" CornerRadius="0" Margin="0"/>
+            <RadioButton ControlTemplate="{StaticResource Key=TabControlTemplate}" IsChecked="{Binding OnVideoView}"
+                         Grid.Row="3" Content="{x:Static f:FluentUI.video_clip_24_regular}" CornerRadius="0" Margin="0"/>
+
+        </Grid>
+
+        <v:MainView Grid.Row="1" Grid.Column="1" BindingContext="{Binding .}" IsVisible="{Binding OnMainView}"/>
+
+        <v:ChartView Grid.Row="1" Grid.Column="1" BindingContext="{Binding .}" IsVisible="{Binding OnChartView}"/>
+
+        <v:VideoView Grid.Row="1" Grid.Column="1" BindingContext="{Binding .}" IsVisible="{Binding OnVideoView}"/>
+
+    </Grid>
+
+</ContentPage>
