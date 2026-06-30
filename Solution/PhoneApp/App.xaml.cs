@@ -13,8 +13,6 @@ namespace MicroVue
         {
             InitializeComponent();
             Routing.RegisterRoute(nameof(AnalysisPage), typeof(AnalysisPage));
-            Routing.RegisterRoute(nameof(ImportPage), typeof(ImportPage));
-            Routing.RegisterRoute(nameof(AboutPage), typeof(AboutPage));
 
             VideoFolder = FileSystem.Current.AppDataDirectory + "/Videos/";
             DataFolder = FileSystem.Current.AppDataDirectory + "/Data/";

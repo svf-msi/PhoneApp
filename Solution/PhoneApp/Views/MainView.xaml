@@ -6,8 +6,10 @@
              x:DataType="vm:AnalysisViewModel">
     <VerticalStackLayout>
         <Label 
-            Text="Main view"
+            Text="{Binding SceneName}"
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
+
+        
     </VerticalStackLayout>
 </ContentView>

@@ -89,12 +89,18 @@ namespace MicroVue.ViewModels
                 //    File.Delete(f);
                 //}
 
-
+                _ = GoBack();
             }
             catch (Exception e)
             {
                 Debug.WriteLine($"Error in saving scene: {e}");
             }
+        }
+
+        [RelayCommand]
+        async Task GoBack()
+        {
+            await Shell.Current.GoToAsync("//ScenesPage");
         }
     }
 }

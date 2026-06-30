@@ -18,7 +18,7 @@
         Title="Scenes"
         Icon="{StaticResource IconScenes}"
         ContentTemplate="{DataTemplate v:ScenesPage}"
-        Route="MainPage" />
+        Route="ScenesPage" />
 
     <ShellContent
         Title="Import"

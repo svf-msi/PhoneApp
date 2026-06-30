@@ -54,14 +54,14 @@ namespace MicroVue.ViewModels
         }
 
         [RelayCommand]
-        async Task Tap(SceneItem scene)
+        async Task Tap(SceneItem sceneItem)
         {
-            if (scene != null)
+            if (sceneItem != null)
             {
                 await Shell.Current.GoToAsync(nameof(AnalysisPage), 
                     new Dictionary<string, object>
                     {
-                        {"SceneItem", scene}
+                        {"SceneItem", sceneItem}
                     });
             }
         }

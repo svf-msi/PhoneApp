@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MicroVue.Views.ImportPage"
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
-             Title="Import Video"
+             Title="Import Scene"
              x:DataType="vm:ImportViewModel">
     <VerticalStackLayout>
 
