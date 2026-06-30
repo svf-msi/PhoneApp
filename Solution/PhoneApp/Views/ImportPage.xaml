@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MicroVue.Views.ImportPage"
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
-             Title="ImportPage"
+             Title="Import Video"
              x:DataType="vm:ImportViewModel">
     <VerticalStackLayout>
 
@@ -22,11 +22,14 @@
                 VerticalOptions="Center" HorizontalOptions="Center" />
             <Entry Text="{Binding SceneName}" FontSize="16" Margin="0, 0, 0, 5"
                 VerticalOptions="Center" HorizontalOptions="Center" />
-            
 
             <Button Text="Import scene" Margin="15"
                 VerticalOptions="Center" HorizontalOptions="Center"
                 Command="{Binding ImportSceneCommand}"/>
+
+            <Label Text="Scene with the same name already exists!" Margin="0, 15, 0, 0"
+                VerticalOptions="Center" HorizontalOptions="Center" 
+                IsVisible="{Binding DuplicateScene}"/>
 
         </VerticalStackLayout>
 

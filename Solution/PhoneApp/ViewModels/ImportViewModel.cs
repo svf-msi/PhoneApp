@@ -1,15 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MicroVue.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace MicroVue.ViewModels
 {
     public partial class ImportViewModel : ObservableObject
     {
-        [ObservableProperty]
         string sceneName = "";
+        public string SceneName { get => sceneName; set { SetProperty(ref sceneName, value); DuplicateScene = false; } }
 
         [ObservableProperty]
         string fileName = "";
@@ -19,6 +22,9 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         bool fileSelected;
+
+        [ObservableProperty]
+        bool duplicateScene;
 
         [RelayCommand]
         public async Task PickFile()
@@ -42,14 +48,53 @@ namespace MicroVue.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error in file picker: {e}");
+                Debug.WriteLine($"Error in file picker: {e}");
             }
         }
 
         [RelayCommand]
         public async Task ImportScene()
         {
+            try
+            {
+                if (!FileSelected || !File.Exists(FilePath)) return;
 
+                var scenePath = App.DataFolder + SceneName;
+                if (File.Exists(scenePath))
+                {
+                    DuplicateScene = true;
+                    return;
+                }
+
+                var file = FileName;
+                var videoPath = App.VideoFolder + file;
+                while (File.Exists(videoPath))
+                {
+                    file = "Copy_" + file;
+                    videoPath = App.VideoFolder + file;
+                }
+                File.Copy(FilePath, videoPath, true);
+
+                var scene = new Scene { Name = SceneName, VideoName = videoPath };
+                var text = JsonConvert.SerializeObject(scene, Formatting.Indented);
+                File.WriteAllText(scenePath, text);
+
+                FileName = FilePath = "";
+                FileSelected = false;
+
+                //string[] files = Directory.GetFiles(App.VideoFolder);
+                //foreach (string f in files)
+                //{
+                //    Debug.WriteLine(Path.GetFileName(f));
+                //    File.Delete(f);
+                //}
+
+
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Error in saving scene: {e}");
+            }
         }
     }
 }

@@ -20,7 +20,7 @@
                                         Command="{Binding Source={x:Reference scenesPage}, Path=BindingContext.DeleteCommand}"
                                         CommandParameter="{Binding .}">
                                         <Border BackgroundColor="Red" Margin="5,0">
-                                            <Label Text="Delete" TextColor="White" FontAttributes="Bold" VerticalTextAlignment="Center"/>
+                                            <Image Source="{StaticResource IconDelete}" VerticalOptions="Center" WidthRequest="32" Margin="-3, 0"/>
                                         </Border>
                                     </SwipeItemView>
                                 </SwipeItems>

@@ -10,22 +10,25 @@
         <Style Class="FlyoutItemLabelStyle" TargetType="Label">
             <Setter Property="FontSize" Value="20" />
             <Setter Property="FontAttributes" Value="Bold" />
-            <Setter Property="TextColor" Value="DarkBlue" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource SecondaryDarkText}}" />
         </Style>
     </Shell.Resources>
 
     <ShellContent
         Title="Scenes"
+        Icon="{StaticResource IconScenes}"
         ContentTemplate="{DataTemplate v:ScenesPage}"
         Route="MainPage" />
 
     <ShellContent
         Title="Import"
+        Icon="{StaticResource IconVideoAdd}"
         ContentTemplate="{DataTemplate v:ImportPage}"
         Route="ImportPage" />
 
     <ShellContent
         Title="About"
+        Icon="{StaticResource IconInfo}"
         ContentTemplate="{DataTemplate v:AboutPage}"
         Route="AboutPage" />
 

@@ -2,9 +2,11 @@
 using CommunityToolkit.Mvvm.Input;
 using MicroVue.Models;
 using MicroVue.Views;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 
 namespace MicroVue.ViewModels
@@ -12,22 +14,43 @@ namespace MicroVue.ViewModels
     public partial class ScenesViewModel : ObservableObject
     {
         [ObservableProperty]
-        ObservableCollection<SceneItem> scenes;
+        ObservableCollection<SceneItem> scenes = new ObservableCollection<SceneItem>();
 
         public ScenesViewModel()
         {
-            Scenes = new ObservableCollection<SceneItem>()
+            
+        }
+
+        public void Refresh()
+        {
+            var sceneItems = new ObservableCollection<SceneItem>();
+            string[] files = Directory.GetFiles(App.DataFolder);
+            foreach (string file in files)
             {
-                new SceneItem { Name = "Scene 1", Date = new DateTime(2025, 10, 10) },
-                new SceneItem { Name = "Scene 2", Date = new DateTime(2026, 2, 15) },
-                new SceneItem { Name = "Scene 3", Date = new DateTime(2026, 3, 20) },
-            };
+                var name = Path.GetFileName(file);
+                var creationTime = File.GetCreationTime(file);
+                var scene = new SceneItem { Name = name, Date = creationTime, ItemPath = file };
+                sceneItems.Add(scene);
+            }
+            Scenes = sceneItems;
         }
 
         [RelayCommand]
-        void Delete(SceneItem scene)
+        void Delete(SceneItem sceneItem)
         {
-            if (scene != null) Scenes.Remove(scene);
+            if (sceneItem != null)
+            {
+                var scenePath = sceneItem.ItemPath;
+                if (!File.Exists(scenePath)) return;
+                var text = File.ReadAllText(scenePath);
+                if (string.IsNullOrEmpty(text)) return;
+
+                var scene = JsonConvert.DeserializeObject<Scene>(text);
+                var videoPath = scene?.VideoName;
+                if (!string.IsNullOrEmpty(scenePath)) File.Delete(scenePath);
+                if (!string.IsNullOrEmpty(videoPath)) File.Delete(videoPath);
+                Scenes.Remove(sceneItem);
+            }
         }
 
         [RelayCommand]
