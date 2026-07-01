@@ -2,9 +2,9 @@
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Newtonsoft.Json;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -21,18 +21,19 @@ namespace StandardLib
         int rotation = 0;
         public string? Path { get; set; }
         public bool IsValid { get; set; } = false;
-        private decimal timeInterval = 1;
-        public decimal TimeInterval { get => timeInterval; set { timeInterval = value; } }
+
+        private double timeInterval = 1;
+        public double TimeInterval { get => timeInterval; set { timeInterval = value; } }
 
         public int Length { get; set; } = 0;
-        public int Rotation { get => rotation; set { rotation = value; SetSize(); } }
+        //public int Rotation { get => rotation; set { rotation = value; SetSize(); } }
         public int Width { get; protected set; }
         public int Height { get; protected set; }
         public double FPS { get; protected set; }
 
         public Video_MP4() { }
 
-        public Video_MP4(string filename, decimal timeInterval = 1)
+        public Video_MP4(string filename, double timeInterval = 1)
         {
             Path = filename;
             TimeInterval = timeInterval;
@@ -74,18 +75,18 @@ namespace StandardLib
             }
         }
 
-        public Bitmap GetFrame(int i)
+        public SKBitmap? GetFrame(int i)
         {
             SetImage(i);
 
-            if (Rotation != 0)
-            {
-                var rotImage = image?.ToImage<Bgr, byte>();
-                rotImage = rotImage?.Rotate(90 * Rotation, new Bgr(), false);
-                return rotImage?.ToBitmap();
-            }
+            //if (Rotation != 0)
+            //{
+            //    var rotImage = image?.ToImage<Bgr, byte>();
+            //    rotImage = rotImage?.Rotate(90 * Rotation, new Bgr(), false);
+            //    return rotImage?.Bit;
+            //}
 
-            return image?.ToBitmap();
+            return ImageAnalysis.ToSKBitmap(image);
         }
 
         public void Dispose() 
@@ -118,14 +119,14 @@ namespace StandardLib
                 currentFrame = i;
             }
 
-            if (image != null && Rotation != 0)
-            {
-                Mat rotatedImage = new Mat();
-                RotateFlags rotation = RotateFlags.Rotate180;
-                if (Rotation % 2 != 0) rotation = Rotation < 0 ? RotateFlags.Rotate90CounterClockwise : RotateFlags.Rotate90Clockwise;
-                CvInvoke.Rotate(image, rotatedImage, rotation);
-                return rotatedImage;
-            }
+            //if (image != null && Rotation != 0)
+            //{
+            //    Mat rotatedImage = new Mat();
+            //    RotateFlags rotation = RotateFlags.Rotate180;
+            //    if (Rotation % 2 != 0) rotation = Rotation < 0 ? RotateFlags.Rotate90CounterClockwise : RotateFlags.Rotate90Clockwise;
+            //    CvInvoke.Rotate(image, rotatedImage, rotation);
+            //    return rotatedImage;
+            //}
 
             return image;
         }
@@ -155,8 +156,8 @@ namespace StandardLib
             if (videoCapture == null) return;
             var width = (int)videoCapture.Get(Emgu.CV.CvEnum.CapProp.FrameWidth);
             var height = (int)videoCapture.Get(Emgu.CV.CvEnum.CapProp.FrameHeight);
-            Width = Rotation % 2 == 0 ? width : height;
-            Height = Rotation % 2 == 0 ? height : width;
+            Width = width; //Rotation % 2 == 0 ? width : height;
+            Height = height; //Rotation % 2 == 0 ? height : width;
         }
 
         void Try(Action action)

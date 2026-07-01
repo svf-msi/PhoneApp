@@ -12,5 +12,8 @@ namespace MicroVue.Models
 
         [ObservableProperty]
         string videoName;
+
+        [ObservableProperty]
+        double timeInterval;
     }
 }

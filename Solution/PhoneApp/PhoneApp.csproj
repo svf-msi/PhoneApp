@@ -102,10 +102,17 @@
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" Version="12.3.0" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+		<PackageReference Include="Emgu.CV" Version="4.13.0.5924" />
+		<PackageReference Include="Emgu.CV.Bitmap" Version="4.13.0.5924" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+		<PackageReference Include="SkiaSharp" Version="4.148.0" />
 		<PackageReference Include="Syncfusion.Maui.Toolkit" Version="1.0.10" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\StandardLib\StandardLib.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -133,6 +140,18 @@
 	  <MauiXaml Update="Views\VideoView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0-android'">
+	  <PackageReference Include="Emgu.CV.runtime.maui.mini">
+	    <Version>4.13.0.5924</Version>
+	  </PackageReference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0-windows10.0.19041.0'">
+	  <PackageReference Include="Emgu.CV.runtime.maui.mini">
+	    <Version>4.13.0.5924</Version>
+	  </PackageReference>
 	</ItemGroup>
 
 </Project>

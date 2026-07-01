@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui;
+using Emgu.CV;
 using Microsoft.Extensions.Logging;
 using MicroVue.ViewModels;
 using MicroVue.Views;
@@ -10,6 +11,16 @@ namespace MicroVue
     {
         public static MauiApp CreateMauiApp()
         {
+#if ANDROID
+            // Initializes the native camera and backend for Android
+            Emgu.CV.CvInvokeAndroid.Init();
+#elif IOS
+        // Initializes the native backend for iOS
+        //Emgu.CV.Platform.Maui.MauiInvoke.Init();
+#endif
+
+            // Example: Disable OpenCL to prevent some rendering bugs
+            CvInvoke.UseOpenCL = false;
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()

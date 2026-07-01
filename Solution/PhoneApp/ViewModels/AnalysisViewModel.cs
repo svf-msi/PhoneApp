@@ -2,6 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using MicroVue.Models;
 using Newtonsoft.Json;
+using SkiaSharp;
+using StandardLib;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -34,7 +36,15 @@ namespace MicroVue.ViewModels
         bool onVideoView;
 
         [ObservableProperty]
+        ImageSource image;
+
+        [ObservableProperty]
+        int currentFrame = 0;
+
+        [ObservableProperty]
         bool back;
+
+        Video_MP4 video;
 
         partial void OnSceneItemChanged(SceneItem sceneItem)
         {
@@ -48,6 +58,26 @@ namespace MicroVue.ViewModels
 
                 Scene = JsonConvert.DeserializeObject<Scene>(text);
                 VideoPath = Scene?.VideoName;
+                if (!string.IsNullOrEmpty(VideoPath))
+                {
+                    video = new Video_MP4(VideoPath);
+                    CurrentFrame = 0;
+                    SetImage();
+                }
+            }
+        }
+
+        void SetImage()
+        {
+            if (video == null) return;
+            var bitmap = video.GetFrame(CurrentFrame);
+            if (bitmap == null) return;
+
+            using (var ms = new MemoryStream())
+            {
+                bitmap.Encode(ms, SKEncodedImageFormat.Png, 100);
+                ms.Position = 0;
+                Image = ImageSource.FromStream(() => new MemoryStream(ms.ToArray()));
             }
         }
 

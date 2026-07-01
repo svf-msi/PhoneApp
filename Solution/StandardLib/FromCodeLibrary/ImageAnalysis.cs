@@ -2,11 +2,13 @@
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -983,6 +985,62 @@ namespace StandardLib
             {
                 return false;
             }
+        }
+
+        public static SKBitmap? ToSKBitmap(Mat? emguMat)
+        {
+            if (emguMat == null) return null;
+
+            // High-performance pointer method
+            if (!emguMat.IsContinuous) emguMat = emguMat.Clone();
+
+            // Map OpenCV color channels to SkiaSharp color types
+            SKColorType colorType = emguMat.NumberOfChannels switch
+            {
+                1 => SKColorType.Gray8,
+                3 => SKColorType.Bgra8888, // Will require color space adjustment below if 3-channel BGR
+                4 => SKColorType.Bgra8888, // Direct map for BGRA
+                _ => throw new NotSupportedException("Unsupported channel count")
+            };
+
+            // Handle 3-channel BGR to 4-channel BGRA conversion if needed
+            Mat processingMat = emguMat;
+            if (emguMat.NumberOfChannels == 3)
+            {
+                processingMat = new Mat();
+                CvInvoke.CvtColor(emguMat, processingMat, ColorConversion.Bgr2Bgra);
+            }
+
+            var info = new SKImageInfo(processingMat.Width, processingMat.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+            var skBitmap = new SKBitmap();
+            skBitmap.InstallPixels(info, processingMat.DataPointer, processingMat.Step);
+
+            return skBitmap;
+        }
+
+        public static SKBitmap ToSKBitmapSafeCopy(Mat emguMat)
+        {
+            // Convert 3-channel BGR to 4-channel BGRA for standard Skia handling
+            Mat bgraMat = new Mat();
+            if (emguMat.NumberOfChannels == 3)
+            {
+                CvInvoke.CvtColor(emguMat, bgraMat, Emgu.CV.CvEnum.ColorConversion.Bgr2Bgra);
+            }
+            else
+            {
+                bgraMat = emguMat.Clone();
+            }
+
+            var info = new SKImageInfo(bgraMat.Width, bgraMat.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+            var skBitmap = new SKBitmap(info);
+
+            // Copy managed/unmanaged bytes over to Skia's pixel memory
+            int totalBytes = bgraMat.Width * bgraMat.Height * bgraMat.NumberOfChannels;
+            byte[] pixelData = new byte[totalBytes];
+            Marshal.Copy(bgraMat.DataPointer, pixelData, 0, totalBytes);
+
+            skBitmap.SetPixels(Marshal.UnsafeAddrOfPinnedArrayElement(pixelData, 0));
+            return skBitmap;
         }
 
         #endregion
