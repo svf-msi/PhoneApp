@@ -6,6 +6,7 @@ using SkiaSharp;
 using StandardLib;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace MicroVue.ViewModels
@@ -39,7 +40,13 @@ namespace MicroVue.ViewModels
         ImageSource image;
 
         [ObservableProperty]
+        int rotation;
+
+        [ObservableProperty]
         int currentFrame = 0;
+
+        [ObservableProperty]
+        bool isPlaying;
 
         [ObservableProperty]
         bool back;
@@ -78,6 +85,28 @@ namespace MicroVue.ViewModels
                 bitmap.Encode(ms, SKEncodedImageFormat.Png, 100);
                 ms.Position = 0;
                 Image = ImageSource.FromStream(() => new MemoryStream(ms.ToArray()));
+                Rotation = 90;
+            }
+        }
+
+        async Task StartPlay()
+        {
+            if (IsPlaying || video == null) return;
+            try
+            {
+                IsPlaying = true;
+                var length = video.Length;
+                while (IsPlaying)
+                {
+                    ++CurrentFrame;
+                    if (CurrentFrame >= length) CurrentFrame = 0;
+                    SetImage();
+                    await Task.Delay(100);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Error in video play: {e}");
             }
         }
 
@@ -86,8 +115,12 @@ namespace MicroVue.ViewModels
             if (value) _ = GoBack();
         }
 
-        //bool onBack;
-        //public bool OnBack { get => onBack; set {  SetProperty(ref onBack, value); if (OnBack) GoBack(); }  }
+        [RelayCommand]
+        async Task PlayPause()
+        {
+            if (IsPlaying) IsPlaying = false;
+            else _ = StartPlay();
+        }
 
         [RelayCommand]
         async Task GoBack()

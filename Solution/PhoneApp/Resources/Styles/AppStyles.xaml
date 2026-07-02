@@ -68,6 +68,18 @@
              Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
              Size="{StaticResource IconSize}" />
 
+    <FontImageSource x:Key="IconPlay"
+         Glyph="{x:Static f:FluentUI.play_circle_24_regular}"
+         FontFamily="{x:Static f:FluentUI.FontFamily}"
+         Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+         Size="{StaticResource IconSize}" />
+
+    <FontImageSource x:Key="IconPause"
+         Glyph="{x:Static f:FluentUI.pause_circle_24_regular}"
+         FontFamily="{x:Static f:FluentUI.FontFamily}"
+         Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+         Size="{StaticResource IconSize}" />
+
     <FontImageSource x:Key="IconCamera"
                  Glyph="{x:Static f:FluentUI.camera_24_regular}"
                  FontFamily="{x:Static f:FluentUI.FontFamily}"
