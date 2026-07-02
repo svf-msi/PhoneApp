@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MicroVue.Models;
 using Newtonsoft.Json;
@@ -39,6 +40,9 @@ namespace MicroVue.ViewModels
         ImageSource image;
 
         [ObservableProperty]
+        MediaSource source;
+
+        [ObservableProperty]
         int currentFrame = 0;
 
         [ObservableProperty]
@@ -58,12 +62,26 @@ namespace MicroVue.ViewModels
 
                 Scene = JsonConvert.DeserializeObject<Scene>(text);
                 VideoPath = Scene?.VideoName;
-                if (!string.IsNullOrEmpty(VideoPath))
-                {
-                    video = new Video_MP4(VideoPath);
-                    CurrentFrame = 0;
-                    SetImage();
-                }
+                //SetupVideo();
+                SetupSource();
+            }
+        }
+
+        void SetupVideo(bool useImage = false)
+        {
+            if (!string.IsNullOrEmpty(VideoPath))
+            {
+                video = new Video_MP4(VideoPath);
+                CurrentFrame = 0;
+                if (useImage) SetImage();
+            }
+        }
+
+        void SetupSource()
+        {
+            if (!string.IsNullOrEmpty(VideoPath))
+            {
+                Source = MediaSource.FromFile(VideoPath);
             }
         }
 

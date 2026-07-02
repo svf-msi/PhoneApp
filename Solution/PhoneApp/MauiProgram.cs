@@ -25,6 +25,7 @@ namespace MicroVue
             builder
                 .UseMauiApp<App>()
                 .UseMauiCommunityToolkit()
+                .UseMauiCommunityToolkitMediaElement()
                 .ConfigureSyncfusionToolkit()
                 .ConfigureFonts(fonts =>
                 {

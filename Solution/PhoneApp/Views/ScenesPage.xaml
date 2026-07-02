@@ -31,9 +31,9 @@
                                         Command="{Binding Source={x:Reference scenesPage}, Path=BindingContext.TapCommand}"
                                         CommandParameter="{Binding .}"/>
                                 </Border.GestureRecognizers>
-                                <Grid ColumnDefinitions="Auto, *, Auto">
-                                    <Label Grid.Column="0" Text="{Binding Name}"/>
-                                    <Label Grid.Column="2" Text="{Binding Date, StringFormat='{0:MM/dd/yyyy}'}"/>
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Label Grid.Column="0" Text="{Binding Name}" LineBreakMode="TailTruncation"/>
+                                    <Label Grid.Column="1" Text="{Binding Date, StringFormat='{0:MM/dd/yyyy}'}"/>
                                 </Grid>
                             </Border>
                         </SwipeView>

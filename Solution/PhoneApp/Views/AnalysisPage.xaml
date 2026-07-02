@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MicroVue.Views.AnalysisPage"
              xmlns:f="clr-namespace:Fonts"
-             xmlns:tabView="clr-namespace:Syncfusion.Maui.Toolkit.TabView;assembly=Syncfusion.Maui.Toolkit"
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
              xmlns:v="clr-namespace:MicroVue.Views"
              x:DataType="vm:AnalysisViewModel"
@@ -18,18 +17,19 @@
                     <VisualStateGroup x:Name="CheckedStates">
                         <VisualState x:Name="Checked">
                             <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="LightBlue"/>
+                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}"/>
                             </VisualState.Setters>
                         </VisualState>
 
                         <VisualState x:Name="Unchecked">
                             <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="LightGray"/>
+                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"/>
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>
                 </VisualStateManager.VisualStateGroups>
                 <Label Text="{TemplateBinding Content}" FontFamily="{x:Static f:FluentUI.FontFamily}"
+                       TextColor="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                        FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
             </Grid>
         </ControlTemplate>
