@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhoneApp", "PhoneApp\PhoneA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandardLib", "StandardLib\StandardLib.csproj", "{EBBD4865-7634-43F9-B414-97E1EA24EE61}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecordingTest", "RecordingTest\RecordingTest.csproj", "{ED65A0B8-6265-400F-84FD-1385FB6E6FDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{EBBD4865-7634-43F9-B414-97E1EA24EE61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBBD4865-7634-43F9-B414-97E1EA24EE61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EBBD4865-7634-43F9-B414-97E1EA24EE61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED65A0B8-6265-400F-84FD-1385FB6E6FDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED65A0B8-6265-400F-84FD-1385FB6E6FDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED65A0B8-6265-400F-84FD-1385FB6E6FDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED65A0B8-6265-400F-84FD-1385FB6E6FDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
