@@ -18,7 +18,9 @@
                 <Grid IsClippedToBounds="True">
                     <toolkit:MediaElement Source="{Binding Source}" 
                           ShouldAutoPlay="False" Aspect="AspectFit"
-                          ShouldShowPlaybackControls="True" />
+                          ShouldShowPlaybackControls="False" 
+                          PositionChanged="OnMediaPositionChanged"
+                          x:Name="player"/>
                 </Grid>
             </v:PanZoomContainer>
         </Grid>
@@ -28,6 +30,38 @@
             VerticalOptions="Center" 
             HorizontalOptions="Center" 
             LineBreakMode="TailTruncation"/>
+
+        <Grid Grid.Row="2" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <Button Grid.Row="2" Margin="5"
+                    Text="Play" Clicked="OnPlayPauseButtonClicked">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button"
+                    Binding="{Binding CurrentState, Source={x:Reference player}}"
+                    Value="{x:Static toolkit:MediaElementState.Playing}">
+                        <Setter Property="Text"
+                                Value="Pause" />
+                    </DataTrigger>
+                    <DataTrigger TargetType="Button"
+                    Binding="{Binding CurrentState, Source={x:Reference player}}"
+                    Value="{x:Static toolkit:MediaElementState.Buffering}">
+                        <Setter Property="IsEnabled"
+                                Value="False" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+
+            <Slider Grid.Column="1" Margin="5" VerticalOptions="Center" x:Name="slider"
+                    Minimum="0" DragStarted="OnSliderDragStarted" DragCompleted="OnSliderDragCompleted"/>
+
+        </Grid>
 
     </Grid>
 </ContentView>
