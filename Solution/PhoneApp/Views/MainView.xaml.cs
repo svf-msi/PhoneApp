@@ -13,6 +13,13 @@ public partial class MainView : ContentView
         player.Speed = 1;
     }
 
+    protected override void OnSizeAllocated(double width, double height)
+    {
+        base.OnSizeAllocated(width, height);
+        if (bottomPanel != null) bottomPanel.IsVisible = width <= height;
+        if (sidePanel != null) sidePanel.IsVisible = width > height;
+    }
+
     void OnPlayPauseButtonClicked(object sender, EventArgs args)
     {
         if (player.CurrentState == MediaElementState.Stopped ||
@@ -30,8 +37,8 @@ public partial class MainView : ContentView
     {
         if (!isDragging)
         {
-            slider.Maximum = player.Duration.TotalSeconds;
-            slider.Value = args.Position.TotalSeconds;
+            slider.Maximum = slider2.Maximum = player.Duration.TotalSeconds;
+            slider.Value = slider2.Value = args.Position.TotalSeconds;
         }
     }
 
@@ -42,38 +49,47 @@ public partial class MainView : ContentView
 
     async void OnSliderDragCompleted(object sender, EventArgs e)
     {
-        var targetPosition = TimeSpan.FromSeconds(slider.Value);
+        if (sender is Slider slider)
+        {
+            var targetPosition = TimeSpan.FromSeconds(slider.Value);
 
-        await player.SeekTo(targetPosition, CancellationToken.None);
-        isDragging = false;
+            await player.SeekTo(targetPosition, CancellationToken.None);
+            isDragging = false;
+        }
     }
 
     void Picker_SelectedIndexChanged(object sender, EventArgs e)
     {
-        switch (picker.SelectedIndex)
+        if (sender is Picker picker)
         {
-            case 1:
-                player.Speed = 2;
-                break;
-            case 2:
-                player.Speed = 10;
-                break;
-            default:
-                player.Speed = 1;
-                break;
+            switch (picker.SelectedIndex)
+            {
+                case 1:
+                    player.Speed = 2;
+                    break;
+                case 2:
+                    player.Speed = 10;
+                    break;
+                default:
+                    player.Speed = 1;
+                    break;
+            }
         }
     }
 
     protected void Picker_HandlerChanged(object sender, EventArgs e)
     {
-        base.OnHandlerChanged();
+        if (sender is Picker picker)
+        {
+            base.OnHandlerChanged();
 
 #if ANDROID
-        if (picker.Handler?.PlatformView is AndroidX.AppCompat.Widget.AppCompatEditText nativePicker)
-        {
-            // Removes the baseline background completely
-            nativePicker.Background = null;
-        }
+            if (picker.Handler?.PlatformView is AndroidX.AppCompat.Widget.AppCompatEditText nativePicker)
+            {
+                // Removes the baseline background completely
+                nativePicker.Background = null;
+            }
 #endif
+        }
     }
 }

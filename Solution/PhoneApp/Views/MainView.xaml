@@ -7,65 +7,146 @@
              xmlns:v="clr-namespace:MicroVue.Views"
              x:Class="MicroVue.Views.MainView"
              x:DataType="vm:AnalysisViewModel">
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="1" IsClippedToBounds="True">
-            <v:PanZoomContainer>
-                <Grid IsClippedToBounds="True">
-                    <toolkit:MediaElement Source="{Binding Source}" 
-                          ShouldAutoPlay="False" Aspect="AspectFit"
-                          ShouldLoopPlayback="True"
-                          ShouldShowPlaybackControls="False" 
-                          PositionChanged="OnMediaPositionChanged"
-                          x:Name="player"/>
-                </Grid>
-            </v:PanZoomContainer>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!--Video-->
+        <Grid Grid.Row="0" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="1" IsClippedToBounds="True">
+                <v:PanZoomContainer>
+                    <Grid IsClippedToBounds="True">
+                        <toolkit:MediaElement Source="{Binding Source}" 
+                      ShouldAutoPlay="False" Aspect="AspectFit"
+                      ShouldLoopPlayback="True"
+                      ShouldShowPlaybackControls="False" 
+                      PositionChanged="OnMediaPositionChanged"
+                      x:Name="player"/>
+                    </Grid>
+                </v:PanZoomContainer>
+            </Grid>
+
+            <Label Grid.Row="0"
+                Text="{Binding SceneName}"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" 
+                LineBreakMode="TailTruncation"/>
+
         </Grid>
 
-        <Label Grid.Row="0"
-            Text="{Binding SceneName}"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" 
-            LineBreakMode="TailTruncation"/>
+        <!--Side panel-->
+        <Grid Grid.Row="0" Grid.Column="1" x:Name="sidePanel" IsVisible="False" MinimumWidthRequest="250">
 
-        <Grid Grid.Row="2" Margin="5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            
-            <Button Grid.Row="2" Margin="5"
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" Margin="5"
                     Text="{x:Static f:FluentUI.play_24_regular}" 
                     FontFamily="{x:Static f:FluentUI.FontFamily}"
                     FontSize="24" CornerRadius="20" Padding="0"
                     Clicked="OnPlayPauseButtonClicked">
-                <Button.Triggers>
-                    <DataTrigger TargetType="Button"
-                    Binding="{Binding CurrentState, Source={x:Reference player}}"
-                    Value="{x:Static toolkit:MediaElementState.Playing}">
-                        <Setter Property="Text"
-                                Value="{x:Static f:FluentUI.pause_24_regular}" />
-                    </DataTrigger>
-                </Button.Triggers>
-            </Button>
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button"
+                            Binding="{Binding CurrentState, Source={x:Reference player}}"
+                            Value="{x:Static toolkit:MediaElementState.Playing}">
+                            <Setter Property="Text" Value="{x:Static f:FluentUI.pause_24_regular}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
 
-            <Picker Grid.Column="1" Margin="5, 0, -20, 0" VerticalOptions="Center" x:Name="picker"
-                    ItemsSource="{Binding Speeds}" SelectedIndex="{Binding SelectedSpeedIndex}"
-                    HandlerChanged="Picker_HandlerChanged" FontSize="20" FontAttributes="Bold"
-                    SelectedIndexChanged="Picker_SelectedIndexChanged"/>
+                <Picker Grid.Column="1" Margin="5, 0, -35, 0" VerticalOptions="Center"
+                        ItemsSource="{Binding Speeds}" SelectedIndex="{Binding SelectedSpeedIndex}"
+                        HandlerChanged="Picker_HandlerChanged" FontSize="20" FontAttributes="Bold"
+                        SelectedIndexChanged="Picker_SelectedIndexChanged" Title="Speed"/>
 
-            <Slider Grid.Column="2" Margin="5" VerticalOptions="Center" x:Name="slider"
-                    Minimum="0" DragStarted="OnSliderDragStarted" DragCompleted="OnSliderDragCompleted"/>
+                <Slider Grid.Column="2" Margin="5" VerticalOptions="Center" x:Name="slider"
+                        Minimum="0" DragStarted="OnSliderDragStarted" DragCompleted="OnSliderDragCompleted"/>
+
+            </Grid>
+            
+            <!--Regions-->
+            <Grid Grid.Row="1" Margin="5">
+                <Label Text=" Regions"/>
+            </Grid>
+        </Grid>
+
+        <!--Bottom panel-->
+        <Grid Grid.Row="1" Grid.Column="0" x:Name="bottomPanel" IsVisible="True">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" Margin="5"
+                    Text="{x:Static f:FluentUI.play_24_regular}" 
+                    FontFamily="{x:Static f:FluentUI.FontFamily}"
+                    FontSize="24" CornerRadius="20" Padding="0"
+                    Clicked="OnPlayPauseButtonClicked">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button"
+                            Binding="{Binding CurrentState, Source={x:Reference player}}"
+                            Value="{x:Static toolkit:MediaElementState.Playing}">
+                            <Setter Property="Text" Value="{x:Static f:FluentUI.pause_24_regular}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+
+                <Picker Grid.Column="1" Margin="5, 0, -35, 0" VerticalOptions="Center"
+                        ItemsSource="{Binding Speeds}" SelectedIndex="{Binding SelectedSpeedIndex}"
+                        HandlerChanged="Picker_HandlerChanged" FontSize="20" FontAttributes="Bold"
+                        SelectedIndexChanged="Picker_SelectedIndexChanged" Title="Speed"/>
+
+                <Slider Grid.Column="2" Margin="5" VerticalOptions="Center" x:Name="slider2"
+                        Minimum="0" DragStarted="OnSliderDragStarted" DragCompleted="OnSliderDragCompleted"/>
+
+            </Grid>
+
+            <!--Regions-->
+            <Grid Grid.Row="1" Margin="5">
+                <Label Text=" Regions"/>
+            </Grid>
 
         </Grid>
 
     </Grid>
+    
 </ContentView>

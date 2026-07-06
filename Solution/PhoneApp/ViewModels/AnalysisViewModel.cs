@@ -110,9 +110,6 @@ namespace MicroVue.ViewModels
             if (value) _ = GoBack();
         }
 
-        //bool onBack;
-        //public bool OnBack { get => onBack; set {  SetProperty(ref onBack, value); if (OnBack) GoBack(); }  }
-
         [RelayCommand]
         async Task GoBack()
         {
