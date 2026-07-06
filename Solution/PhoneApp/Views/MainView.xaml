@@ -2,6 +2,7 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:f="clr-namespace:Fonts"
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
              xmlns:v="clr-namespace:MicroVue.Views"
              x:Class="MicroVue.Views.MainView"
@@ -18,6 +19,7 @@
                 <Grid IsClippedToBounds="True">
                     <toolkit:MediaElement Source="{Binding Source}" 
                           ShouldAutoPlay="False" Aspect="AspectFit"
+                          ShouldLoopPlayback="True"
                           ShouldShowPlaybackControls="False" 
                           PositionChanged="OnMediaPositionChanged"
                           x:Name="player"/>
@@ -34,31 +36,33 @@
         <Grid Grid.Row="2" Margin="5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
             <Button Grid.Row="2" Margin="5"
-                    Text="Play" Clicked="OnPlayPauseButtonClicked">
+                    Text="{x:Static f:FluentUI.play_24_regular}" 
+                    FontFamily="{x:Static f:FluentUI.FontFamily}"
+                    FontSize="24" CornerRadius="20" Padding="0"
+                    Clicked="OnPlayPauseButtonClicked">
                 <Button.Triggers>
                     <DataTrigger TargetType="Button"
                     Binding="{Binding CurrentState, Source={x:Reference player}}"
                     Value="{x:Static toolkit:MediaElementState.Playing}">
                         <Setter Property="Text"
-                                Value="Pause" />
-                    </DataTrigger>
-                    <DataTrigger TargetType="Button"
-                    Binding="{Binding CurrentState, Source={x:Reference player}}"
-                    Value="{x:Static toolkit:MediaElementState.Buffering}">
-                        <Setter Property="IsEnabled"
-                                Value="False" />
+                                Value="{x:Static f:FluentUI.pause_24_regular}" />
                     </DataTrigger>
                 </Button.Triggers>
             </Button>
 
-            <Slider Grid.Column="1" Margin="5" VerticalOptions="Center" x:Name="slider"
+            <Picker Grid.Column="1" Margin="5, 0, -20, 0" VerticalOptions="Center" x:Name="picker"
+                    ItemsSource="{Binding Speeds}" SelectedIndex="{Binding SelectedSpeedIndex}"
+                    HandlerChanged="Picker_HandlerChanged" FontSize="20" FontAttributes="Bold"
+                    SelectedIndexChanged="Picker_SelectedIndexChanged"/>
+
+            <Slider Grid.Column="2" Margin="5" VerticalOptions="Center" x:Name="slider"
                     Minimum="0" DragStarted="OnSliderDragStarted" DragCompleted="OnSliderDragCompleted"/>
 
         </Grid>

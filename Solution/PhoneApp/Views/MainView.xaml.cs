@@ -10,9 +10,7 @@ public partial class MainView : ContentView
     public MainView()
 	{
 		InitializeComponent();
-        //slider.Value = player.Position.TotalSeconds;
-        //slider.Maximum = player.Duration.TotalSeconds;
-        //slider.Player = player;
+        player.Speed = 1;
     }
 
     void OnPlayPauseButtonClicked(object sender, EventArgs args)
@@ -48,5 +46,34 @@ public partial class MainView : ContentView
 
         await player.SeekTo(targetPosition, CancellationToken.None);
         isDragging = false;
+    }
+
+    void Picker_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        switch (picker.SelectedIndex)
+        {
+            case 1:
+                player.Speed = 2;
+                break;
+            case 2:
+                player.Speed = 10;
+                break;
+            default:
+                player.Speed = 1;
+                break;
+        }
+    }
+
+    protected void Picker_HandlerChanged(object sender, EventArgs e)
+    {
+        base.OnHandlerChanged();
+
+#if ANDROID
+        if (picker.Handler?.PlatformView is AndroidX.AppCompat.Widget.AppCompatEditText nativePicker)
+        {
+            // Removes the baseline background completely
+            nativePicker.Background = null;
+        }
+#endif
     }
 }

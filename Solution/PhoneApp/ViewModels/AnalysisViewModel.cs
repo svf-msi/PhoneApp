@@ -7,6 +7,7 @@ using SkiaSharp;
 using StandardLib;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 
 namespace MicroVue.ViewModels
@@ -26,6 +27,11 @@ namespace MicroVue.ViewModels
         [ObservableProperty]
         string videoPath;
 
+        [ObservableProperty]
+        private ObservableCollection<string> speeds = new() { "x1", "x2", "x10" };
+
+        [ObservableProperty]
+        private int selectedSpeedIndex = 0;
 
         [ObservableProperty]
         bool onMainView = true;
