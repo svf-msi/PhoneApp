@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
+using System.Diagnostics;
 
 namespace MicroVue.Views;
 
@@ -11,6 +12,40 @@ public partial class MainView : ContentView
 	{
 		InitializeComponent();
         player.Speed = 1;
+
+        player.PropertyChanged += Player_PropertyChanged;
+    }
+
+    void Player_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+    {
+        if (player != null)
+        {
+            if (args.PropertyName == nameof(player.MediaWidth) || args.PropertyName == nameof(player.MediaHeight))
+            {
+                SetupOverlay();
+            }
+        }
+    }
+
+    void SetupOverlay()
+    {
+        if (player == null) return;
+        var w = player.MediaWidth;
+        var h = player.MediaHeight;
+        //Debug.WriteLine($"****** player resolution: {player.MediaWidth}, {player.MediaHeight}");
+        if (w == 0 || h == 0) return;
+        var aspect = (double)w / h;
+        var rw = player.Height * aspect;
+        var rh = player.Width / aspect;
+        //Debug.WriteLine($"****** player bounds: {player.Bounds}");
+        //Debug.WriteLine($"****** player frame: {player.Frame}");
+        //Debug.WriteLine($"****** player height: {player.Width} vs {rw}");
+        //Debug.WriteLine($"****** player height: {player.Height} vs {rh}");
+        rw = Math.Min(player.Width, rw);
+        rh = Math.Min(player.Height, rh);
+        var off_x = player.Width - rw;
+        var off_y = player.Height - rh;
+        AbsoluteLayout.SetLayoutBounds(overlay, new Rect(off_x/2, off_y/2, rw, rh));
     }
 
     protected override void OnSizeAllocated(double width, double height)
@@ -18,6 +53,7 @@ public partial class MainView : ContentView
         base.OnSizeAllocated(width, height);
         if (bottomPanel != null) bottomPanel.IsVisible = width <= height;
         if (sidePanel != null) sidePanel.IsVisible = width > height;
+        SetupOverlay();
     }
 
     void OnPlayPauseButtonClicked(object sender, EventArgs args)
