@@ -107,13 +107,21 @@ namespace RecordingTest.Models
         static string? SelectCameraId(CameraManager manager, CameraFacing facing)
         {
             var want = facing == CameraFacing.Front ? (int)LensFacing.Front : (int)LensFacing.Back;
+
+            string? firstMatch = null;
             foreach (var id in manager.GetCameraIdList())
             {
                 var chars = manager.GetCameraCharacteristics(id);
-                if (chars.Get(CameraCharacteristics.LensFacing) is Java.Lang.Integer lens && lens.IntValue() == want)
-                    return id;
+                if (!(chars.Get(CameraCharacteristics.LensFacing) is Java.Lang.Integer lens) || lens.IntValue() != want)
+                    continue;
+
+                if (firstMatch == null) firstMatch = id; // backup if no high speed capable options
+
+                var caps = chars.Get(CameraCharacteristics.RequestAvailableCapabilities)?.ToArray<int>() ?? Array.Empty<int>();
+                Console.WriteLine($"Camera {id}, high speed: {caps.Contains((int)RequestAvailableCapabilities.ConstrainedHighSpeedVideo)}");
+                if (caps.Contains((int)RequestAvailableCapabilities.ConstrainedHighSpeedVideo)) return id;
             }
-            return manager.GetCameraIdList().FirstOrDefault();
+            return firstMatch ?? manager.GetCameraIdList().FirstOrDefault();
         }
 
         void ReadCapabilities(CameraCharacteristics chars)
@@ -152,10 +160,12 @@ namespace RecordingTest.Models
 
                 var rates = new SortedSet<double>();
                 aeFpsRanges = chars.Get(CameraCharacteristics.ControlAeAvailableTargetFpsRanges)?.ToArray<ARange>();
+                Console.WriteLine($"FPS ranges #: {aeFpsRanges?.Length}");
                 if (aeFpsRanges != null)
                 {
                     foreach (var r in aeFpsRanges)
                     {
+                        Console.WriteLine($"FPS option: {Num(r.Lower)}-{Num(r.Upper)}");
                         rates.Add(Num(r.Upper));
                     }
                 }
@@ -163,12 +173,14 @@ namespace RecordingTest.Models
 
                 List<Resolution> highSpeedModes = new List<Resolution>();
                 var hsSizes = map.GetHighSpeedVideoSizes();
+                Console.WriteLine($"High speed sizes #: {hsSizes?.Length}");
                 if (hsSizes != null && hsSizes.Length > 0)
                 {
                     foreach (var size in hsSizes)
                     {
                         foreach (var range in map.GetHighSpeedVideoFpsRangesFor(size))
                         {
+                            Console.WriteLine($"High speed option: {size.Width}x{size.Height} {Num(range.Lower)}-{Num(range.Upper)}");
                             highSpeedModes.Add(new Resolution(size.Width, size.Height, (int)Num(range.Upper)));
                         }
                     }
