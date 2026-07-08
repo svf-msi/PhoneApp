@@ -44,7 +44,9 @@ namespace RecordingTest.Models
 
         private bool isRecording;
         public bool IsRecording { get => isRecording; set { isRecording = value; NotifyPropertyChanged(); } }
-        public CameraCapabilities? Capabilities { get; set; }
+
+        private CameraCapabilities? capabilities;
+        public CameraCapabilities? Capabilities { get => capabilities; set { capabilities = value; NotifyPropertyChanged(); } }
 
         private double frameRate;
         public double FrameRate { get => frameRate; set { frameRate = value; ApplyToBuilder(); NotifyPropertyChanged(); } }
@@ -82,9 +84,11 @@ namespace RecordingTest.Models
 
                 Console.WriteLine($"Camera capabilities:\n{Capabilities}");
 
+                double defaultFPS = Capabilities.AllFrameRates.Contains(120) ? 120 : Capabilities.FrameRateRange.Default;
+
                 SetSettingsFields(
                     ae: true,
-                    fps: Capabilities.FrameRateRange.Default,
+                    fps: defaultFPS,
                     exposureUs: Capabilities.ExposureRange.Default,
                     iso: Capabilities.GainRange.Default);
 
@@ -152,7 +156,6 @@ namespace RecordingTest.Models
                     if (minDurationNs > 0) maxFps = 1_000_000_000.0 / minDurationNs;
 
                     PreviewSize = sizes
-                        .Where(s => (long)s.Width * s.Height <= 1920L * 1080)
                         .OrderByDescending(s => (long)s.Width * s.Height)
                         .FirstOrDefault() ?? sizes[0];
                 }
@@ -191,7 +194,6 @@ namespace RecordingTest.Models
                 if (recordSizes != null && recordSizes.Length > 0)
                 {
                     defaultVideoSize = recordSizes
-                        .Where(s => (long)s.Width * s.Height <= 1920L * 1080)
                         .OrderByDescending(s => (long)s.Width * s.Height)
                         .FirstOrDefault() ?? recordSizes[0];
                 }
@@ -534,11 +536,23 @@ namespace RecordingTest.Models
             {
                 camera.Close(); svc.device = null; opened.TrySetResult(false);
             }
+            int openRetries = 0;
             public override void OnError(CameraDevice camera, CameraError error)
             {
                 camera.Close(); svc.device = null;
                 Console.WriteLine($"Camera device error: {error}");
                 opened.TrySetResult(false);
+
+                if (error == CameraError.CameraDisabled)
+                {
+                    Console.WriteLine($"Camera disabled, aborting");
+                    return;
+                }
+                if (openRetries++ >= 2)
+                {
+                    Console.WriteLine($"Max retry attempts exceeded, aborting");
+                    return;
+                }
 
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {

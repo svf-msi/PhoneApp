@@ -48,7 +48,7 @@ namespace RecordingTest.ViewModels
 
         public void Initialize()
         {
-            Camera?.Open(CameraFacing.Front);
+            Camera?.Open(CameraFacing.Back);
         }
 
         #region Settings
