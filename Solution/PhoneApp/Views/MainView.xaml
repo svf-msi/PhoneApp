@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:f="clr-namespace:Fonts"
+             xmlns:m="clr-namespace:MicroVue.Models"
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
              xmlns:v="clr-namespace:MicroVue.Views"
              x:Class="MicroVue.Views.MainView"
@@ -41,19 +42,27 @@
                             ShouldAutoPlay="False" 
                             ShouldLoopPlayback="True"
                             ShouldShowPlaybackControls="False" 
-                            PositionChanged="OnMediaPositionChanged"
+                            PropertyChanged="Player_PropertyChanged"
+                            PositionChanged="Player_PositionChanged"
                             AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
                             AbsoluteLayout.LayoutFlags="All" 
                             x:Name="player"/>
 
                         <AbsoluteLayout x:Name="overlay" 
+                            BindableLayout.ItemsSource="{Binding Scene.Regions}"
                             AbsoluteLayout.LayoutFlags="None"
                             AbsoluteLayout.LayoutBounds="0, 0, 0, 0">
 
-                            <Rectangle Fill="Transparent" 
-                               Stroke="Red" StrokeThickness="3"
-                               AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
-                               AbsoluteLayout.LayoutFlags="All" />
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="m:Region">
+
+                                    <Rectangle Fill="Transparent" 
+                                        Stroke="{Binding Color}" StrokeThickness="3"
+                                        AbsoluteLayout.LayoutBounds="{Binding Rect}"
+                                        AbsoluteLayout.LayoutFlags="All" />
+
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
 
                         </AbsoluteLayout>
 
@@ -65,16 +74,17 @@
         </Grid>
 
         <!--Side panel-->
-        <Grid Grid.Row="0" Grid.Column="1" x:Name="sidePanel" IsVisible="False" MinimumWidthRequest="250">
+        <v:MainPanel Grid.Row="0" Grid.Column="1" x:Name="sidePanel" 
+                     HorizontalOptions="Fill" MinimumWidthRequest="250"
+                     IsVisible="False"  BindingContext="{Binding .}"/>
+        <!--<Grid Grid.Row="0" Grid.Column="1" x:Name="sidePanel" IsVisible="False" MinimumWidthRequest="250">
 
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
+            --><!--Player--><!--
             <Grid Grid.Row="0" Margin="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -107,14 +117,38 @@
 
             </Grid>
             
-            <!--Regions-->
+            --><!--Regions--><!--
             <Grid Grid.Row="1" Margin="5">
-                <Label Text=" Regions"/>
+                
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Label Grid.Row="0" Text=" Regions" Margin="5"/>
+
+                <ScrollView Grid.Row="1" Margin="5">
+
+                    <CollectionView ItemsSource="{Binding Scene.Regions}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="m:Region">
+                                <Border StrokeThickness="1" Stroke="Gray" Margin="2">
+                                    <Label Text="{Binding Name}" Margin="-5 0"/>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </ScrollView>
             </Grid>
-        </Grid>
+        </Grid>-->
 
         <!--Bottom panel-->
-        <Grid Grid.Row="1" Grid.Column="0" x:Name="bottomPanel" IsVisible="True">
+        <v:MainPanel Grid.Row="1" Grid.Column="0" x:Name="bottomPanel" 
+             HorizontalOptions="Fill" MinimumWidthRequest="250"
+             IsVisible="True"  BindingContext="{Binding .}"/>
+        
+        <!--<Grid Grid.Row="1" Grid.Column="0" x:Name="bottomPanel" IsVisible="True">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -124,6 +158,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
+            --><!--Player--><!--
             <Grid Grid.Row="0" Margin="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -156,12 +191,33 @@
 
             </Grid>
 
-            <!--Regions-->
+            --><!--Regions--><!--
             <Grid Grid.Row="1" Margin="5">
-                <Label Text=" Regions"/>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Label Grid.Row="0" Text=" Regions" Margin="5"/>
+
+                <ScrollView Grid.Row="1" Margin="5">
+
+                    <CollectionView ItemsSource="{Binding Scene.Regions}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="m:Region">
+                                <Border StrokeThickness="1" Stroke="Gray" Margin="2">
+                                    <Label Text="{Binding Name}" Margin="-5, 0"/>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </ScrollView>
+                
             </Grid>
 
-        </Grid>
+        </Grid>-->
 
     </Grid>
     

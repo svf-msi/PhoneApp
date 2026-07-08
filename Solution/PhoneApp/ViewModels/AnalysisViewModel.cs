@@ -34,6 +34,9 @@ namespace MicroVue.ViewModels
         private int selectedSpeedIndex = 0;
 
         [ObservableProperty]
+        bool isPlaying = false;
+
+        [ObservableProperty]
         bool onMainView = true;
 
         [ObservableProperty]
@@ -47,6 +50,9 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         MediaSource source;
+
+        [ObservableProperty]
+        Rect rectangle = new Rect(0, 0, 0.5, 0.5);
 
         [ObservableProperty]
         int currentFrame = 0;
@@ -66,7 +72,11 @@ namespace MicroVue.ViewModels
                 var text = File.ReadAllText(scenePath);
                 if (string.IsNullOrEmpty(text)) return;
 
-                Scene = JsonConvert.DeserializeObject<Scene>(text);
+                var settings = new JsonSerializerSettings
+                {
+                    ObjectCreationHandling = ObjectCreationHandling.Replace
+                };
+                Scene = JsonConvert.DeserializeObject<Scene>(text, settings);
                 VideoPath = Scene?.VideoName;
                 //SetupVideo();
                 SetupSource();

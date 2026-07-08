@@ -12,8 +12,9 @@ public partial class MainView : ContentView
 	{
 		InitializeComponent();
         player.Speed = 1;
-
-        player.PropertyChanged += Player_PropertyChanged;
+        sidePanel.Player = bottomPanel.Player = player;
+        if (player.Duration.TotalSeconds > 0)
+            sidePanel.Duration = bottomPanel.Duration = player.Duration.TotalSeconds;
     }
 
     void Player_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
@@ -24,7 +25,17 @@ public partial class MainView : ContentView
             {
                 SetupOverlay();
             }
+            if (args.PropertyName == nameof(player.Duration))
+            {
+                sidePanel.Duration = bottomPanel.Duration = player.Duration.TotalSeconds;
+            }
         }
+    }
+
+    void Player_PositionChanged(object sender, MediaPositionChangedEventArgs args)
+    {
+        //Debug.WriteLine($"[Debug]: Player position changed: {args.Position.TotalSeconds}");
+        sidePanel.Position = bottomPanel.Position = args.Position.TotalSeconds;
     }
 
     void SetupOverlay()
@@ -66,15 +77,6 @@ public partial class MainView : ContentView
         else if (player.CurrentState == MediaElementState.Playing)
         {
             player.Pause();
-        }
-    }
-
-    void OnMediaPositionChanged(object sender, MediaPositionChangedEventArgs args)
-    {
-        if (!isDragging)
-        {
-            slider.Maximum = slider2.Maximum = player.Duration.TotalSeconds;
-            slider.Value = slider2.Value = args.Position.TotalSeconds;
         }
     }
 

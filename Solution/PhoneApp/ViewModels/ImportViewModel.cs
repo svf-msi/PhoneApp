@@ -48,7 +48,7 @@ namespace MicroVue.ViewModels
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"Error in file picker: {e}");
+                Debug.WriteLine($"[Debug]: Error in file picker: {e}");
             }
         }
 
@@ -93,7 +93,7 @@ namespace MicroVue.ViewModels
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"Error in saving scene: {e}");
+                Debug.WriteLine($"[Debug]: Error in saving scene: {e}");
             }
         }
 

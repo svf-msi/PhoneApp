@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:f="clr-namespace:Fonts"
+             xmlns:m="clr-namespace:MicroVue.Models"
+             xmlns:vm="clr-namespace:MicroVue.ViewModels"
+             xmlns:v="clr-namespace:MicroVue.Views"
+             x:Class="MicroVue.Views.MainPanel"
+             x:DataType="vm:AnalysisViewModel">
+
+    <Grid RowDefinitions="Auto, *" ColumnDefinitions="*">
+
+        <!--Player-->
+        <Grid Grid.Row="0" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Margin="5"
+                Text="{x:Static f:FluentUI.play_24_regular}" 
+                FontFamily="{x:Static f:FluentUI.FontFamily}"
+                FontSize="24" CornerRadius="20" Padding="0"
+                Clicked="OnPlayPauseButtonClicked">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button"
+                        Binding="{Binding IsPlaying}"
+                        Value="True">
+                            <Setter Property="Text" Value="{x:Static f:FluentUI.pause_24_regular}" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+
+            <Picker Grid.Column="1" Margin="5, 0, -35, 0" VerticalOptions="Center"
+                ItemsSource="{Binding Speeds}" SelectedIndex="{Binding SelectedSpeedIndex}"
+                HandlerChanged="Picker_HandlerChanged" FontSize="20" FontAttributes="Bold"
+                SelectedIndexChanged="Picker_SelectedIndexChanged" Title="Speed"/>
+
+            <Slider Grid.Column="2" Margin="5" VerticalOptions="Center" x:Name="slider"
+                Minimum="0.0" DragStarted="OnSliderDragStarted" DragCompleted="OnSliderDragCompleted"/>
+
+        </Grid>
+
+        <!--Regions-->
+        <Grid Grid.Row="1" RowDefinitions="Auto, *" ColumnDefinitions="*" Margin="5">
+
+            <Label Grid.Row="0" Text=" Regions:" Margin="5"/>
+
+            <ScrollView Grid.Row="1" Margin="5">
+
+                <CollectionView ItemsSource="{Binding Scene.Regions}" >
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="m:Region">
+                            <Border StrokeThickness="1" Stroke="Gray" Margin="10, 1">
+                                <Grid ColumnDefinitions="*">
+                                    <Label Text="{Binding Name}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </ScrollView>
+        </Grid>
+    </Grid>
+
+</ContentView>
