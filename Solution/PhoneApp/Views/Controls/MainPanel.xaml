@@ -30,7 +30,7 @@
                                     <Label Grid.Column="0" Text="{Binding Name}" VerticalOptions="Center" Margin="5"/>
                                     <Rectangle Grid.Column="1"  VerticalOptions="Center" Margin="10, 0, 10, 0"
                                             Fill="Transparent" Stroke="{Binding Color}" StrokeThickness="3" 
-                                            WidthRequest="30" HeightRequest="20" />
+                                            WidthRequest="20" HeightRequest="20" />
                                 </Grid>
                             </Border>
                         </DataTemplate>

@@ -102,16 +102,9 @@ namespace MicroVue.ViewModels
             {
                 SceneName = sceneItem.Name;
                 var scenePath = sceneItem.ItemPath;
-                if (!File.Exists(scenePath)) return;
-                var text = File.ReadAllText(scenePath);
-                if (string.IsNullOrEmpty(text)) return;
-
-                var settings = new JsonSerializerSettings
-                {
-                    ObjectCreationHandling = ObjectCreationHandling.Replace
-                };
-                Scene = JsonConvert.DeserializeObject<Scene>(text, settings);
-                VideoPath = Scene?.VideoName;
+                Scene = Scene.Read(scenePath);
+                if (Scene == null) return;
+                VideoPath = Scene.VideoName;
                 SetupSource();
                 SetupVideo();
             }
@@ -194,6 +187,7 @@ namespace MicroVue.ViewModels
             var target = new Models.Region(id, $"Target {id}", DefaultSize, MediaWidth / 2, MediaHeight / 2, false, color);
             Scene.Regions.Add(target);
             SelectedRegion = target;
+            Scene.Save();
         }
 
         [RelayCommand]
@@ -211,6 +205,7 @@ namespace MicroVue.ViewModels
             var target = new Models.Region(id, $"Background {id}", DefaultSize, MediaWidth / 2, MediaHeight / 2, true, color);
             Scene.Regions.Add(target);
             SelectedRegion = target;
+            Scene.Save();
         }
 
         [RelayCommand]

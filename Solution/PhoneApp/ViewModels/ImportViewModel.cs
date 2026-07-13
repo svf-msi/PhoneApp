@@ -76,8 +76,9 @@ namespace MicroVue.ViewModels
                 File.Copy(FilePath, videoPath, true);
 
                 var scene = new Scene { Name = SceneName, VideoName = videoPath };
-                var text = JsonConvert.SerializeObject(scene, Formatting.Indented);
-                File.WriteAllText(scenePath, text);
+                //var text = JsonConvert.SerializeObject(scene, Formatting.Indented);
+                //File.WriteAllText(scenePath, text);
+                scene.Save(scenePath);
 
                 FileName = FilePath = "";
                 FileSelected = false;
