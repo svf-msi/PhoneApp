@@ -24,8 +24,7 @@ namespace MicroVue.Models
         public void RefreshRegions()
         {
             //Debug.WriteLine($"[Debug]: --- Reresh regions");
-            var newRegions = new ObservableCollection<Region>();
-            for (int i = 0; i < regions.Count; i++)
+            for (int i = 0; i < Regions.Count; i++)
             {
                 var region = Regions[0];
                 Regions.RemoveAt(0);

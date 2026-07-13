@@ -1,5 +1,4 @@
-﻿using Android.Icu.Number;
-using MicroVue.ViewModels;
+﻿using MicroVue.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,6 +18,7 @@ namespace MicroVue.Views
             {
                 var scale = vm.PlayerScale;
                 var newrect = new Rect(rect.X * scale, rect.Y * scale, rect.Width * scale, rect.Height * scale);
+                //Debug.WriteLine($"[Debug]: convert scale={scale} - {rect}, {newrect}");
                 return newrect;
             }
             return value;
@@ -26,6 +26,12 @@ namespace MicroVue.Views
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            if (value is Rect rect && parameter is ContentView cv && cv.BindingContext is AnalysisViewModel vm)
+            {
+                var scale = vm.PlayerScale;
+                var newrect = new Rect(rect.X / scale, rect.Y / scale, rect.Width / scale, rect.Height / scale);
+                return newrect;
+            }
             return value;
         }
     }

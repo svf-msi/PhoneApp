@@ -42,7 +42,7 @@ public partial class MainView : ContentView
         if (player == null) return;
         var w = player.MediaWidth;
         var h = player.MediaHeight;
-        //Debug.WriteLine($"****** player resolution: {player.MediaWidth}, {player.MediaHeight}");
+        Debug.WriteLine($"****** player resolution: {player.MediaWidth}, {player.MediaHeight}, {player.Rotation}, {player.Scale}");
         if (w == 0 || h == 0) return;
         var aspect = (double)w / h;
         var rw = player.Height * aspect;
@@ -59,7 +59,11 @@ public partial class MainView : ContentView
         AbsoluteLayout.SetLayoutBounds(overlay, bounds);
         if (BindingContext is AnalysisViewModel vm)
         {
-            vm.PlayerWidth = rw; vm.PlayerHeight = rh; vm.PlayerScale = rw / w;
+            vm.MediaWidth = player.MediaWidth;
+            vm.MediaHeight = player.MediaHeight;
+            vm.PlayerWidth = rw; 
+            vm.PlayerHeight = rh; 
+            vm.PlayerScale = rw / w;
             vm.Scene?.RefreshRegions();
 
             //Debug.WriteLine($"[Debug]: player width: {rw} vs {w} - {rw / w}");

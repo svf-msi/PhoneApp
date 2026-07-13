@@ -38,7 +38,7 @@ namespace MicroVue.ViewModels
         private int selectedSpeedIndex = 0;
 
         [ObservableProperty]
-        MicroVue.Models.Region selectedRegion;
+        Models.Region selectedRegion;
 
         [ObservableProperty]
         bool isRegionSelected;
@@ -62,7 +62,13 @@ namespace MicroVue.ViewModels
         MediaSource source;
 
         [ObservableProperty]
-        double defaultSize = 0.1;
+        double defaultSize = 100;
+
+        [ObservableProperty]
+        double mediaWidth;
+
+        [ObservableProperty]
+        double mediaHeight;
 
         [ObservableProperty]
         double playerWidth;
@@ -81,6 +87,9 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         int currentFrame = 0;
+
+        [ObservableProperty]
+        bool isRotated;
 
         [ObservableProperty]
         bool back;
@@ -121,7 +130,8 @@ namespace MicroVue.ViewModels
                 CurrentFrame = 0;
                 VideoWidth = video?.Width ?? 0;
                 VideoHeight = video?.Height ?? 0;
-                if (useImage) SetImage();
+                IsRotated = MediaWidth > 0 && VideoWidth > 0 && VideoWidth == MediaHeight;
+                //if (useImage) SetImage();
             }
         }
 
@@ -180,7 +190,8 @@ namespace MicroVue.ViewModels
             }
 
             var color = TargetColors[(id - 1) % TargetColors.Count];
-            var target = new Models.Region(id, $"Target {id}", VideoWidth, VideoWidth / 2, VideoHeight / 2, false, color);
+            //Debug.WriteLine($"[Debug]: add target, width={MediaWidth} height={MediaHeight}");
+            var target = new Models.Region(id, $"Target {id}", DefaultSize, MediaWidth / 2, MediaHeight / 2, false, color);
             Scene.Regions.Add(target);
             SelectedRegion = target;
         }
@@ -197,7 +208,7 @@ namespace MicroVue.ViewModels
             }
 
             var color = "White";
-            var target = new Models.Region(id, $"Background {id}", 100, VideoWidth / 2, VideoHeight / 2, true, color);
+            var target = new Models.Region(id, $"Background {id}", DefaultSize, MediaWidth / 2, MediaHeight / 2, true, color);
             Scene.Regions.Add(target);
             SelectedRegion = target;
         }

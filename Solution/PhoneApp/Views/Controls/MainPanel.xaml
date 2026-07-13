@@ -73,15 +73,15 @@
             
             <Label Grid.Row="3" Grid.Column="0" Text="Size:" VerticalOptions="Center" Margin="5"/>
             <Slider Grid.Row="3" Grid.Column="1" Value="{Binding SelectedRegion.Size}" VerticalOptions="Center" Margin="5"
-                Minimum="0" Maximum="200"/>
+                Minimum="0" Maximum="2000"/>
 
             <Label Grid.Row="4" Grid.Column="0" Text="X:" VerticalOptions="Center" Margin="5"/>
             <Slider Grid.Row="4" Grid.Column="1" Value="{Binding SelectedRegion.X}" VerticalOptions="Center" Margin="5"
-                Minimum="0" Maximum="{Binding VideoWidth}"/>
+                Minimum="0" Maximum="{Binding MediaWidth}"/>
 
             <Label Grid.Row="5" Grid.Column="0" Text="Y:" VerticalOptions="Center" Margin="5"/>
             <Slider Grid.Row="5" Grid.Column="1" Value="{Binding SelectedRegion.Y}" VerticalOptions="Center" Margin="5"
-                Minimum="0" Maximum="{Binding VideoHeight}"/>
+                Minimum="0" Maximum="{Binding MediaHeight}"/>
 
 
         </Grid>
