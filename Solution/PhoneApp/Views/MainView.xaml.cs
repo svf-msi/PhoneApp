@@ -1,5 +1,7 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls.Shapes;
+using MicroVue.ViewModels;
 using System.Diagnostics;
 
 namespace MicroVue.Views;
@@ -53,7 +55,16 @@ public partial class MainView : ContentView
         rh = Math.Min(player.Height, rh);
         var off_x = player.Width - rw;
         var off_y = player.Height - rh;
-        AbsoluteLayout.SetLayoutBounds(overlay, new Rect(off_x/2, off_y/2, rw, rh));
+        var bounds = new Rect(off_x / 2, off_y / 2, rw, rh);
+        AbsoluteLayout.SetLayoutBounds(overlay, bounds);
+        if (BindingContext is AnalysisViewModel vm)
+        {
+            vm.PlayerWidth = rw; vm.PlayerHeight = rh; vm.PlayerScale = rw / w;
+            vm.Scene?.RefreshRegions();
+
+            //Debug.WriteLine($"[Debug]: player width: {rw} vs {w} - {rw / w}");
+            //Debug.WriteLine($"[Debug]: player height: {rh} vs {h} - {rh / h}");
+        }
     }
 
     protected override void OnSizeAllocated(double width, double height)

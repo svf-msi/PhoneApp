@@ -8,6 +8,7 @@ using StandardLib;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 
 namespace MicroVue.ViewModels
@@ -15,6 +16,9 @@ namespace MicroVue.ViewModels
     [QueryProperty(nameof(SceneItem), "SceneItem")]
     public partial class AnalysisViewModel : ObservableObject
     {
+        [ObservableProperty]
+        List<string> targetColors = new List<string> { "Red", "Green", "Blue", "Yellow", "Teal", "Purple" };
+
         [ObservableProperty]
         SceneItem sceneItem = new SceneItem();
 
@@ -32,6 +36,12 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         private int selectedSpeedIndex = 0;
+
+        [ObservableProperty]
+        MicroVue.Models.Region selectedRegion;
+
+        [ObservableProperty]
+        bool isRegionSelected;
 
         [ObservableProperty]
         bool isPlaying = false;
@@ -52,7 +62,22 @@ namespace MicroVue.ViewModels
         MediaSource source;
 
         [ObservableProperty]
-        Rect rectangle = new Rect(0, 0, 0.5, 0.5);
+        double defaultSize = 0.1;
+
+        [ObservableProperty]
+        double playerWidth;
+
+        [ObservableProperty]
+        double playerHeight;
+
+        [ObservableProperty]
+        double playerScale;
+
+        [ObservableProperty]
+        double videoWidth;
+
+        [ObservableProperty]
+        double videoHeight;
 
         [ObservableProperty]
         int currentFrame = 0;
@@ -78,9 +103,14 @@ namespace MicroVue.ViewModels
                 };
                 Scene = JsonConvert.DeserializeObject<Scene>(text, settings);
                 VideoPath = Scene?.VideoName;
-                //SetupVideo();
                 SetupSource();
+                SetupVideo();
             }
+        }
+
+        partial void OnSelectedRegionChanged(MicroVue.Models.Region region)
+        {
+            IsRegionSelected = SelectedRegion != null;
         }
 
         void SetupVideo(bool useImage = false)
@@ -89,6 +119,8 @@ namespace MicroVue.ViewModels
             {
                 video = new Video_MP4(VideoPath);
                 CurrentFrame = 0;
+                VideoWidth = video?.Width ?? 0;
+                VideoHeight = video?.Height ?? 0;
                 if (useImage) SetImage();
             }
         }
@@ -124,6 +156,56 @@ namespace MicroVue.ViewModels
         async Task GoBack()
         {
             await Shell.Current.GoToAsync("..");
+        }
+
+        [RelayCommand]
+        void Delete(MicroVue.Models.Region region)
+        {
+            if (Scene?.Regions != null && region != null)
+            {
+                Scene.Regions.Remove(region);
+                SelectedRegion = null;
+            }
+        }
+
+        [RelayCommand]
+        void AddTarget()
+        {
+            if (Scene?.Regions == null) return;
+
+            var id = 1;
+            if (Scene.Regions.Count > 0)
+            {
+                while (Scene.Regions.Any(r => r.Id == id && !r.IsBackgound)) ++id;
+            }
+
+            var color = TargetColors[(id - 1) % TargetColors.Count];
+            var target = new Models.Region(id, $"Target {id}", VideoWidth, VideoWidth / 2, VideoHeight / 2, false, color);
+            Scene.Regions.Add(target);
+            SelectedRegion = target;
+        }
+
+        [RelayCommand]
+        void AddBackground()
+        {
+            if (Scene?.Regions == null) return;
+
+            var id = 1;
+            if (Scene.Regions.Count > 0)
+            {
+                while (Scene.Regions.Any(r => r.Id == id && r.IsBackgound)) ++id;
+            }
+
+            var color = "White";
+            var target = new Models.Region(id, $"Background {id}", 100, VideoWidth / 2, VideoHeight / 2, true, color);
+            Scene.Regions.Add(target);
+            SelectedRegion = target;
+        }
+
+        [RelayCommand]
+        void ShowRegions()
+        {
+            SelectedRegion = null;
         }
     }
 }

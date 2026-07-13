@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 
 namespace MicroVue.Models
@@ -18,6 +19,18 @@ namespace MicroVue.Models
         double timeInterval = 1;
 
         [ObservableProperty]
-        ObservableCollection<Region> regions = new ObservableCollection<Region>() { new Region { Rect = new Rect(0.1, 0.1, 0.2, 0.3) } };
+        ObservableCollection<Region> regions = new ObservableCollection<Region>();
+
+        public void RefreshRegions()
+        {
+            //Debug.WriteLine($"[Debug]: --- Reresh regions");
+            var newRegions = new ObservableCollection<Region>();
+            for (int i = 0; i < regions.Count; i++)
+            {
+                var region = Regions[0];
+                Regions.RemoveAt(0);
+                Regions.Add(region);
+            }
+        }
     }
 }
