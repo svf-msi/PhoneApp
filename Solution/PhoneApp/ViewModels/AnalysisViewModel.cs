@@ -213,5 +213,11 @@ namespace MicroVue.ViewModels
         {
             SelectedRegion = null;
         }
+
+        [RelayCommand]
+        void Analyze()
+        {
+
+        }
     }
 }

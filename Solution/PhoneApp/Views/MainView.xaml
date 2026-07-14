@@ -68,7 +68,7 @@
                                     <Rectangle Fill="Transparent" 
                                         Stroke="{Binding Color}" StrokeThickness="3"
                                         AbsoluteLayout.LayoutBounds="{Binding Rect, 
-                                        Converter={StaticResource LayoutScaleConverter,LayoutScaleConverter},
+                                        Converter={StaticResource LayoutScaleConverter},
                                         ConverterParameter={x:Reference mainView}}"
                                         AbsoluteLayout.LayoutFlags="None" />
 
@@ -130,7 +130,7 @@
         
         <!--Bottom panel-->
         <v:MainPanel Grid.Row="1" Grid.Column="0" x:Name="bottomPanel" 
-                     HorizontalOptions="Fill" MinimumWidthRequest="250"
+                     HorizontalOptions="Fill" MaximumHeightRequest="240"
                      IsVisible="True"  BindingContext="{Binding .}"/>
         
     </Grid>
