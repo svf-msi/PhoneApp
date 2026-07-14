@@ -1,5 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Dnn;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using SkiaSharp;
@@ -301,9 +302,9 @@ namespace StandardLib
         /// <summary>
         /// Create scaled square root intesity map
         /// </summary>
-        public static Bitmap CreateSqrtColorMap(Image<Gray, float> image)
+        public static SKBitmap? CreateSqrtColorMap(Image<Gray, float> image)
         {
-            if (image == null) return new Bitmap(1, 1);
+            if (image == null) return new SKBitmap(1, 1);
             var copy = CreateSqrtIntensityMap(image);
             return CreateColorMap(copy);
         }
@@ -311,12 +312,12 @@ namespace StandardLib
         /// <summary>
         /// Create color intesity map for a grayscale image
         /// </summary>
-        public static Bitmap CreateColorMap(Image<Gray, byte> image, ColorMapType mapType = ColorMapType.Jet)
+        public static SKBitmap? CreateColorMap(Image<Gray, byte> image, ColorMapType mapType = ColorMapType.Jet)
         {
-            if (image == null) return new Bitmap(1, 1);
+            if (image == null) return new SKBitmap(1, 1);
             var colorMap = new Image<Bgr, byte>(image.Size);
             CvInvoke.ApplyColorMap(image, colorMap, mapType);
-            return colorMap?.ToBitmap();
+            return ToSKBitmap(colorMap.Mat);
         }
 
         #endregion
@@ -372,21 +373,20 @@ namespace StandardLib
         /// <summary>
         /// Create color image bitmap for an edge image
         /// </summary>
-        public static Bitmap CreateEdgeMap(Image<Gray, byte> image, Bgr edgeColor = default)
+        public static SKBitmap CreateEdgeMap(Image<Gray, byte> image, Bgr edgeColor = default)
         {
             if (edgeColor.Equals(default)) edgeColor = new Bgr(0, 255, 0);
             var mask = image.Convert<Bgr, byte>();
             var edges = new Image<Bgr, byte>(mask.Width, mask.Height, edgeColor);
             CvInvoke.BitwiseAnd(edges, mask, edges);
-            var edgeMap = edges.ToBitmap();
-            edgeMap.MakeTransparent(Color.FromArgb(0, 0, 0));
+            var edgeMap = ToSKBitmap(edges.Mat);
             return edgeMap;
         }
 
         /// <summary>
         /// Find edges and create color image bitmap for edges
         /// </summary>
-        public static Bitmap CreateEdgeMap<TColor, TDepth>(Image<TColor, TDepth> image, Rgb edgeColor = default, int dilation = 0)
+        public static SKBitmap? CreateEdgeMap<TColor, TDepth>(Image<TColor, TDepth> image, Rgb edgeColor = default, int dilation = 0)
             where TColor : struct, IColor
             where TDepth : new()
         {
@@ -400,8 +400,7 @@ namespace StandardLib
             var mask = edges.Convert<Rgb, byte>();
             var colorEdges = new Image<Rgb, byte>(mask.Width, mask.Height, edgeColor);
             CvInvoke.BitwiseAnd(colorEdges, mask, colorEdges);
-            var edgeMap = colorEdges.ToBitmap();
-            edgeMap.MakeTransparent(Color.FromArgb(0, 0, 0));
+            var edgeMap = ToSKBitmap(colorEdges.Mat);
             return edgeMap;
         }
 
@@ -429,49 +428,6 @@ namespace StandardLib
                 }
             }
             //Console.WriteLine($"Found {edges.Count} edge points");
-            return edges;
-        }
-
-        /// <summary>
-        /// Locate all found edge points
-        /// </summary>
-        public static List<List<Point>> GroupEdges(Image<Gray, byte> edgeMask, Image<Gray, float> gradientDirection, int edgeSize = 10)
-        {
-            var edges = new List<List<Point>>();
-
-            if (edgeMask != null)
-            {
-                try
-                {
-                    VectorOfPoint points = new VectorOfPoint();
-                    CvInvoke.FindNonZero(edgeMask, points);
-                    var removed = new bool[edgeMask.Width, edgeMask.Height];
-
-                    for (int i = 0; i < points.Size; ++i)
-                    {
-                        var point = points[i];
-                        if (!removed[point.X, point.Y])
-                        {
-                            var edge = new List<Point>();
-                            var gradient = gradientDirection.Data[point.Y, point.X, 0];
-                            AddPoint(point, edge, edgeMask, gradient, gradientDirection, removed, edgeSize);
-                            if (edge.Count >= edgeSize)
-                            {
-                                edges.Add(edge);
-                            }
-                        }
-                    }
-
-                    //Console.WriteLine($"Points:");
-                    //Console.WriteLine(Utils.ToString(points));
-                    //Console.WriteLine($"Edge groups:");
-                    //Console.WriteLine(Utils.ToString(edges));
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Error in group edges: {e}");
-                }
-            }
             return edges;
         }
 
@@ -595,7 +551,7 @@ namespace StandardLib
 
                     var gradientPoint = new GradientPoint()
                     {
-                        Point = new System.Drawing.Point(c, r),
+                        Point = new Point(c, r),
                         X = -gradientX,
                         Y = -gradientY,
                         Gradient = gradient,
@@ -656,9 +612,150 @@ namespace StandardLib
 
         #endregion
 
+        #region Analysis
+
+        public static void AnalyzeTargets()
+        {
+            ImageAnalysis.NormalizeDefault = true;
+            TargetSearch.SearchRange = 1;
+            TargetSearch.MaxSearchRange = 2;
+
+            //ProcessBackground();
+        }
+
+        public static void ProcessBackground(BackgroundAnalysis backgroundAnalysis, IEnumerable<Target> targets, Video_MP4 video)
+        {
+            backgroundAnalysis?.Process2D(targets);
+            backgroundAnalysis?.Subtract(targets);
+            if (video != null)
+                video.Transforms = backgroundAnalysis.TransformPoins;
+        }
+
+        public static void AnalyzeFrame(int frame, Video_MP4 video, IEnumerable<Target> targets)
+        {
+            var grayImage = video?.GetRgbImage(frame)?.Convert<Gray, float>();
+            if (grayImage?.Data == null) return;
+
+            foreach (var target in targets)
+            {
+                if (target.IsTracked)
+                {
+                    //Console.WriteLine($"Analyze frame {frame} for {target?.Text}");
+                    TrackTarget(target, frame, grayImage);
+                }
+            }
+        }
+
+        public static void TrackTarget<T>(Target target, int frame, Image<T, float> image, Func<int, Image<T, float>> getFrameImage = null) where T : struct, IColor
+        {
+            if (typeof(T) != typeof(Rgb) && typeof(T) != typeof(Gray)) return;
+            if (target?.Track?.RawPath == null || target.Track.RawPath.ContainsKey(frame) || target.EndFrame >= frame) return;
+
+            target.UpdateReference(frame);
+            target.IsLocked = true;
+            var found = TrackingAnalysis.FindGradientPoints(target, getFrameImage);
+            if (!found) return;
+            //Console.WriteLine($"Check: {frame}, {target.GrayReference}, {target.RgbReference}");
+
+            var rgbImage = image as Image<Rgb, float>;
+            var grayImage = image as Image<Gray, float>;
+            if (rgbImage == null && grayImage == null) return;
+
+            var track = target.Track;
+            var roundReference = target.RoundReference;
+            var referenceOffset = target.ReferenceOffset;
+            var nextPoint = frame == target.PrimaryReferenceFrame ? target.Reference.TrackPoint : ProjectNextPoint(track, frame);
+            //Console.WriteLine($"Projected point for {target.Text}: {frame}, {Utils.ToString(nextPoint)}");
+            if (nextPoint != null)
+            {
+                nextPoint.ReferenceFrame = target.Reference.FrameNumber;
+                var nextRegion = nextPoint.MakeTrackRegion(roundReference.Width, roundReference.Height, -referenceOffset.X, -referenceOffset.Y);
+                var search = rgbImage != null ? TargetSearch.Make(rgbImage, target.RgbReference, nextRegion, target.ReferenceError) :
+                                                TargetSearch.Make(grayImage, target.GrayReference, nextRegion, target.ReferenceError);
+                if (search.IsValid)
+                {
+                    var position = search.Find();
+                    if (search.NotFound)
+                    {
+                        target.IsTracked = false;
+                    }
+                    else
+                    {
+                        var errorLearningRate = 0.2;
+                        target.ReferenceError = target.ReferenceError * (1 - errorLearningRate) + errorLearningRate * search.ErrorThreshold;
+                        //Console.WriteLine($"Global position for {target.Text}: {frame}, {Utils.ToString(position)}");
+                        var rectangle = Rectangle.Round(roundReference.Rectangle);
+                        var referencePosition = roundReference.Position;
+                        var globalShift = new Point { X = (int)Math.Round(position.X - referencePosition.X), Y = (int)Math.Round(position.Y - referencePosition.Y) };
+                        //Console.WriteLine($"global shift for {frame}: {globalShift}");
+                        rectangle.Offset(globalShift);
+                        //var gray = rgbImage.Convert<Gray, float>();
+                        //var normFactor = ImageAnalysis.FindMaximum(rgbImage, rectangle);
+                        //var scale = ImageAnalysis.FindMaximum(gray, rectangle);
+                        var x = 0.0; var y = 0.0;
+                        if (rgbImage != null)
+                        {
+                            var pattern = ImageAnalysis.PreparePattern(rectangle, rgbImage); //.Convert<Gray, float>();
+                            (x, y) = TrackingAnalysis.CalculateShift(pattern, target.GradientPoints);
+                        }
+                        else
+                        {
+                            var pattern = ImageAnalysis.PreparePattern(rectangle, grayImage);
+                            (x, y) = TrackingAnalysis.CalculateShift(pattern, target.GradientPoints);
+                        }
+                        //var shift = CalculateShift(gray, target);
+                        //Console.WriteLine($"local shift for {frame}: {localShift}");
+                        nextPoint.X = (float)Math.Round(position.X + x + referenceOffset.X, 3);
+                        nextPoint.Y = (float)Math.Round(position.Y + y + referenceOffset.Y, 3);
+                        track.RawPath[frame] = nextPoint;
+                        target.EndFrame = Math.Max(target.EndFrame, frame);
+                        //Console.WriteLine($"Next point for {target.Text}: {frame}, {nextPoint}");
+                    }
+                }
+            }
+        }
+
+        static TrackPoint ProjectNextPoint(Track track, int frame)
+        {
+            if (track?.RawPath == null || frame < 0) return null;
+
+            var currentFrame = frame;
+
+            var step = 1;
+            frame -= step;
+            if (frame < 0 || !track.RawPath.ContainsKey(frame)) return null;
+            var point = track.RawPath[frame];
+
+            if (track.RawPath.ContainsKey(frame - step))
+            {
+                var previousPoint = track.RawPath[frame - step];
+                return new TrackPoint
+                {
+                    Frame = currentFrame,
+                    State = PointState.Auto,
+                    X = 2 * point.X - previousPoint.X,
+                    Y = 2 * point.Y - previousPoint.Y,
+                    Angle = 2 * point.Angle - previousPoint.Angle,
+                };
+            }
+            else
+            {
+                return new TrackPoint
+                {
+                    Frame = currentFrame,
+                    State = PointState.Auto,
+                    X = point.X,
+                    Y = point.Y,
+                    Angle = point.Angle
+                };
+            }
+        }
+
+        #endregion
+
         #region Miscellaneous
 
-         public static Image<TColor, TDepth> Transform<TColor, TDepth>(Image<TColor, TDepth> image, TransformPoint transform)
+        public static Image<TColor, TDepth> Transform<TColor, TDepth>(Image<TColor, TDepth> image, TransformPoint transform)
             where TColor : struct, IColor
             where TDepth : new()
         {
@@ -695,14 +792,6 @@ namespace StandardLib
                 X = point.X * cos - point.Y * sin + transform.X,
                 Y = point.Y * cos + point.X * sin + transform.Y,
             };
-        }
-
-        public static Bitmap Add(Bitmap bitmap1, Bitmap bitmap2)
-        {
-            if (bitmap1 == null || bitmap2 == null || bitmap1.Width != bitmap2.Width || bitmap1.Height != bitmap2.Height) return bitmap1;
-            var graphics = Graphics.FromImage(bitmap1);
-            graphics.DrawImage(bitmap2, new Point());
-            return bitmap1;
         }
 
         public static bool FilterFrequency<T>(double frequency, double frameRate, int length, Func<int, Image<Gray, T>> grabFrame,
@@ -878,99 +967,6 @@ namespace StandardLib
             CvInvoke.Pow(diff, 2, diff);
             var mean = CvInvoke.Mean(diff);
             return Math.Sqrt(mean.V0);
-        }
-
-        public static double FrameBurn(Image<Rgb, byte> image1, Rectangle rect1, Image<Rgb, byte> image2, Rectangle rect2)
-        {
-            if (rect1.Size != rect2.Size)
-            {
-                Console.WriteLine($"Frame difference requested with different sample sizes");
-                return 0;
-            }
-
-            //Intensity option:
-            var sample1 = new Mat(image1.Mat, rect1).ToImage<Gray, byte>().ConvertScale<float>(1.0 / 255, 0);
-            var sample2 = new Mat(image2.Mat, rect2).ToImage<Gray, byte>().ConvertScale<float>(1.0 / 255, 0);
-
-            //Red option:
-            //var sample1 = image1.Split()[0].ConvertScale<float>(1.0 / 255, 0);
-            //var sample2 = image2.Split()[0].ConvertScale<float>(1.0 / 255, 0);
-            CvInvoke.Pow(sample1, 2, sample1);
-            CvInvoke.Pow(sample2, 2, sample2);
-            var diff = new Image<Gray, float>(image1.Size);
-            CvInvoke.Subtract(sample1, sample2, diff);
-            var mean = CvInvoke.Mean(diff);
-            return mean.V0;
-        }
-
-        public static double HistogramDifference(Image<Rgb, byte> image1, Rectangle rect1, Image<Rgb, byte> image2, Rectangle rect2)
-        {
-            if (rect1.Size != rect2.Size)
-            {
-                Console.WriteLine($"Histogram difference requested with different sample sizes");
-                return 0;
-            }
-
-            var sample1 = new Mat(image1.Mat, rect1);
-            var sample2 = new Mat(image2.Mat, rect2);
-            Mat sample1HSV = new Mat(), sample2HSV = new Mat();
-            CvInvoke.CvtColor(sample1, sample1HSV, ColorConversion.Rgb2Hsv);
-            CvInvoke.CvtColor(sample2, sample2HSV, ColorConversion.Rgb2Hsv);
-            int hBins = 50, sBins = 60;
-            int[] histSize = { hBins, sBins };
-            float[] ranges = { 0, 180, 0, 256 };
-            int[] channels = { 0, 1 };
-
-            VectorOfMat vou1 = new VectorOfMat(), vou2 = new VectorOfMat();
-            vou1.Push(sample1);
-            vou2.Push(sample2);
-
-            Mat histTest1 = new Mat(), histTest2 = new Mat();
-            CvInvoke.CalcHist(vou1, channels, new Mat(), histTest1, histSize, ranges, false);
-            CvInvoke.Normalize(histTest1, histTest1, 0, 1, NormType.MinMax);
-            CvInvoke.CalcHist(vou2, channels, new Mat(), histTest2, histSize, ranges, false);
-            CvInvoke.Normalize(histTest2, histTest2, 0, 1, NormType.MinMax);
-
-            double result = CvInvoke.CompareHist(histTest1, histTest2, HistogramCompMethod.Correl);
-            return 1.0 - result; // no difference is 1.0
-        }
-
-        public static double Entropy(Image<Gray, byte> image, Rectangle rect)
-        {
-            var sample = new Mat(image.Mat, rect).ToImage<Gray, byte>();
-
-            DenseHistogram hist = new DenseHistogram(256, new RangeF(0, 256));
-            hist.Calculate(new Image<Gray, byte>[] { sample }, false, null);
-            double totalPixels = sample.Width * sample.Height;
-
-            double entropy = 0.0;
-            float[,] histData = (float[,])hist.GetData();
-
-            for (int i = 0; i < 256; i++)
-            {
-                double count = histData[i, 0];
-
-                if (count > 0)
-                {
-                    double probability = count / totalPixels;
-                    entropy -= probability * Math.Log(probability, 2);
-                }
-            }
-
-            return entropy;
-        }
-
-        public static double PixelsAboveLuminanceThreshold(Image<Gray, byte> image, Rectangle rect, byte threshold)
-        {
-            var sample = new Mat(image.Mat, rect).ToImage<Gray, byte>();
-
-            double totalPixels = sample.Width * sample.Height;
-
-            Mat thresholded = new Mat();
-            CvInvoke.Threshold(sample, thresholded, threshold, 255, ThresholdType.Binary);
-            double pixelCount = CvInvoke.CountNonZero(thresholded);
-
-            return pixelCount / totalPixels;
         }
 
         public static bool IsValid<TColor, TDepth>(Image<TColor, TDepth> image)

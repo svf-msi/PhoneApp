@@ -30,6 +30,8 @@ namespace StandardLib
         public int Width { get; protected set; }
         public int Height { get; protected set; }
         public double FPS { get; protected set; }
+        public bool UseTransform { get; set; } = false;
+        public Dictionary<int, TransformPoint> Transforms { get; set; }
 
         public Video_MP4() { }
 
@@ -68,6 +70,13 @@ namespace StandardLib
                         if (i != videoCapture.Get(CapProp.PosFrames))
                             videoCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, i);
                         image = videoCapture.QueryFrame();
+
+                        if (UseTransform && Transforms != null && Transforms.ContainsKey(i))
+                        {
+                            var oldImage = image;
+                            image = ImageAnalysis.Transform(image, Transforms[i]);
+                            oldImage?.Dispose();
+                        }
                     }
                 });
 
@@ -113,6 +122,13 @@ namespace StandardLib
                         if (i != videoCapture.Get(CapProp.PosFrames))
                             videoCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, i);
                         image = videoCapture.QueryFrame();
+
+                        if (UseTransform && Transforms != null && Transforms.ContainsKey(i))
+                        {
+                            var oldImage = image;
+                            image = ImageAnalysis.Transform(image, Transforms[i]);
+                            oldImage?.Dispose();
+                        }
                     }
                 });
 
