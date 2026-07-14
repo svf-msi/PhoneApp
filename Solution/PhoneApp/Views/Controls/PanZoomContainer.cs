@@ -170,7 +170,7 @@ namespace MicroVue.Views
                 return;
             }
 
-            if (Content.Scale <= 1)
+            if (Content.Scale <= 0.5)
             {
                 return;
             }
@@ -232,10 +232,10 @@ namespace MicroVue.Views
 
             if (e.Status == GestureStatus.Completed)
             {
-                if (_currentScale < 1)
+                if (_currentScale < 0.5)
                 {
                     var translateTask = TranslateToAsync(0, 0);
-                    var scaleTask = ScaleToAsync(1);
+                    var scaleTask = ScaleToAsync(0.5);
 
                     await Task.WhenAll(translateTask, scaleTask);
                 }

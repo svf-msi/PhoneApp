@@ -48,7 +48,7 @@ namespace MicroVue.ViewModels
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"Error in file picker: {e}");
+                Debug.WriteLine($"[Debug]: Error in file picker: {e}");
             }
         }
 
@@ -76,8 +76,9 @@ namespace MicroVue.ViewModels
                 File.Copy(FilePath, videoPath, true);
 
                 var scene = new Scene { Name = SceneName, VideoName = videoPath };
-                var text = JsonConvert.SerializeObject(scene, Formatting.Indented);
-                File.WriteAllText(scenePath, text);
+                //var text = JsonConvert.SerializeObject(scene, Formatting.Indented);
+                //File.WriteAllText(scenePath, text);
+                scene.Save(scenePath);
 
                 FileName = FilePath = "";
                 FileSelected = false;
@@ -93,7 +94,7 @@ namespace MicroVue.ViewModels
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"Error in saving scene: {e}");
+                Debug.WriteLine($"[Debug]: Error in saving scene: {e}");
             }
         }
 
