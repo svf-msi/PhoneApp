@@ -126,6 +126,9 @@
 	  <MauiXaml Update="Views\AnalysisPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\CameraPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\ChartView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

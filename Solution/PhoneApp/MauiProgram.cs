@@ -41,6 +41,8 @@ namespace MicroVue
 
             builder.Services.AddSingleton<ScenesPage>();
             builder.Services.AddSingleton<ScenesViewModel>();
+            builder.Services.AddSingleton<CameraPage>();
+            builder.Services.AddSingleton<CameraViewModel>();
             builder.Services.AddSingleton<ImportPage>();
             builder.Services.AddSingleton<ImportViewModel>();
             builder.Services.AddTransient<AnalysisPage>();

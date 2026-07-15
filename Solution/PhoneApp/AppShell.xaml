@@ -21,6 +21,12 @@
         Route="ScenesPage" />
 
     <ShellContent
+        Title="Camera"
+        Icon="{StaticResource IconCamera}"
+        ContentTemplate="{DataTemplate v:CameraPage}"
+        Route="CameraPage" />
+
+    <ShellContent
         Title="Import"
         Icon="{StaticResource IconVideoAdd}"
         ContentTemplate="{DataTemplate v:ImportPage}"
