@@ -11,12 +11,21 @@ namespace MicroVue
     {
         public static MauiApp CreateMauiApp()
         {
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+    System.Diagnostics.Debug.WriteLine($"UNHANDLED: {e.ExceptionObject}");
+
+            TaskScheduler.UnobservedTaskException += (s, e) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"UNOBSERVED: {e.Exception}");
+                e.SetObserved();
+            };
+
 #if ANDROID
             // Initializes the native camera and backend for Android
             Emgu.CV.CvInvokeAndroid.Init();
 #elif IOS
-        // Initializes the native backend for iOS
-        //Emgu.CV.Platform.Maui.MauiInvoke.Init();
+            // Initializes the native backend for iOS
+            //Emgu.CV.Platform.Maui.MauiInvoke.Init();
 #endif
 
             // Example: Disable OpenCL to prevent some rendering bugs
@@ -27,6 +36,10 @@ namespace MicroVue
                 .UseMauiCommunityToolkit()
                 .UseMauiCommunityToolkitMediaElement()
                 .ConfigureSyncfusionToolkit()
+                .ConfigureMauiHandlers(handlers =>
+                {
+                    handlers.AddHandler<MicroVue.Views.CameraPreview, MicroVue.Handlers.CameraPreviewHandler>();
+                })
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

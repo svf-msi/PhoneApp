@@ -2,11 +2,88 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MicroVue.Views.CameraPage"
+             xmlns:v="clr-namespace:MicroVue.Views"
+             xmlns:vm="clr-namespace:MicroVue.ViewModels"
+             x:DataType="vm:CameraViewModel"
+             Background="Black"
              Title="Camera">
-    <VerticalStackLayout>
-        <Label 
-            Text="to do..."
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+    <Grid>
+        <v:CameraPreview Camera="{Binding Camera}" HorizontalOptions="Fill" VerticalOptions="Fill" />
+
+        <Button HorizontalOptions="Center" VerticalOptions="End" Margin="10" TextColor="White" Command="{Binding ToggleSettingsOpenCommand}" Text="Settings" />
+
+        <Grid x:Name="SettingsOverlay" IsVisible="{Binding SettingsOpen}" BackgroundColor="Transparent">
+            <BoxView BackgroundColor="Transparent">
+                <BoxView.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ToggleSettingsOpenCommand}" />
+                    <TapGestureRecognizer Tapped="OnDialogTapped" />
+                </BoxView.GestureRecognizers>
+            </BoxView>
+
+            <Border VerticalOptions="End" BackgroundColor="White" StrokeThickness="0" Padding="22,12,22,32">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="28,28,0,0" />
+                </Border.StrokeShape>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDialogTapped" />
+                </Border.GestureRecognizers>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Camera settings" FontSize="20" FontAttributes="Bold" />
+
+                    <!-- Camera settings -->
+                    <!--<HorizontalStackLayout>
+                     <Label Text="Auto-exposure" VerticalOptions="Center" FontAttributes="Bold" />
+                     <Switch IsToggled="{Binding Camera.AutoExposure}" />
+                 </HorizontalStackLayout>
+
+                 <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="4">
+
+                     <Label Grid.Row="0" Grid.Column="0" Text="Exposure (us):" VerticalTextAlignment="Center" FontAttributes="Bold" />
+                     <Entry Grid.Row="0" Grid.Column="1" Keyboard="Numeric" WidthRequest="80"
+                            Text="{Binding Camera.Exposure, StringFormat='{0:F1}', Converter={StaticResource SafeDouble}}"
+                            VerticalTextAlignment="Center" IsEnabled="{Binding Camera.Capabilities.SupportsManualExposure}" />
+                     <Slider Grid.Row="0" Grid.Column="2" Value="{Binding Camera.Exposure}"
+                             Minimum="{Binding Camera.Capabilities.ExposureRange.Min}" Maximum="{Binding Camera.Capabilities.ExposureRange.Max}"
+                             IsEnabled="{Binding Camera.Capabilities.SupportsManualExposure}" />
+
+                     <Label Grid.Row="1" Grid.Column="0" Text="Gain/ISO:" VerticalTextAlignment="Center" FontAttributes="Bold" />
+                     <Entry Grid.Row="1" Grid.Column="1" WidthRequest="80" Keyboard="Numeric"
+                            Text="{Binding Camera.Gain, StringFormat='{0:F1}', Converter={StaticResource SafeDouble}}"
+                            VerticalTextAlignment="Center" IsEnabled="{Binding Camera.Capabilities.SupportsManualGain}" />
+                     <Slider Grid.Row="1" Grid.Column="2" Value="{Binding Camera.Gain}"
+                             Minimum="{Binding Camera.Capabilities.GainRange.Min}" Maximum="{Binding Camera.Capabilities.GainRange.Max}"
+                             IsEnabled="{Binding Camera.Capabilities.SupportsManualGain}" />
+                 </Grid>-->
+
+                    <HorizontalStackLayout>
+                        <Label Text="Frame rate: " VerticalTextAlignment="Center" />
+                        <Picker ItemsSource="{Binding Camera.Capabilities.AllFrameRates}"
+                         SelectedItem="{Binding Camera.FrameRate}" BackgroundColor="Transparent" />
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout>
+                        <Label Grid.Row="0" Grid.Column="0" Text="Recording duration (s):" VerticalTextAlignment="Center" />
+                        <Entry Grid.Row="0" Grid.Column="1" Text="{Binding RecordingDurationStr}" x:Name="DurationEntry" Keyboard="Numeric" WidthRequest="80" VerticalTextAlignment="Center" />
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="8">
+                        <Button VerticalOptions="Center" TextColor="White" Command="{Binding SwitchFacingCommand}" Text="Flip Camera" />
+                        <Button VerticalOptions="Center" TextColor="White" Command="{Binding RecordCommand}">
+                            <Button.Style>
+                                <Style TargetType="{x:Type Button}">
+                                    <Setter Property="Text" Value="Record" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Camera.IsRecording}" Value="True" TargetType="{x:Type Button}">
+                                            <Setter Property="Text" Value="Stop Recording" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </HorizontalStackLayout>
+
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </Grid>
 </ContentPage>
