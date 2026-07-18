@@ -105,6 +105,8 @@ namespace MicroVue.ViewModels
                 Scene = Scene.Read(scenePath);
                 if (Scene == null) return;
                 VideoPath = Scene.VideoName;
+                var rotation = Utilities.GetMp4Rotation(VideoPath);
+                Debug.WriteLine($"[Debug]: video rotation = {rotation}");
                 SetupSource();
                 SetupVideo();
             }
