@@ -15,6 +15,9 @@ namespace MicroVue.Models
         bool IsRecording { get; }
         CameraCapabilities Capabilities { get; }
 
+        // raised on the main thread once a recording has stopped and its file is ready at the given path
+        event Action<string>? RecordingSaved;
+
         #endregion
 
         #region Live parameter values
@@ -32,7 +35,7 @@ namespace MicroVue.Models
         Task<bool> Open(CameraFacing facing = CameraFacing.Back);
         void Close();
 
-        void StartRecording();
+        void StartRecording(string outputPath);
         void StopRecording(bool discard);
         Task SwitchFacing();
 

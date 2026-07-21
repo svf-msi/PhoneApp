@@ -7,10 +7,29 @@
              x:DataType="vm:CameraViewModel"
              Background="Black"
              Title="Camera">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="⚙️" Command="{Binding ToggleSettingsOpenCommand}" />
+    </ContentPage.ToolbarItems>
+
     <Grid>
         <v:CameraPreview Camera="{Binding Camera}" HorizontalOptions="Fill" VerticalOptions="Fill" />
 
-        <Button HorizontalOptions="Center" VerticalOptions="End" Margin="10" TextColor="White" Command="{Binding ToggleSettingsOpenCommand}" Text="Settings" />
+        <Button HorizontalOptions="Center" VerticalOptions="End" Margin="0,0,0,32"
+                HeightRequest="40" MinimumWidthRequest="96" CornerRadius="22" Padding="16,0"
+                FontSize="15" FontAttributes="Bold" TextColor="White" Command="{Binding RecordCommand}">
+            <Button.Style>
+                <Style TargetType="{x:Type Button}">
+                    <Setter Property="Text" Value="Record" />
+                    <Setter Property="BackgroundColor" Value="#A9D32F2F" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Camera.IsRecording}" Value="True" TargetType="{x:Type Button}">
+                            <Setter Property="Text" Value="Stop" />
+                            <Setter Property="BackgroundColor" Value="#B3202020" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
 
         <Grid x:Name="SettingsOverlay" IsVisible="{Binding SettingsOpen}" BackgroundColor="Transparent">
             <BoxView BackgroundColor="Transparent">
@@ -20,9 +39,9 @@
                 </BoxView.GestureRecognizers>
             </BoxView>
 
-            <Border VerticalOptions="End" BackgroundColor="White" StrokeThickness="0" Padding="22,12,22,32">
+            <Border VerticalOptions="Start" BackgroundColor="White" StrokeThickness="0" Padding="22,2,22,22">
                 <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="28,28,0,0" />
+                    <RoundRectangle CornerRadius="0,0,28,28" />
                 </Border.StrokeShape>
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnDialogTapped" />
@@ -61,25 +80,14 @@
                          SelectedItem="{Binding Camera.FrameRate}" BackgroundColor="Transparent" />
                     </HorizontalStackLayout>
 
-                    <HorizontalStackLayout>
-                        <Label Grid.Row="0" Grid.Column="0" Text="Recording duration (s):" VerticalTextAlignment="Center" />
-                        <Entry Grid.Row="0" Grid.Column="1" Text="{Binding RecordingDurationStr}" x:Name="DurationEntry" Keyboard="Numeric" WidthRequest="80" VerticalTextAlignment="Center" />
-                    </HorizontalStackLayout>
+                    <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="Recording duration (s):" VerticalTextAlignment="Center" />
+                        <Entry Grid.Column="1" Text="{Binding RecordingDurationStr}" x:Name="DurationEntry" Keyboard="Numeric" WidthRequest="80" VerticalTextAlignment="Center" />
+                        <Slider Grid.Column="2" Minimum="1" Maximum="10" Value="{Binding RecordingDurationSlider}" VerticalOptions="Center" />
+                    </Grid>
 
                     <HorizontalStackLayout Spacing="8">
                         <Button VerticalOptions="Center" TextColor="White" Command="{Binding SwitchFacingCommand}" Text="Flip Camera" />
-                        <Button VerticalOptions="Center" TextColor="White" Command="{Binding RecordCommand}">
-                            <Button.Style>
-                                <Style TargetType="{x:Type Button}">
-                                    <Setter Property="Text" Value="Record" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Camera.IsRecording}" Value="True" TargetType="{x:Type Button}">
-                                            <Setter Property="Text" Value="Stop Recording" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
                     </HorizontalStackLayout>
 
                 </VerticalStackLayout>

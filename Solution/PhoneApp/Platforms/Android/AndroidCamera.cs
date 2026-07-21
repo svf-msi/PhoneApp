@@ -33,6 +33,8 @@ namespace MicroVue.Models
         private Android.Media.MediaRecorder? mediaRecorder;
         private Android.Views.Surface? recorderSurface;
         private MediaStoreVideo? output;
+        private string? requestedOutputPath;
+        public event Action<string>? RecordingSaved;
         private ASize videoSize = new ASize(1920, 1080);
         ASize defaultVideoSize = new ASize(1920, 1080);
         private int sensorOrientation;
@@ -339,9 +341,11 @@ namespace MicroVue.Models
         #region Recording
 
         int recordFps;
-        public void StartRecording()
+
+        public void StartRecording(string outputPath)
         {
             if (device == null || previewSurface == null || IsRecording) return;
+            requestedOutputPath = outputPath;
             recorderStarted = false;
             try
             {
@@ -387,7 +391,7 @@ namespace MicroVue.Models
 
                     // When recording the auto-exposure retriggers, so we have to wait a bit.
                     if (waitForAe)
-                        backgroundHandler?.PostDelayed(BeginRecorder, 1200); // fallback if AE never reports converged
+                        backgroundHandler?.PostDelayed(BeginRecorder, 1200);
                     else
                         BeginRecorder();
                 });
@@ -431,11 +435,10 @@ namespace MicroVue.Models
         // get recording surface, set fps and orientation
         void SetupMediaRecorder()
         {
-            output = new MediaStoreVideo($"Capture_{DateTime.Now:yyyyMMdd_HHmmss}");
             mediaRecorder = new Android.Media.MediaRecorder();
             mediaRecorder.SetVideoSource(Android.Media.VideoSource.Surface);
             mediaRecorder.SetOutputFormat(Android.Media.OutputFormat.Mpeg4);
-            mediaRecorder.SetOutputFile(output.Fd.FileDescriptor);
+            mediaRecorder.SetOutputFile(requestedOutputPath);
 
             double fps;
             if (recordFps > 0)
@@ -500,13 +503,19 @@ namespace MicroVue.Models
         public void StopRecording(bool discard)
         {
             if (!IsRecording) return;
+            bool kept = false;
             try
             {
                 try { session?.StopRepeating(); } catch { }
 
                 if (!discard)
                 {
-                    try { mediaRecorder?.Stop(); output?.Finish(); }
+                    try
+                    {
+                        mediaRecorder?.Stop();
+                        output?.Finish();
+                        kept = true;
+                    }
                     catch (Exception e) { Console.WriteLine($"MediaRecorder.Stop failed: {e}"); }
                 }
             }
@@ -516,7 +525,13 @@ namespace MicroVue.Models
                 IsRecording = false;
                 CloseSession();
                 CleanupRecorder();
+
+                if (!kept && requestedOutputPath != null) try { File.Delete(requestedOutputPath); } catch { }
+
                 StartPreview();
+
+                if (kept && requestedOutputPath != null) RecordingSaved?.Invoke(requestedOutputPath);
+                requestedOutputPath = null;
             }
         }
 
