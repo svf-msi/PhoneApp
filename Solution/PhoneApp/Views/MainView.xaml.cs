@@ -42,7 +42,7 @@ public partial class MainView : ContentView
         if (player == null) return;
         var w = player.MediaWidth;
         var h = player.MediaHeight;
-        Debug.WriteLine($"****** player resolution: {player.MediaWidth}, {player.MediaHeight}, {player.Rotation}, {player.Scale}");
+        //Debug.WriteLine($"[Debug]: player params {player.MediaWidth}, {player.MediaHeight}, {player.Rotation}");
         if (w == 0 || h == 0) return;
         var aspect = (double)w / h;
         var rw = player.Height * aspect;
@@ -65,7 +65,7 @@ public partial class MainView : ContentView
             vm.PlayerHeight = rh; 
             vm.PlayerScale = rw / w;
             vm.Scene?.RefreshRegions();
-
+            Debug.WriteLine($"[Debug]: media = {vm.MediaWidth}, {vm.MediaHeight}, {vm.MediaRotation}");
             //Debug.WriteLine($"[Debug]: player width: {rw} vs {w} - {rw / w}");
             //Debug.WriteLine($"[Debug]: player height: {rh} vs {h} - {rh / h}");
         }

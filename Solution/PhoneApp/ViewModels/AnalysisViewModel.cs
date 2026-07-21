@@ -65,10 +65,15 @@ namespace MicroVue.ViewModels
         double defaultSize = 100;
 
         [ObservableProperty]
-        double mediaWidth;
+        int mediaWidth;
 
         [ObservableProperty]
-        double mediaHeight;
+        int mediaHeight;
+
+        [ObservableProperty]
+        int mediaRotation;
+
+        public bool IsFlipped => MediaRotation == 90 || MediaRotation == -90;
 
         [ObservableProperty]
         double playerWidth;
@@ -80,10 +85,38 @@ namespace MicroVue.ViewModels
         double playerScale;
 
         [ObservableProperty]
-        double videoWidth;
+        int videoWidth;
 
         [ObservableProperty]
-        double videoHeight;
+        int videoHeight;
+
+        public double RegionX
+        {
+            get => IsFlipped ? SelectedRegion?.Y ?? 0 : SelectedRegion?.X ?? 0;
+            set
+            {
+                if (SelectedRegion != null)
+                {
+                    if (IsFlipped) SelectedRegion.Y = value;
+                    else SelectedRegion.X = value;
+                }
+                OnPropertyChanged();
+            }
+        }
+
+        public double RegionY
+        {
+            get => IsFlipped ? SelectedRegion?.X ?? 0 : SelectedRegion?.Y ?? 0;
+            set
+            {
+                if (SelectedRegion != null)
+                {
+                    if (IsFlipped) SelectedRegion.X = value;
+                    else SelectedRegion.Y = value;
+                }
+                OnPropertyChanged();
+            }
+        }
 
         [ObservableProperty]
         int currentFrame = 0;
@@ -105,8 +138,8 @@ namespace MicroVue.ViewModels
                 Scene = Scene.Read(scenePath);
                 if (Scene == null) return;
                 VideoPath = Scene.VideoName;
-                var rotation = Utilities.GetMp4Rotation(VideoPath);
-                Debug.WriteLine($"[Debug]: video rotation = {rotation}");
+                MediaRotation = Utilities.GetMp4Rotation(VideoPath);
+                //Debug.WriteLine($"[Debug]: video rotation = {MediaRotation}");
                 SetupSource();
                 SetupVideo();
             }
@@ -115,6 +148,8 @@ namespace MicroVue.ViewModels
         partial void OnSelectedRegionChanged(MicroVue.Models.Region region)
         {
             IsRegionSelected = SelectedRegion != null;
+            OnPropertyChanged(nameof(RegionX));
+            OnPropertyChanged(nameof(RegionY));
         }
 
         void SetupVideo(bool useImage = false)
@@ -125,7 +160,6 @@ namespace MicroVue.ViewModels
                 CurrentFrame = 0;
                 VideoWidth = video?.Width ?? 0;
                 VideoHeight = video?.Height ?? 0;
-                IsRotated = MediaWidth > 0 && VideoWidth > 0 && VideoWidth == MediaHeight;
                 //if (useImage) SetImage();
             }
         }
@@ -185,8 +219,10 @@ namespace MicroVue.ViewModels
             }
 
             var color = TargetColors[(id - 1) % TargetColors.Count];
-            //Debug.WriteLine($"[Debug]: add target, width={MediaWidth} height={MediaHeight}");
-            var target = new Models.Region(id, $"Target {id}", DefaultSize, MediaWidth / 2, MediaHeight / 2, false, color);
+            var width = IsFlipped ? MediaHeight : MediaWidth;
+            var height = IsFlipped ? MediaWidth : MediaHeight;
+            Debug.WriteLine($"[Debug]: add target, rotation={MediaRotation} width={width} height={height}");
+            var target = new Models.Region(id, $"Target {id}", DefaultSize, width / 2, height / 2, false, color);
             Scene.Regions.Add(target);
             SelectedRegion = target;
             Scene.Save();

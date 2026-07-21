@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -49,6 +50,48 @@ namespace MicroVue.Models
     }
 #endif
             return rotationAngle;
+        }
+
+        public static Point Rotate(this Point point, int rotation, int width, int height)
+        {
+            switch (rotation)
+            {
+                case 1:
+                case -3:
+                case 90:
+                case -270:
+                    return new Point(height - point.Y, point.X);
+                case 2:
+                case -2:
+                case 180:
+                case -180:
+                    return new Point(width - point.X, height - point.Y);
+                case 3:
+                case -1:
+                case 270:
+                case -90:
+                    return new Point(point.Y, width - point.X);
+                default: return point;
+            }
+        }
+
+        public static Rect Rotate(this Rect rect, int rotation, int width, int height)
+        {
+            var point = Rotate(new Point(rect.X + rect.Width / 2, rect.Y + rect.Height / 2), rotation, width, height);
+            switch (rotation)
+            {
+                case 1:
+                case -1:
+                case 3:
+                case -3:
+                case 90:
+                case -90:
+                case 270:
+                case -270:
+                    return new Rect(point.X - rect.Height / 2, point.Y - rect.Width / 2, rect.Height, rect.Width);
+                default: 
+                    return new Rect(point.X - rect.Width / 2, point.Y - rect.Height / 2, rect.Width, rect.Height);
+            }
         }
     }
 

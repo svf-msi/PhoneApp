@@ -12,7 +12,7 @@
 
     <ContentView.Resources>
 
-        <v:LayoutScaleConverter x:Key="LayoutScaleConverter"/>
+        <v:LayoutRegionConverter x:Key="LayoutRegionConverter"/>
 
     </ContentView.Resources>
 
@@ -68,7 +68,7 @@
                                     <Rectangle Fill="Transparent" 
                                         Stroke="{Binding Color}" StrokeThickness="3"
                                         AbsoluteLayout.LayoutBounds="{Binding Rect, 
-                                        Converter={StaticResource LayoutScaleConverter},
+                                        Converter={StaticResource LayoutRegionConverter},
                                         ConverterParameter={x:Reference mainView}}"
                                         AbsoluteLayout.LayoutFlags="None" />
 

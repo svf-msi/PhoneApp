@@ -82,11 +82,11 @@
                 Minimum="0" Maximum="2000"/>
 
             <Label Grid.Row="4" Grid.Column="0" Text="X:" VerticalOptions="Center" Margin="5"/>
-            <Slider Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Value="{Binding SelectedRegion.X}" VerticalOptions="Center" Margin="5"
+            <Slider Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Value="{Binding RegionX}" VerticalOptions="Center" Margin="5"
                 Minimum="0" Maximum="{Binding MediaWidth}"/>
 
             <Label Grid.Row="5" Grid.Column="0" Text="Y:" VerticalOptions="Center" Margin="5"/>
-            <Slider Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Value="{Binding SelectedRegion.Y}" VerticalOptions="Center" Margin="5"
+            <Slider Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Value="{Binding RegionY}" VerticalOptions="Center" Margin="5"
                 Minimum="0" Maximum="{Binding MediaHeight}"/>
 
         </Grid>
