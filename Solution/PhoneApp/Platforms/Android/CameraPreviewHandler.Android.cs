@@ -27,6 +27,24 @@ namespace MicroVue.Handlers
             return texture;
         }
 
+        protected override void ConnectHandler(TextureView platformView)
+        {
+            base.ConnectHandler(platformView);
+            DeviceDisplay.MainDisplayInfoChanged += OnDisplayInfoChanged;
+        }
+
+        protected override void DisconnectHandler(TextureView platformView)
+        {
+            DeviceDisplay.MainDisplayInfoChanged -= OnDisplayInfoChanged;
+            base.DisconnectHandler(platformView);
+        }
+
+        void OnDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+        {
+            if (VirtualView?.Camera is AndroidCamera cam)
+                ConfigureTransform(cam.PreviewSize.Width, cam.PreviewSize.Height);
+        }
+
         // Re-runs whenever the bound Camera changes; reconnects if the surface is already live.
         static void MapCamera(CameraPreviewHandler handler, CameraPreview view) => handler.Attach();
 
@@ -58,15 +76,37 @@ namespace MicroVue.Handlers
         {
             if (textureView == null || viewWidth == 0 || viewHeight == 0) return;
 
-            // rotate to device position
-            float contentAspect = (float)bufH / bufW;
-            float viewAspect = (float)viewWidth / viewHeight;
-
+            var rotation = DeviceDisplay.MainDisplayInfo.Rotation switch
+            {
+                DisplayRotation.Rotation90 => SurfaceOrientation.Rotation90,
+                DisplayRotation.Rotation180 => SurfaceOrientation.Rotation180,
+                DisplayRotation.Rotation270 => SurfaceOrientation.Rotation270,
+                _ => SurfaceOrientation.Rotation0,
+            };
+            float cx = viewWidth / 2f, cy = viewHeight / 2f;
             var m = new Matrix();
-            if (viewAspect > contentAspect)
-                m.SetScale(contentAspect / viewAspect, 1f, viewWidth / 2f, viewHeight / 2f);
+
+            if (rotation == SurfaceOrientation.Rotation90 || rotation == SurfaceOrientation.Rotation270)
+            {
+                var viewRect = new Android.Graphics.RectF(0, 0, viewWidth, viewHeight);
+                var bufferRect = new Android.Graphics.RectF(0, 0, bufH, bufW);
+                bufferRect.Offset(cx - bufferRect.CenterX(), cy - bufferRect.CenterY());
+                m.SetRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.Fill);
+
+                float scale = Math.Min((float)viewWidth / bufW, (float)viewHeight / bufH);
+                m.PostScale(scale, scale, cx, cy);
+                m.PostRotate(90 * ((int)rotation - 2), cx, cy);
+            }
             else
-                m.SetScale(1f, viewAspect / contentAspect, viewWidth / 2f, viewHeight / 2f);
+            {
+                float contentAspect = (float)bufH / bufW;
+                float viewAspect = (float)viewWidth / viewHeight;
+                if (viewAspect > contentAspect)
+                    m.SetScale(contentAspect / viewAspect, 1f, cx, cy);
+                else
+                    m.SetScale(1f, viewAspect / contentAspect, cx, cy);
+                if (rotation == SurfaceOrientation.Rotation180) m.PostRotate(180, cx, cy);
+            }
             textureView.SetTransform(m);
         }
 

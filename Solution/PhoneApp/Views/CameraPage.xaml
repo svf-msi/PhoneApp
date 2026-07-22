@@ -80,11 +80,11 @@
                          SelectedItem="{Binding Camera.FrameRate}" BackgroundColor="Transparent" />
                     </HorizontalStackLayout>
 
-                    <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
-                        <Label Grid.Column="0" Text="Recording duration (s):" VerticalTextAlignment="Center" />
-                        <Entry Grid.Column="1" Text="{Binding RecordingDurationStr}" x:Name="DurationEntry" Keyboard="Numeric" WidthRequest="80" VerticalTextAlignment="Center" />
-                        <Slider Grid.Column="2" Minimum="1" Maximum="10" Value="{Binding RecordingDurationSlider}" VerticalOptions="Center" />
-                    </Grid>
+                    <FlexLayout Wrap="Wrap" AlignItems="Center">
+                        <Label Text="Recording duration (s):" Margin="0,0,8,0" VerticalTextAlignment="Center" />
+                        <Entry Text="{Binding RecordingDurationStr}" x:Name="DurationEntry" Keyboard="Numeric" WidthRequest="80" VerticalTextAlignment="Center" />
+                        <Slider Minimum="1" Maximum="10" Value="{Binding RecordingDurationSlider}" VerticalOptions="Center" FlexLayout.Basis="200" FlexLayout.Grow="1" Margin="4,0,0,0" />
+                    </FlexLayout>
 
                     <HorizontalStackLayout Spacing="8">
                         <Button VerticalOptions="Center" TextColor="White" Command="{Binding SwitchFacingCommand}" Text="Flip Camera" />
