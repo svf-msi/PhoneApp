@@ -631,10 +631,14 @@ namespace StandardLib
                 video.Transforms = backgroundAnalysis.TransformPoins;
         }
 
-        public static void AnalyzeFrame(int frame, Video_MP4 video, IEnumerable<Target> targets)
+        public static bool AnalyzeFrame(int frame, Video_MP4 video, IEnumerable<Target> targets)
         {
-            var grayImage = video?.GetRgbImage(frame)?.Convert<Gray, float>();
-            if (grayImage?.Data == null) return;
+            Image<Gray, float> grayImage = null;
+            if (video.ReadFrame(out Image<Gray, byte> image))
+            {
+                grayImage = image?.Convert<Gray, float>();
+            }
+            if (grayImage?.Data == null) return false;
 
             foreach (var target in targets)
             {
@@ -644,6 +648,8 @@ namespace StandardLib
                     TrackTarget(target, frame, grayImage);
                 }
             }
+
+            return true;
         }
 
         public static void TrackTarget<T>(Target target, int frame, Image<T, float> image, Func<int, Image<T, float>> getFrameImage = null) where T : struct, IColor

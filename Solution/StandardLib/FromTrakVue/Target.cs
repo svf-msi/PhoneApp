@@ -62,16 +62,10 @@ namespace StandardLib
         [JsonIgnore]
         public bool IsInRange => CurrentFrame >= StartFrame && CurrentFrame <= EndFrame;
 
-        [JsonIgnore]
-        public List<TargetType> Types { get; } = new List<TargetType> { TargetType.Static, TargetType.Rotary };
-
         TargetType type = TargetType.Static;
         public TargetType Type { get => type; set { type = value; NotifyPropertyChanged(); } }
 
         public double TimeInterval { get; set; } = 1;
-
-        [JsonIgnore]
-        public PointState CurrentState => PointState;
 
         #endregion
 

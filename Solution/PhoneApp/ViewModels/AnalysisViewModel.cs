@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Emgu.CV;
+using Emgu.CV.Structure;
 using MicroVue.Models;
 using Newtonsoft.Json;
 using SkiaSharp;
@@ -119,10 +121,16 @@ namespace MicroVue.ViewModels
         }
 
         [ObservableProperty]
+        double progress;
+
+        [ObservableProperty]
         int currentFrame = 0;
 
         [ObservableProperty]
         bool isRotated;
+
+        [ObservableProperty]
+        bool isAnalizing;
 
         [ObservableProperty]
         bool back;
@@ -160,6 +168,8 @@ namespace MicroVue.ViewModels
                 CurrentFrame = 0;
                 VideoWidth = video?.Width ?? 0;
                 VideoHeight = video?.Height ?? 0;
+                IsRotated = MediaWidth > 0 && VideoWidth > 0 && VideoWidth == MediaHeight;
+                video.Count();
                 //if (useImage) SetImage();
             }
         }
@@ -253,9 +263,32 @@ namespace MicroVue.ViewModels
         }
 
         [RelayCommand]
-        void Analyze()
+        async Task Analyze()
         {
+            if (video == null || !video.IsValid || Scene.Regions.Count == 0) return;
 
+            try
+            {
+                Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {video.Length} frames.");
+                IsAnalizing = true;
+                video.Reset();
+                var count = 0;
+                while (video.ReadFrame(out Image<Gray, byte> image))
+                {
+                    ++count;
+                    Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
+                    image.Dispose();
+                }
+                Debug.WriteLine($"[Debug]: done, frame count = {count}.");
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"[Debug]: Error in analysis: {e}");
+            }
+            finally
+            {
+                IsAnalizing = false;
+            }
         }
     }
 }

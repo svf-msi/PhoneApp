@@ -49,36 +49,39 @@
 
             </ScrollView>
 
-            <Button Grid.Row="3" Text="Track Targets" VerticalOptions="Center" Margin="10"
-                Command="{Binding AnalyzeCommand}"/>
+            <Button Grid.Row="2" Text="Track Targets" VerticalOptions="Center" Margin="10" Command="{Binding AnalyzeCommand}"/>
+
+            <ProgressBar Grid.Row="3" Progress="{Binding Progress}" Margin="5" IsVisible="{Binding IsAnalizing}"/>
+
         </Grid>
         
         <!--Selected region-->
-        <Grid Grid.Row="0" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *, Auto" Margin="5"
-              IsVisible="{Binding IsRegionSelected}">
+        <ScrollView Grid.Row="0" IsVisible="{Binding IsRegionSelected}">
+            
+            <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *, Auto" Margin="5">
 
-            <Button Grid.Row="0" Grid.Column="0" Text="{x:Static f:FluentUI.arrow_left_24_regular}" FontSize="22"
+                <Button Grid.Row="0" Grid.Column="0" Text="{x:Static f:FluentUI.arrow_left_24_regular}" FontSize="22"
                     FontFamily="{x:Static f:FluentUI.FontFamily}" Margin="5"
                     Command="{Binding ShowRegionsCommand}"/>
 
-            <Button Grid.Row="0" Grid.Column="2" Text="{x:Static f:FluentUI.delete_32_regular}" Margin="5"
+                <Button Grid.Row="0" Grid.Column="2" Text="{x:Static f:FluentUI.delete_32_regular}" Margin="5"
                     FontSize="22" FontFamily="{x:Static f:FluentUI.FontFamily}" TextColor="White" BackgroundColor="Red"
                     Command="{Binding DeleteCommand}" CommandParameter="{Binding SelectedRegion}"/>
 
-            <Label Grid.Row="1" Grid.Column="0" Text="Name:" VerticalOptions="Center" Margin="5"/>
-            <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedRegion.Name}" VerticalOptions="Center" Margin="5"/>
+                <Label Grid.Row="1" Grid.Column="0" Text="Name:" VerticalOptions="Center" Margin="5"/>
+                <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedRegion.Name}" VerticalOptions="Center" Margin="5"/>
 
-            <Label Grid.Row="2" Grid.Column="0" Text="Color:" VerticalOptions="Center" Margin="5"/>
-            <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
+                <Label Grid.Row="2" Grid.Column="0" Text="Color:" VerticalOptions="Center" Margin="5"/>
+                <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
 
-                <Label Text="{Binding SelectedRegion.ColorText}" VerticalOptions="Center" Margin="5"/>
-                <Rectangle VerticalOptions="Center" Margin="10, 0, 10, 0"
+                    <Label Text="{Binding SelectedRegion.ColorText}" VerticalOptions="Center" Margin="5"/>
+                    <Rectangle VerticalOptions="Center" Margin="10, 0, 10, 0"
                     Fill="Transparent" Stroke="{Binding SelectedRegion.Color}" StrokeThickness="3" 
                     WidthRequest="20" HeightRequest="20" />
-            </HorizontalStackLayout>
-            
-            <Label Grid.Row="3" Grid.Column="0" Text="Size:" VerticalOptions="Center" Margin="5"/>
-            <Slider Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Value="{Binding SelectedRegion.Size}" VerticalOptions="Center" Margin="5"
+                </HorizontalStackLayout>
+
+                <Label Grid.Row="3" Grid.Column="0" Text="Size:" VerticalOptions="Center" Margin="5"/>
+                <Slider Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Value="{Binding SelectedRegion.Size}" VerticalOptions="Center" Margin="5"
                 Minimum="0" Maximum="2000"/>
 
             <Label Grid.Row="4" Grid.Column="0" Text="X:" VerticalOptions="Center" Margin="5"/>
@@ -89,8 +92,10 @@
             <Slider Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Value="{Binding RegionY}" VerticalOptions="Center" Margin="5"
                 Minimum="0" Maximum="{Binding MediaHeight}"/>
 
-        </Grid>
-        
+            </Grid>
+
+        </ScrollView>
+
     </Grid>
 
 </ContentView>
