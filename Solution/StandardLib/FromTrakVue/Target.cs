@@ -3,6 +3,8 @@ using Emgu.CV.Structure;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 
 namespace StandardLib
@@ -13,6 +15,8 @@ namespace StandardLib
         #region Fields and Properties
 
         #region General
+
+        public string Name { get; set; }
 
         bool isBackground;
         public bool IsBackground { get => isBackground; set { if (IsBackground == value) return; isBackground = value; NotifyPropertyChanged(); } }
@@ -182,6 +186,9 @@ namespace StandardLib
         [JsonIgnore]
         public System.Drawing.PointF GradientPointsCGOffset { get; set; }
 
+        [JsonIgnore]
+        public bool HasGoodGradientPoints => GradientPoints?.Count > 2;
+
         #endregion
 
         #region Track-related
@@ -212,9 +219,15 @@ namespace StandardLib
 
         #endregion
 
-        public Target()
+        public Target(TrackRegion reference = null)
         {
             Track = new Track();
+            if (reference != null)
+            {
+                Debug.WriteLine($"[Debug]: reference = {Utils.ToString(reference)}");
+                Reference = reference;
+                Name = reference.Name;
+            }
         }
 
         void NotifyPropertyChanged(string _ = null) { }
@@ -380,14 +393,14 @@ namespace StandardLib
 
         void UpdateState()
         {
-            NotifyPropertyChanged(nameof(CurrentState));
+            //NotifyPropertyChanged(nameof(CurrentState));
             //Console.WriteLine($"Update state: {Text}, {CurrentFrame}, {PointState}, {Visible}");
         }
 
         void UpdatePoint()
         {
             NotifyPropertyChanged(nameof(CurrentPoint));
-            NotifyPropertyChanged(nameof(CurrentState));
+            //NotifyPropertyChanged(nameof(CurrentState));
         }
 
         public void Reset()

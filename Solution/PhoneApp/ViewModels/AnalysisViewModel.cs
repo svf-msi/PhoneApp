@@ -75,6 +75,12 @@ namespace MicroVue.ViewModels
         [ObservableProperty]
         int mediaRotation;
 
+        [ObservableProperty]
+        int mediaLength;
+
+        [ObservableProperty]
+        double frameRate;
+
         public bool IsFlipped => MediaRotation == 90 || MediaRotation == -90;
 
         [ObservableProperty]
@@ -135,6 +141,8 @@ namespace MicroVue.ViewModels
         [ObservableProperty]
         bool back;
 
+        bool stopAnalysis = false;
+
         Video_MP4 video;
 
         partial void OnSceneItemChanged(SceneItem sceneItem)
@@ -146,8 +154,11 @@ namespace MicroVue.ViewModels
                 Scene = Scene.Read(scenePath);
                 if (Scene == null) return;
                 VideoPath = Scene.VideoName;
-                MediaRotation = Utilities.GetMp4Rotation(VideoPath);
-                //Debug.WriteLine($"[Debug]: video rotation = {MediaRotation}");
+                Utilities.GetMetadata(out var data, VideoPath);
+                MediaRotation = (int)data[MetaType.VideoRotation];
+                MediaLength = (int)data[MetaType.FrameCount];
+                FrameRate = data[MetaType.FrameRate];
+                //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(data)}");
                 SetupSource();
                 SetupVideo();
             }
@@ -169,7 +180,7 @@ namespace MicroVue.ViewModels
                 VideoWidth = video?.Width ?? 0;
                 VideoHeight = video?.Height ?? 0;
                 IsRotated = MediaWidth > 0 && VideoWidth > 0 && VideoWidth == MediaHeight;
-                video.Count();
+                //video.Count();
                 //if (useImage) SetImage();
             }
         }
@@ -231,7 +242,6 @@ namespace MicroVue.ViewModels
             var color = TargetColors[(id - 1) % TargetColors.Count];
             var width = IsFlipped ? MediaHeight : MediaWidth;
             var height = IsFlipped ? MediaWidth : MediaHeight;
-            Debug.WriteLine($"[Debug]: add target, rotation={MediaRotation} width={width} height={height}");
             var target = new Models.Region(id, $"Target {id}", DefaultSize, width / 2, height / 2, false, color);
             Scene.Regions.Add(target);
             SelectedRegion = target;
@@ -250,7 +260,9 @@ namespace MicroVue.ViewModels
             }
 
             var color = "White";
-            var target = new Models.Region(id, $"Background {id}", DefaultSize, MediaWidth / 2, MediaHeight / 2, true, color);
+            var width = IsFlipped ? MediaHeight : MediaWidth;
+            var height = IsFlipped ? MediaWidth : MediaHeight;
+            var target = new Models.Region(id, $"Background {id}", DefaultSize, width / 2, height / 2, true, color);
             Scene.Regions.Add(target);
             SelectedRegion = target;
             Scene.Save();
@@ -263,7 +275,50 @@ namespace MicroVue.ViewModels
         }
 
         [RelayCommand]
-        async Task Analyze()
+        void Analyze()
+        {
+            if (video == null || !video.IsValid || Scene.Regions.Count == 0 || MediaLength == 0) return;
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {MediaLength} frames.");
+                    IsAnalizing = true;
+                    stopAnalysis = false;
+                    video.Reset();
+                    if (!video.ReadFrame(out Image<Gray, byte> image)) return;
+                    Scene.Targets = new ObservableCollection<Target>(Scene.Regions.Select(region => new Target(region.ToTrackRegion())));
+                    ImageAnalysis.StartFrame(image, Scene.Targets);
+                    var count = 1;
+                    //image.Dispose();
+                    while (video.ReadFrame(out image) && !stopAnalysis)
+                    {
+                        Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
+                        var found = ImageAnalysis.AnalyzeFrame(count, image, Scene.Targets);
+                        image.Dispose();
+                        if (!found) break;
+                        ++count;
+                        Progress = (double)count / MediaLength;
+                    }
+                    Debug.WriteLine($"[Debug]: done, frame count = {count}.");
+                    Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(Scene.Targets[0].Track.RawPath, Formatting.Indented)}");
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine($"[Debug]: Error in analysis: {e}");
+                }
+                finally
+                {
+                    IsAnalizing = false;
+                    stopAnalysis = false;
+                    Progress = 0;
+                }
+            });
+        }
+
+        [RelayCommand]
+        async Task Analyze2()
         {
             if (video == null || !video.IsValid || Scene.Regions.Count == 0) return;
 
@@ -271,15 +326,13 @@ namespace MicroVue.ViewModels
             {
                 Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {video.Length} frames.");
                 IsAnalizing = true;
-                video.Reset();
-                var count = 0;
-                while (video.ReadFrame(out Image<Gray, byte> image))
+                stopAnalysis = false;
+                for (int i = 0; i< MediaLength; ++i)
                 {
-                    ++count;
-                    Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
-                    image.Dispose();
+                    Progress = (double)i / MediaLength;
+                    await Task.Delay(100);
                 }
-                Debug.WriteLine($"[Debug]: done, frame count = {count}.");
+                //Debug.WriteLine($"[Debug]: done, frame count = {count}.");
             }
             catch (Exception e)
             {
@@ -288,7 +341,15 @@ namespace MicroVue.ViewModels
             finally
             {
                 IsAnalizing = false;
+                stopAnalysis = false;
             }
+        }
+
+
+        [RelayCommand]
+        void Stop()
+        {
+            stopAnalysis = true;
         }
     }
 }

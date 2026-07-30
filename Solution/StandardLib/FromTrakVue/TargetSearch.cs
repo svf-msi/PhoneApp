@@ -68,7 +68,7 @@ namespace StandardLib
             Reset();
             var rectangle = Rectangle.Round(region.Rectangle);
             Position = new PointF { X = rectangle.X + (float)rectangle.Width / 2, Y = rectangle.Y + (float)rectangle.Height / 2 };
-            //Console.WriteLine($"Search check: {image}, {referencePattern}, {Region.Rectangle}, {rectangle}");
+            Console.WriteLine($"[Debug]: Search check: {image}, {referencePattern}, {Region.Rectangle}, {rectangle}");
             if (image == null || Region == null || !new Rectangle(0, 0, image.Width, image.Height).Contains(rectangle))
                 IsValid = false;
         }
@@ -331,6 +331,7 @@ namespace StandardLib
 
     public class TrackRegion
     {
+        public string Name { get; set; }
         public int FrameNumber { get; set; }
         public DateTime Time { get; set; }
         public float X { get; set; } = 0;

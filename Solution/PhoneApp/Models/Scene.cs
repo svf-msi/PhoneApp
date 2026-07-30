@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
+using StandardLib;
 
 namespace MicroVue.Models
 {
@@ -48,6 +49,9 @@ namespace MicroVue.Models
 
         [ObservableProperty]
         ObservableCollection<Region> regions = new ObservableCollection<Region>();
+
+        [ObservableProperty]
+        ObservableCollection<Target> targets = new ObservableCollection<Target>();
 
         public void RefreshRegions()
         {

@@ -24,9 +24,10 @@ public partial class MainView : ContentView
             {
                 SetupOverlay();
             }
-            if (args.PropertyName == nameof(player.Duration))
+            else if (args.PropertyName == nameof(player.Duration))
             {
                 slider.Maximum = player.Duration.TotalSeconds;
+                Debug.WriteLine($"[Debug]: Player duration {player.Duration.TotalSeconds}");
             }
         }
     }
@@ -42,7 +43,7 @@ public partial class MainView : ContentView
         if (player == null) return;
         var w = player.MediaWidth;
         var h = player.MediaHeight;
-        //Debug.WriteLine($"[Debug]: player params {player.MediaWidth}, {player.MediaHeight}, {player.Rotation}");
+        Debug.WriteLine($"[Debug]: player params {player.MediaWidth}, {player.MediaHeight}");
         if (w == 0 || h == 0) return;
         var aspect = (double)w / h;
         var rw = player.Height * aspect;

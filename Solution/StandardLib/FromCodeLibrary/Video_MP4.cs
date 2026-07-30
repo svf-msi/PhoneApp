@@ -62,7 +62,7 @@ namespace StandardLib
         public void Count()
         {
             var count = 0;
-            while (ReadFrame(out Mat image))
+            while (ReadFrameMat(out Mat image))
             {
                 ++count;
                 image.Dispose();
@@ -76,7 +76,7 @@ namespace StandardLib
             videoCapture = new VideoCapture(Path);
         }
 
-        public bool ReadFrame(out Mat image)
+        public bool ReadFrameMat(out Mat image)
         {
             image = new Mat();
             try
@@ -95,7 +95,7 @@ namespace StandardLib
             image = null;
             try
             {
-                if (ReadFrame(out Mat mat))
+                if (ReadFrameMat(out Mat mat))
                 {
                     Mat grayMat = new Mat();
                     CvInvoke.CvtColor(mat, grayMat, Emgu.CV.CvEnum.ColorConversion.Bgr2Gray);
