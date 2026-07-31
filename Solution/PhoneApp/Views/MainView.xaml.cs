@@ -40,16 +40,7 @@ public partial class MainView : ContentView
             slider.Value = args.Position.TotalSeconds;
             if (BindingContext is AnalysisViewModel vm)
             {
-                if (vm.Scene?.Targets?.Count > 0)
-                {
-                    foreach (var target in vm.Scene.Targets)
-                    {
-                        if (target != null)
-                        {
-                            target.CurrentFrame = (int)Math.Round(slider.Value / slider.Maximum * vm.MediaLength);
-                        }
-                    }
-                }
+                vm.Scene?.RefreshTargets((int)Math.Round(slider.Value / slider.Maximum * vm.MediaLength));
             }
         }
     }
@@ -79,6 +70,7 @@ public partial class MainView : ContentView
             vm.PlayerHeight = rh; 
             vm.PlayerScale = rw / w;
             vm.Scene?.RefreshRegions();
+            vm.Scene?.RefreshTargets(0);
             //Debug.WriteLine($"[Debug]: media = {vm.MediaWidth}, {vm.MediaHeight}, {vm.MediaRotation}");
         }
     }
@@ -116,6 +108,10 @@ public partial class MainView : ContentView
             var targetPosition = TimeSpan.FromSeconds(slider.Value);
 
             await player.SeekTo(targetPosition, CancellationToken.None);
+            if (BindingContext is AnalysisViewModel vm)
+            {
+                vm.Scene?.RefreshTargets((int)Math.Round(slider.Value / slider.Maximum * vm.MediaLength));
+            }
             isDragging = false;
         }
     }

@@ -272,6 +272,7 @@ namespace MicroVue.ViewModels
         void ShowRegions()
         {
             SelectedRegion = null;
+            Scene.Save();
         }
 
         [RelayCommand]
@@ -302,6 +303,7 @@ namespace MicroVue.ViewModels
                         Progress = (double)count / MediaLength;
                     }
                     Scene.Targets = targets;
+                    Scene.Save();
                     Debug.WriteLine($"[Debug]: done, frame count = {count}.");
                     Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(Scene.Targets[0].Track.RawPath, Formatting.Indented)}");
                 }

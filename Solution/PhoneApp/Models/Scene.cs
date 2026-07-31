@@ -64,6 +64,20 @@ namespace MicroVue.Models
             }
         }
 
+        public void RefreshTargets(int currentFrame)
+        {
+            if (Targets?.Count > 0)
+            {
+                foreach (var target in Targets)
+                {
+                    if (target != null)
+                    {
+                        target.CurrentFrame = currentFrame;
+                    }
+                }
+            }
+        }
+
         public void Save(string file = null)
         {
             if (file == null) file = FileName;
