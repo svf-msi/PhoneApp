@@ -11,6 +11,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace StandardLib
 {
@@ -89,13 +90,43 @@ namespace StandardLib
                 return false;
             }
         }
+        public bool ReadFrameMatWithTimeout(out Mat image, int timeout = 2000)
+        {
+            image = null;
+            if (videoCapture == null) return false;
+
+            var im = new Mat();
+            try
+            {
+                var success = false;
+                var main = Task.Run(() =>
+                {
+                    im = new Mat();
+                    success = videoCapture.Read(im);
+                });
+                var timer = Task.Delay(timeout);
+
+                Task.WaitAny(main, timer);
+
+                if (success)
+                {
+                    image = im; return true;
+                }
+                return false;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Error in reading frame: {e}");
+                return false;
+            }
+        }
 
         public bool ReadFrame(out Image<Gray, byte> image)
         {
             image = null;
             try
             {
-                if (ReadFrameMat(out Mat mat))
+                if (ReadFrameMatWithTimeout(out Mat mat))
                 {
                     Mat grayMat = new Mat();
                     CvInvoke.CvtColor(mat, grayMat, Emgu.CV.CvEnum.ColorConversion.Bgr2Gray);

@@ -3,20 +3,23 @@ using Emgu.CV.Structure;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace StandardLib
 {
-    public class Target
+    public class Target : INotifyPropertyChanged
     {
-
         #region Fields and Properties
 
         #region General
 
         public string Name { get; set; }
+
+        public string ColorText { get; set; }
 
         bool isBackground;
         public bool IsBackground { get => isBackground; set { if (IsBackground == value) return; isBackground = value; NotifyPropertyChanged(); } }
@@ -33,38 +36,11 @@ namespace StandardLib
         bool isTracked = true;
         public bool IsTracked { get => isTracked; set { isTracked = value; NotifyPropertyChanged(); } }
 
-        double distance; // meters
-        public double Distance { get => distance; set { distance = value; NotifyPropertyChanged(); } }
-
         int startFrame = 0;
         public int StartFrame { get => startFrame; set { startFrame = value; NotifyPropertyChanged(); } }
 
         int endFrame = 0;
         public int EndFrame { get => endFrame; set { endFrame = value; NotifyPropertyChanged(); } }
-
-        int currentFrame;
-        [JsonIgnore]
-        public int CurrentFrame
-        {
-            get => currentFrame; // Track?.CurrentFrame ?? -1;
-            set
-            {
-                if (Track != null) Track.CurrentFrame = value;
-                currentFrame = value;
-
-                //Console.WriteLine($"Frame changed in {Text}: {currentFrame}");
-                UpdateState();
-                if (Type == TargetType.Dynamic)
-                {
-                    Reference = CurrentReference;
-                }
-                NotifyPropertyChanged();
-                UpdatePoint();
-            }
-        }
-
-        [JsonIgnore]
-        public bool IsInRange => CurrentFrame >= StartFrame && CurrentFrame <= EndFrame;
 
         TargetType type = TargetType.Static;
         public TargetType Type { get => type; set { type = value; NotifyPropertyChanged(); } }
@@ -180,6 +156,7 @@ namespace StandardLib
         public Image<Rgb, float> RgbReference { get; set; }
 
         List<GradientPoint> gradientPoints;
+
         [JsonIgnore]
         public List<GradientPoint> GradientPoints { get => gradientPoints; set { gradientPoints = value; SetCG(); } } // referenced to reference rectangle
 
@@ -197,8 +174,46 @@ namespace StandardLib
 
         public Dictionary<int, TransformPoint> TransformPoints { get; set; }
 
+        int currentFrame;
+        [JsonIgnore]
+        public int CurrentFrame
+        {
+            get => currentFrame; // Track?.CurrentFrame ?? -1;
+            set
+            {
+                if (Track != null) Track.CurrentFrame = value;
+                currentFrame = value;
+
+                Console.WriteLine($"Frame changed in {Name}: {currentFrame}");
+                if (Type == TargetType.Dynamic)
+                {
+                    Reference = CurrentReference;
+                }
+                NotifyPropertyChanged();
+                UpdatePoint();
+            }
+        }
+
+        [JsonIgnore]
+        public bool IsInRange => CurrentFrame >= StartFrame && CurrentFrame <= EndFrame;
+
         [JsonIgnore]
         public TrackPoint CurrentPoint { get => Track?.CurrentPoint; set { if (Track != null) Track.CurrentPoint = value; } }
+
+        [JsonIgnore]
+        public float X { get => CurrentPoint?.X ?? 0; set { if (CurrentPoint != null) CurrentPoint.X = value; NotifyPropertyChanged(); } }
+
+        [JsonIgnore]
+        public float Y { get => CurrentPoint?.Y ?? 0; set { if (CurrentPoint != null) CurrentPoint.Y = value; NotifyPropertyChanged(); } }
+
+        [JsonIgnore]
+        public TrackRegion CurrentRegion => new TrackRegion { Name = Name, FrameNumber = CurrentFrame, X = X, Y = Y, Width = Width, Height = Height };
+
+        [JsonIgnore]
+        public float Width => Reference?.Width ?? 0;
+
+        [JsonIgnore]
+        public float Height => Reference?.Height ?? 0;
 
         [JsonIgnore]
         public bool IsSet => CurrentPoint != null;
@@ -217,20 +232,19 @@ namespace StandardLib
 
         #endregion
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         #endregion
 
-        public Target(TrackRegion reference = null)
+        public Target()
         {
             Track = new Track();
-            if (reference != null)
-            {
-                Debug.WriteLine($"[Debug]: reference = {Utils.ToString(reference)}");
-                Reference = reference;
-                Name = reference.Name;
-            }
         }
 
-        void NotifyPropertyChanged(string _ = null) { }
+        protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "") 
+        { 
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         #region Reference-related
 
@@ -334,7 +348,6 @@ namespace StandardLib
                     reference.FrameNumber = frame;
                     Reference = reference;
                     Track.RawPath[frame] = reference.TrackPoint;
-                    UpdateState();
                     UpdatePoint();
                 }
             }
@@ -391,16 +404,10 @@ namespace StandardLib
                 return null;
         }
 
-        void UpdateState()
-        {
-            //NotifyPropertyChanged(nameof(CurrentState));
-            //Console.WriteLine($"Update state: {Text}, {CurrentFrame}, {PointState}, {Visible}");
-        }
-
         void UpdatePoint()
         {
             NotifyPropertyChanged(nameof(CurrentPoint));
-            //NotifyPropertyChanged(nameof(CurrentState));
+            NotifyPropertyChanged(nameof(CurrentRegion));
         }
 
         public void Reset()
@@ -415,7 +422,6 @@ namespace StandardLib
                 Track.RawPath[PrimaryReferenceFrame] = reference.TrackPoint;
             }
             EndFrame = PrimaryReferenceFrame;
-            UpdateState();
         }
 
         public void ClearFrom(int frame)
@@ -434,7 +440,6 @@ namespace StandardLib
                         References.Remove(key);
                 }
                 EndFrame = frame - 1;
-                UpdateState();
             }
         }
 

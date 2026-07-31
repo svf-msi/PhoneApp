@@ -27,7 +27,7 @@ public partial class MainView : ContentView
             else if (args.PropertyName == nameof(player.Duration))
             {
                 slider.Maximum = player.Duration.TotalSeconds;
-                Debug.WriteLine($"[Debug]: Player duration {player.Duration.TotalSeconds}");
+                //Debug.WriteLine($"[Debug]: Player duration {player.Duration.TotalSeconds}");
             }
         }
     }
@@ -35,7 +35,23 @@ public partial class MainView : ContentView
     void Player_PositionChanged(object sender, MediaPositionChangedEventArgs args)
     {
         //Debug.WriteLine($"[Debug]: Player position changed: {args.Position.TotalSeconds}");
-        if (!isDragging) slider.Value = args.Position.TotalSeconds;
+        if (!isDragging)
+        {
+            slider.Value = args.Position.TotalSeconds;
+            if (BindingContext is AnalysisViewModel vm)
+            {
+                if (vm.Scene?.Targets?.Count > 0)
+                {
+                    foreach (var target in vm.Scene.Targets)
+                    {
+                        if (target != null)
+                        {
+                            target.CurrentFrame = (int)Math.Round(slider.Value / slider.Maximum * vm.MediaLength);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     void SetupOverlay()
@@ -43,21 +59,18 @@ public partial class MainView : ContentView
         if (player == null) return;
         var w = player.MediaWidth;
         var h = player.MediaHeight;
-        Debug.WriteLine($"[Debug]: player params {player.MediaWidth}, {player.MediaHeight}");
+        //Debug.WriteLine($"[Debug]: player params {player.MediaWidth}, {player.MediaHeight}");
         if (w == 0 || h == 0) return;
         var aspect = (double)w / h;
         var rw = player.Height * aspect;
         var rh = player.Width / aspect;
-        //Debug.WriteLine($"****** player bounds: {player.Bounds}");
-        //Debug.WriteLine($"****** player frame: {player.Frame}");
-        //Debug.WriteLine($"****** player height: {player.Width} vs {rw}");
-        //Debug.WriteLine($"****** player height: {player.Height} vs {rh}");
         rw = Math.Min(player.Width, rw);
         rh = Math.Min(player.Height, rh);
         var off_x = player.Width - rw;
         var off_y = player.Height - rh;
         var bounds = new Rect(off_x / 2, off_y / 2, rw, rh);
         AbsoluteLayout.SetLayoutBounds(overlay, bounds);
+        AbsoluteLayout.SetLayoutBounds(overlay2, bounds);
         if (BindingContext is AnalysisViewModel vm)
         {
             vm.MediaWidth = player.MediaWidth;
@@ -66,9 +79,7 @@ public partial class MainView : ContentView
             vm.PlayerHeight = rh; 
             vm.PlayerScale = rw / w;
             vm.Scene?.RefreshRegions();
-            Debug.WriteLine($"[Debug]: media = {vm.MediaWidth}, {vm.MediaHeight}, {vm.MediaRotation}");
-            //Debug.WriteLine($"[Debug]: player width: {rw} vs {w} - {rw / w}");
-            //Debug.WriteLine($"[Debug]: player height: {rh} vs {h} - {rh / h}");
+            //Debug.WriteLine($"[Debug]: media = {vm.MediaWidth}, {vm.MediaHeight}, {vm.MediaRotation}");
         }
     }
 

@@ -288,19 +288,20 @@ namespace MicroVue.ViewModels
                     stopAnalysis = false;
                     video.Reset();
                     if (!video.ReadFrame(out Image<Gray, byte> image)) return;
-                    Scene.Targets = new ObservableCollection<Target>(Scene.Regions.Select(region => new Target(region.ToTrackRegion())));
-                    ImageAnalysis.StartFrame(image, Scene.Targets);
+                    var targets = new ObservableCollection<Target>(Scene.Regions.Select(region => region.ToTarget()));
+                    ImageAnalysis.StartFrame(image, targets);
                     var count = 1;
                     //image.Dispose();
                     while (video.ReadFrame(out image) && !stopAnalysis)
                     {
                         Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
-                        var found = ImageAnalysis.AnalyzeFrame(count, image, Scene.Targets);
+                        var found = ImageAnalysis.AnalyzeFrame(count, image, targets);
                         image.Dispose();
                         if (!found) break;
                         ++count;
                         Progress = (double)count / MediaLength;
                     }
+                    Scene.Targets = targets;
                     Debug.WriteLine($"[Debug]: done, frame count = {count}.");
                     Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(Scene.Targets[0].Track.RawPath, Formatting.Indented)}");
                 }

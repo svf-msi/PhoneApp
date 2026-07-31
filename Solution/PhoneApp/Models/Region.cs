@@ -49,6 +49,16 @@ namespace MicroVue.Models
             ColorText = colorText;
         }
 
+        public Target ToTarget(int frame = 0)
+        {
+            return new Target
+            {
+                Name = Name,
+                ColorText = ColorText,
+                Reference = ToTrackRegion(frame)
+            };
+        }
+
         public TrackRegion ToTrackRegion(int frame = 0)
         {
             return new TrackRegion

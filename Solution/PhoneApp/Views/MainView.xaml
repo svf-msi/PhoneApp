@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:f="clr-namespace:Fonts"
+             xmlns:lib="clr-namespace:StandardLib;assembly=StandardLib"
              xmlns:m="clr-namespace:MicroVue.Models"
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
              xmlns:v="clr-namespace:MicroVue.Views"
@@ -13,6 +14,8 @@
     <ContentView.Resources>
 
         <v:LayoutRegionConverter x:Key="LayoutRegionConverter"/>
+        <v:LayoutTargetConverter x:Key="LayoutTargetConverter"/>
+        <v:ColorTextConverter x:Key="ColorTextConverter"/>
 
     </ContentView.Resources>
 
@@ -56,7 +59,7 @@
                             AbsoluteLayout.LayoutFlags="All" 
                             x:Name="player"/>
 
-                        <!--Video overlay-->
+                        <!--Region overlay-->
                         <AbsoluteLayout x:Name="overlay" 
                             BindableLayout.ItemsSource="{Binding Scene.Regions}"
                             AbsoluteLayout.LayoutFlags="None"
@@ -66,9 +69,32 @@
                                 <DataTemplate x:DataType="m:Region">
 
                                     <Rectangle Fill="Transparent" 
-                                        Stroke="{Binding Color}" StrokeThickness="3"
+                                        Stroke="{Binding Color}" 
+                                        StrokeThickness="3" StrokeDashArray="1 1"
                                         AbsoluteLayout.LayoutBounds="{Binding Rect, 
                                         Converter={StaticResource LayoutRegionConverter},
+                                        ConverterParameter={x:Reference mainView}}"
+                                        AbsoluteLayout.LayoutFlags="None" />
+
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+
+                        </AbsoluteLayout>
+
+                        <!--Region overlay-->
+                        <AbsoluteLayout x:Name="overlay2" 
+                            BindableLayout.ItemsSource="{Binding Scene.Targets}"
+                            AbsoluteLayout.LayoutFlags="None"
+                            AbsoluteLayout.LayoutBounds="0, 0, 0, 0">
+
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="lib:Target">
+
+                                    <Rectangle Fill="Transparent" 
+                                        Stroke="{Binding ColorText, Converter={StaticResource ColorTextConverter}}" 
+                                        StrokeThickness="3"
+                                        AbsoluteLayout.LayoutBounds="{Binding CurrentRegion, 
+                                        Converter={StaticResource LayoutTargetConverter},
                                         ConverterParameter={x:Reference mainView}}"
                                         AbsoluteLayout.LayoutFlags="None" />
 
