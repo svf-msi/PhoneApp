@@ -1,13 +1,39 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
+             xmlns:lib="clr-namespace:StandardLib;assembly=StandardLib"
+             xmlns:m="clr-namespace:MicroVue.Models"
+             xmlns:v="clr-namespace:MicroVue.Views"
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
+             xmlns:f="clr-namespace:Fonts"
              x:DataType="vm:AnalysisViewModel"
              x:Class="MicroVue.Views.ChartView">
-    <VerticalStackLayout>
-        <Label 
-            Text="Chart view"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+    <Grid>
+
+        <chart:SfCartesianChart>
+
+            <chart:SfCartesianChart.XAxes>
+                <chart:NumericalAxis>
+                    <chart:NumericalAxis.Title>
+                        <chart:ChartAxisTitle Text="Intensity"/>
+                    </chart:NumericalAxis.Title>
+                </chart:NumericalAxis>
+            </chart:SfCartesianChart.XAxes>
+
+            <chart:SfCartesianChart.YAxes>
+                <chart:NumericalAxis>
+                    <chart:NumericalAxis.Title>
+                        <chart:ChartAxisTitle Text="Time(ms)"/>
+                    </chart:NumericalAxis.Title>
+                </chart:NumericalAxis>
+            </chart:SfCartesianChart.YAxes>
+
+            <chart:SfCartesianChart.Behaviors>
+                <v:ChartSeriesBindingBehavior SeriesSource="{Binding ChartData}" />
+            </chart:SfCartesianChart.Behaviors>
+
+        </chart:SfCartesianChart>
+
+    </Grid>
 </ContentView>

@@ -443,6 +443,8 @@ namespace StandardLib
                         return Y;
                     case nameof(Angle):
                         return Angle;
+                    case nameof(Magnitude):
+                        return (float)Magnitude;
                     default:
                         return float.NaN;
                 }

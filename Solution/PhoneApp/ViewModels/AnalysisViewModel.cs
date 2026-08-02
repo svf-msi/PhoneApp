@@ -139,6 +139,12 @@ namespace MicroVue.ViewModels
         bool isAnalizing;
 
         [ObservableProperty]
+        ObservableCollection<LineSeriesModel> chartData = new ObservableCollection<LineSeriesModel>();
+
+        [ObservableProperty]
+        DataParameter dataParameter = DataParameter.Magnitude;
+
+        [ObservableProperty]
         bool back;
 
         bool stopAnalysis = false;
@@ -161,6 +167,7 @@ namespace MicroVue.ViewModels
                 //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(data)}");
                 SetupSource();
                 SetupVideo();
+                UpdateChartData();
             }
         }
 
@@ -169,6 +176,11 @@ namespace MicroVue.ViewModels
             IsRegionSelected = SelectedRegion != null;
             OnPropertyChanged(nameof(RegionX));
             OnPropertyChanged(nameof(RegionY));
+        }
+
+        partial void OnDataParameterChanged(DataParameter oldValue, DataParameter newValue)
+        {
+            UpdateChartData();
         }
 
         void SetupVideo(bool useImage = false)
@@ -205,6 +217,26 @@ namespace MicroVue.ViewModels
                 ms.Position = 0;
                 Image = ImageSource.FromStream(() => new MemoryStream(ms.ToArray()));
             }
+        }
+
+        public void UpdateChartData()
+        {
+            var data = new ObservableCollection<LineSeriesModel>();
+            if (Scene.Targets?.Count > 0)
+            {
+                foreach (var target in  Scene.Targets)
+                {
+                    if (target?.IsBackground == false)
+                    {
+                        data.Add(new LineSeriesModel
+                        {
+                            Name = target.Name,
+                            Points = new ObservableCollection<ChartDataPoint>(target.Track.RawPoints.Select(p => new ChartDataPoint { X = p.Frame, Y = p[DataParameter.ToString()] }))
+                        });
+                    }
+                }
+            }
+            ChartData = data;
         }
 
         partial void OnBackChanged(bool value)
@@ -304,6 +336,7 @@ namespace MicroVue.ViewModels
                     }
                     Scene.Targets = targets;
                     Scene.Save();
+                    UpdateChartData();
                     Debug.WriteLine($"[Debug]: done, frame count = {count}.");
                     Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(Scene.Targets[0].Track.RawPath, Formatting.Indented)}");
                 }
@@ -319,35 +352,6 @@ namespace MicroVue.ViewModels
                 }
             });
         }
-
-        [RelayCommand]
-        async Task Analyze2()
-        {
-            if (video == null || !video.IsValid || Scene.Regions.Count == 0) return;
-
-            try
-            {
-                Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {video.Length} frames.");
-                IsAnalizing = true;
-                stopAnalysis = false;
-                for (int i = 0; i< MediaLength; ++i)
-                {
-                    Progress = (double)i / MediaLength;
-                    await Task.Delay(100);
-                }
-                //Debug.WriteLine($"[Debug]: done, frame count = {count}.");
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"[Debug]: Error in analysis: {e}");
-            }
-            finally
-            {
-                IsAnalizing = false;
-                stopAnalysis = false;
-            }
-        }
-
 
         [RelayCommand]
         void Stop()
