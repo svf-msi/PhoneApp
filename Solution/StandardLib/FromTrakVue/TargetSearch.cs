@@ -441,6 +441,8 @@ namespace StandardLib
                         return X;
                     case nameof(Y):
                         return Y;
+                    case nameof(Magnitude):
+                        return (float)Magnitude;
                     case nameof(Angle):
                         return Angle;
                     default:
@@ -506,6 +508,8 @@ namespace StandardLib
     public enum ErrorType { Abs, Squares }
 
     public enum PointState { None, Reference, Manual, Auto }
+
+    public enum DataDirection { X, Y, Magnitude }
 
     #endregion
 }

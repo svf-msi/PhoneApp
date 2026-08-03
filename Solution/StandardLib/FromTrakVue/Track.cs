@@ -54,6 +54,9 @@ namespace StandardLib
             }
         }
 
+        [JsonIgnore]
+        public List<TrackPoint> RawPoints => RawPath?.Values?.OrderBy(p => p.Frame).ToList() ?? new List<TrackPoint>();
+
         Dictionary<int, TrackPoint> path;
         [JsonIgnore]
         public Dictionary<int, TrackPoint> Path { get => path ?? RawPath; set => path = value; }

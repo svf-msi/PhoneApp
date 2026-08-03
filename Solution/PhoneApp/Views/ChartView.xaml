@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
              x:DataType="vm:AnalysisViewModel"
              x:Class="MicroVue.Views.ChartView">
-    <VerticalStackLayout>
-        <Label 
-            Text="Chart view"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+    <Grid>
+        <lvc:CartesianChart Series="{Binding Charts}" 
+                            ZoomMode="Both" EasingFunction="{x:Null}"/>
+    </Grid>
 </ContentView>

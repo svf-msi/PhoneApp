@@ -12,6 +12,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
+using LiveChartsCore;
+using LiveChartsCore.Defaults;
+using LiveChartsCore.SkiaSharpView;
 
 namespace MicroVue.ViewModels
 {
@@ -139,6 +142,9 @@ namespace MicroVue.ViewModels
         bool isAnalizing;
 
         [ObservableProperty]
+        ISeries[] charts = new ISeries[] { };
+
+        [ObservableProperty]
         bool back;
 
         bool stopAnalysis = false;
@@ -160,7 +166,8 @@ namespace MicroVue.ViewModels
                 FrameRate = data[MetaType.FrameRate];
                 //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(data)}");
                 SetupSource();
-                SetupVideo();
+                SetupVideo(); 
+                UpdateChart();
             }
         }
 
@@ -204,6 +211,25 @@ namespace MicroVue.ViewModels
                 bitmap.Encode(ms, SKEncodedImageFormat.Png, 100);
                 ms.Position = 0;
                 Image = ImageSource.FromStream(() => new MemoryStream(ms.ToArray()));
+            }
+        }
+
+        void UpdateChart()
+        {
+            if (Scene?.Targets?.Count > 0)
+            {
+                var series = new List<ISeries>();
+                foreach (var target in Scene.Targets)
+                {
+                    if (target?.IsBackground == false && target.Track?.RawPath?.Count > 0)
+                    {
+                        var fps = FrameRate > 0 ? FrameRate : 1;
+                        var start = target.Track.RawPoints[0][DataDirection.Magnitude.ToString()];
+                        var values = target.Track.RawPoints.Select(p => new ObservablePoint(p.Frame / fps, p[DataDirection.Magnitude.ToString()] - start)).ToArray();
+                        series.Add(new LineSeries<ObservablePoint> { Values = values });
+                    }
+                }
+                Charts = series.ToArray();
             }
         }
 
@@ -304,6 +330,7 @@ namespace MicroVue.ViewModels
                     }
                     Scene.Targets = targets;
                     Scene.Save();
+                    UpdateChart();
                     Debug.WriteLine($"[Debug]: done, frame count = {count}.");
                     Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(Scene.Targets[0].Track.RawPath, Formatting.Indented)}");
                 }
@@ -319,35 +346,6 @@ namespace MicroVue.ViewModels
                 }
             });
         }
-
-        [RelayCommand]
-        async Task Analyze2()
-        {
-            if (video == null || !video.IsValid || Scene.Regions.Count == 0) return;
-
-            try
-            {
-                Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {video.Length} frames.");
-                IsAnalizing = true;
-                stopAnalysis = false;
-                for (int i = 0; i< MediaLength; ++i)
-                {
-                    Progress = (double)i / MediaLength;
-                    await Task.Delay(100);
-                }
-                //Debug.WriteLine($"[Debug]: done, frame count = {count}.");
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"[Debug]: Error in analysis: {e}");
-            }
-            finally
-            {
-                IsAnalizing = false;
-                stopAnalysis = false;
-            }
-        }
-
 
         [RelayCommand]
         void Stop()
