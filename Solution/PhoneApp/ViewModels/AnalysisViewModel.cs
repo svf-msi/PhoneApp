@@ -3,18 +3,22 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using LiveChartsCore;
+using LiveChartsCore.Defaults;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Maui;
+using LiveChartsCore.SkiaSharpView.Painting;
+using LiveChartsCore.SkiaSharpView.Painting.Effects;
 using MicroVue.Models;
 using Newtonsoft.Json;
 using SkiaSharp;
 using StandardLib;
+using Syncfusion.Maui.Toolkit.Charts;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
-using LiveChartsCore;
-using LiveChartsCore.Defaults;
-using LiveChartsCore.SkiaSharpView;
 
 namespace MicroVue.ViewModels
 {
@@ -145,6 +149,9 @@ namespace MicroVue.ViewModels
         ISeries[] charts = new ISeries[] { };
 
         [ObservableProperty]
+        LiveChartsCore.Measure.ZoomAndPanMode zoomMode = LiveChartsCore.Measure.ZoomAndPanMode.ZoomX;
+
+        [ObservableProperty]
         bool back;
 
         bool stopAnalysis = false;
@@ -226,7 +233,16 @@ namespace MicroVue.ViewModels
                         var fps = FrameRate > 0 ? FrameRate : 1;
                         var start = target.Track.RawPoints[0][DataDirection.Magnitude.ToString()];
                         var values = target.Track.RawPoints.Select(p => new ObservablePoint(p.Frame / fps, p[DataDirection.Magnitude.ToString()] - start)).ToArray();
-                        series.Add(new LineSeries<ObservablePoint> { Values = values });
+                        series.Add(new LineSeries<ObservablePoint> 
+                        { 
+                            Values = values,
+                            Stroke = new SolidColorPaint(Utilities.ConvertToSKColor(target.ColorText)) { StrokeThickness = 2 },
+                            Fill = null,
+                            GeometryFill = null,
+                            GeometryStroke = null,
+                            GeometrySize = 0,
+                            LineSmoothness = 0
+                        });
                     }
                 }
                 Charts = series.ToArray();

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 #if ANDROID
 using Android.Media;
+using SkiaSharp;
 #endif
 
 #if IOS
@@ -20,6 +21,7 @@ namespace MicroVue.Models
     public static class Utilities
     {
         public static MetaType[] MetaTypes = new MetaType[] { MetaType.FrameRate, MetaType.FrameCount, MetaType.VideoWidth, MetaType.VideoHeight, MetaType.VideoRotation, MetaType.Duration };
+        
         public static void GetMetadata(out Dictionary<MetaType, double> data, string file, IEnumerable<MetaType> parameters = null)
         {
             data = new Dictionary<MetaType, double>();
@@ -173,6 +175,28 @@ namespace MicroVue.Models
                     return new Rect(point.X - rect.Height / 2, point.Y - rect.Width / 2, rect.Height, rect.Width);
                 default: 
                     return new Rect(point.X - rect.Width / 2, point.Y - rect.Height / 2, rect.Width, rect.Height);
+            }
+        }
+
+        public static SkiaSharp.SKColor ConvertToSKColor(string colorText)
+        {
+            switch (colorText)
+            {
+                case "Red":
+                    return SkiaSharp.SKColors.Red;
+                case "Green":
+                    return SkiaSharp.SKColors.Green;
+                case "Blue":
+                    return SkiaSharp.SKColors.Blue;
+                case "Yellow":
+                    return SkiaSharp.SKColors.Yellow;
+                case "Teal":
+                    return SkiaSharp.SKColors.Teal;
+                case "Purple":
+                    return SkiaSharp.SKColors.Purple;
+                default:
+                    return SkiaSharp.SKColors.Black;
+
             }
         }
     }

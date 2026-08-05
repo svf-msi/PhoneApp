@@ -5,8 +5,60 @@
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
              x:DataType="vm:AnalysisViewModel"
              x:Class="MicroVue.Views.ChartView">
+
+    <ContentView.Resources>
+        <x:String x:Key="gray">#c3c3c3</x:String>
+        <x:String x:Key="gray1">#a0a0a0</x:String>
+        <x:String x:Key="gray2">#5a5a5a</x:String>
+        <x:String x:Key="gray3">#3c3c3c</x:String>
+    </ContentView.Resources>
+
     <Grid>
         <lvc:CartesianChart Series="{Binding Charts}" 
-                            ZoomMode="Both" EasingFunction="{x:Null}"/>
+                            ZoomMode="{Binding ZoomMode}">
+            <lvc:CartesianChart.XAxes>
+                <lvc:AxesCollection>
+                    <lvc:XamlAxis
+                    AxisName="Time(secs)"
+                    NamePaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray3}}"
+                    TextSize="18"
+                    LabelsPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray3}}"
+                    SeparatorsPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray2},
+                        StrokeWidth=1}"
+                    SubseparatorsPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray1},
+                        StrokeWidth=0.5}"
+                    SubseparatorsCount="9"
+                    TicksPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray2},
+                        StrokeWidth=1}"/>
+                </lvc:AxesCollection>
+            </lvc:CartesianChart.XAxes>
+
+            <lvc:CartesianChart.YAxes>
+                <lvc:AxesCollection>
+                    <lvc:XamlAxis
+                    AxisName="Displacement"
+                    NamePaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray3}}"
+                    TextSize="18"
+                    LabelsPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray3}}"
+                    SeparatorsPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray2},
+                        StrokeWidth=1}"
+                    SubseparatorsPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray1},
+                        StrokeWidth=0.5}"
+                    SubseparatorsCount="9"
+                    TicksPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray3},
+                        StrokeWidth=1}"/>
+                </lvc:AxesCollection>
+            </lvc:CartesianChart.YAxes>
+        </lvc:CartesianChart>
     </Grid>
 </ContentView>
