@@ -2,6 +2,7 @@
 using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -35,7 +36,7 @@ namespace StandardLib
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error in emgu fft: {e}");
+                Debug.WriteLine($"[Debug]: Error in emgu fft: {e}");
                 return null;
             }
             finally

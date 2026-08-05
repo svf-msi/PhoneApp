@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Views;
+﻿using Bumptech.Glide.Util;
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Emgu.CV;
@@ -146,6 +147,12 @@ namespace MicroVue.ViewModels
         bool isAnalizing;
 
         [ObservableProperty]
+        string axisXTitle = "Time(secs)";
+
+        [ObservableProperty]
+        string axisYTitle = "Displacement";
+
+        [ObservableProperty]
         ISeries[] charts = new ISeries[] { };
 
         [ObservableProperty]
@@ -161,16 +168,7 @@ namespace MicroVue.ViewModels
         bool isSpectrum = true;
 
         [ObservableProperty]
-        bool isWaveform = false;
-
-        [ObservableProperty]
-        bool direction_X = false;
-
-        [ObservableProperty]
-        bool direction_Y = false;
-
-        [ObservableProperty]
-        bool direction_Both = true;
+        DataDirection dataDirection = DataDirection.Magnitude;
 
         [ObservableProperty]
         bool back;
@@ -199,11 +197,21 @@ namespace MicroVue.ViewModels
             }
         }
 
-        partial void OnSelectedRegionChanged(MicroVue.Models.Region region)
+        partial void OnSelectedRegionChanged(Models.Region? oldRegion, Models.Region newRegion)
         {
             IsRegionSelected = SelectedRegion != null;
             OnPropertyChanged(nameof(RegionX));
             OnPropertyChanged(nameof(RegionY));
+        }
+
+        partial void OnIsSpectrumChanged(bool oldValue, bool newValue)
+        {
+            UpdateChart();
+        }
+
+        partial void OnDataDirectionChanged(DataDirection oldValue, DataDirection newValue)
+        {
+            UpdateChart();
         }
 
         void SetupVideo(bool useImage = false)
@@ -244,18 +252,38 @@ namespace MicroVue.ViewModels
 
         void UpdateChart()
         {
+            //Debug.WriteLine($"[Debug]: Update chart");
             if (Scene?.Targets?.Count > 0)
             {
+                var direction = DataDirection;
                 var series = new List<ISeries>();
                 foreach (var target in Scene.Targets)
                 {
                     if (target?.IsBackground == false && target.Track?.RawPath?.Count > 0)
                     {
                         var fps = FrameRate > 0 ? FrameRate : 1;
-                        var start = target.Track.RawPoints[0][DataDirection.Magnitude.ToString()];
-                        var values = target.Track.RawPoints.Select(p => new ObservablePoint(p.Frame / fps, p[DataDirection.Magnitude.ToString()] - start)).ToArray();
-                        series.Add(new LineSeries<ObservablePoint> 
-                        { 
+                        List<ObservablePoint> values = new List<ObservablePoint>();
+                        if (!IsSpectrum)
+                        {
+                            var start = target.Track.RawPoints[0][direction.ToString()];
+                            values = target.Track.RawPoints.Select(p => new ObservablePoint(p.Frame / fps, p[direction.ToString()] - start)).ToList();
+                        }
+                        else
+                        {
+                            var track = target.Track.RawPoints.Select(p => (double)p[direction.ToString()]).ToArray();
+                            var mean = track.Average();
+                            var waveform = track.Select(p => p - mean).ToArray();
+                            var spectrum = FftAnalysis.Emgu(waveform, WindowType.Hann);
+                            var span = spectrum.GetLength(1);
+                            //values.Add(new ObservablePoint(0, 0));
+                            for (int i = 5; i < span / 2; ++i)
+                            {
+                                var disp = FftAnalysis.Complex(spectrum, 0, 2 * i - 1);
+                                values.Add(new ObservablePoint(i * fps / span, disp.Magnitude));
+                            }
+                        }
+                        series.Add(new LineSeries<ObservablePoint>
+                        {
                             Values = values,
                             Stroke = new SolidColorPaint(Utilities.ConvertToSKColor(target.ColorText)) { StrokeThickness = 2 },
                             Fill = null,
@@ -266,6 +294,8 @@ namespace MicroVue.ViewModels
                         });
                     }
                 }
+                AxisXTitle = IsSpectrum ? "Frequency(Hz)" : "Time(secs)";
+                AxisYTitle = DataDirection == DataDirection.X ? "X displacement" : DataDirection == DataDirection.Y ? "Y displacement" : "Total displacement";
                 Charts = series.ToArray();
             }
         }

@@ -34,20 +34,20 @@
             <lvc:CartesianChart.XAxes>
                 <lvc:AxesCollection>
                     <lvc:XamlAxis
-                    AxisName="Time(secs)"
-                    NamePaint="{lvc:SolidColorPaint
+                        AxisName="{Binding AxisXTitle}"
+                        NamePaint="{lvc:SolidColorPaint
                         Color={StaticResource gray3}}"
-                    TextSize="18"
-                    LabelsPaint="{lvc:SolidColorPaint
+                        TextSize="18"
+                        LabelsPaint="{lvc:SolidColorPaint
                         Color={StaticResource gray3}}"
-                    SeparatorsPaint="{lvc:SolidColorPaint
+                        SeparatorsPaint="{lvc:SolidColorPaint
                         Color={StaticResource gray2},
                         StrokeWidth=1}"
-                    SubseparatorsPaint="{lvc:SolidColorPaint
+                        SubseparatorsPaint="{lvc:SolidColorPaint
                         Color={StaticResource gray1},
                         StrokeWidth=0.5}"
-                    SubseparatorsCount="9"
-                    TicksPaint="{lvc:SolidColorPaint
+                        SubseparatorsCount="9"
+                        TicksPaint="{lvc:SolidColorPaint
                         Color={StaticResource gray2},
                         StrokeWidth=1}"/>
                 </lvc:AxesCollection>
@@ -56,20 +56,20 @@
             <lvc:CartesianChart.YAxes>
                 <lvc:AxesCollection>
                     <lvc:XamlAxis
-                    AxisName="Displacement"
-                    NamePaint="{lvc:SolidColorPaint
+                        AxisName="{Binding AxisYTitle}"
+                        NamePaint="{lvc:SolidColorPaint
                         Color={StaticResource gray3}}"
-                    TextSize="18"
-                    LabelsPaint="{lvc:SolidColorPaint
+                        TextSize="18"
+                        LabelsPaint="{lvc:SolidColorPaint
                         Color={StaticResource gray3}}"
-                    SeparatorsPaint="{lvc:SolidColorPaint
+                        SeparatorsPaint="{lvc:SolidColorPaint
                         Color={StaticResource gray2},
                         StrokeWidth=1}"
-                    SubseparatorsPaint="{lvc:SolidColorPaint
+                        SubseparatorsPaint="{lvc:SolidColorPaint
                         Color={StaticResource gray1},
                         StrokeWidth=0.5}"
-                    SubseparatorsCount="9"
-                    TicksPaint="{lvc:SolidColorPaint
+                        SubseparatorsCount="9"
+                        TicksPaint="{lvc:SolidColorPaint
                         Color={StaticResource gray3},
                         StrokeWidth=1}"/>
                 </lvc:AxesCollection>
