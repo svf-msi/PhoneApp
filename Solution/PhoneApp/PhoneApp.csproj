@@ -134,6 +134,9 @@
 	  <MauiXaml Update="Views\ChartView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\Controls\ChartPanel.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\ImportPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

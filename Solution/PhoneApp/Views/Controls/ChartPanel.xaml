@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:f="clr-namespace:Fonts"
+             xmlns:m="clr-namespace:MicroVue.Models"
+             xmlns:vm="clr-namespace:MicroVue.ViewModels"
+             xmlns:v="clr-namespace:MicroVue.Views"
+             x:DataType="vm:AnalysisViewModel"
+             x:Name="chartPanel"
+             x:Class="MicroVue.Views.ChartPanel">
+
+    <ContentView.Resources>
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </ContentView.Resources>
+
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto, *" ColumnDefinitions="*">
+
+        <HorizontalStackLayout Grid.Row="0" Margin="5, 0">
+            <Label Text="Cahrt Type:" FontSize="18" FontAttributes="Bold" Margin="5, 0" VerticalOptions="Center"/>
+            <RadioButton Content="Frequency" IsChecked="{Binding IsSpectrum}" FontSize="18" Margin="5, 0"/>
+            <RadioButton Content="Time" IsChecked="{Binding IsWaveform}" FontSize="18" Margin="5, 0"/>
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout Grid.Row="1" Margin="5, 0">
+            <Label Text="Direction:" FontSize="18" FontAttributes="Bold" Margin="5, 0" VerticalOptions="Center"/>
+            <RadioButton Content="X" FontSize="18" IsChecked="{Binding Direction_X}" Margin="5, 0"/>
+            <RadioButton Content="Y" FontSize="18" IsChecked="{Binding Direction_Y}" Margin="5, 0"/>
+            <RadioButton Content="Both" FontSize="18" IsChecked="{Binding Direction_Both}" Margin="5, 0"/>
+        </HorizontalStackLayout>
+
+        <Button Grid.Row="2" Text="Select Peak Frequency" FontSize="18" TextColor="White" Margin="10"
+                IsVisible="{Binding IsSpectrum}"/>
+
+        <Label Grid.Row="3" Text="Selected frequencies:" FontSize="18" FontAttributes="Bold" Margin="10, 5" VerticalOptions="Center"
+               IsVisible="{Binding IsSpectrum}"/>
+
+    </Grid>
+    
+</ContentView>

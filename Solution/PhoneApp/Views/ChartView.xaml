@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
+             xmlns:v="clr-namespace:MicroVue.Views"
              x:DataType="vm:AnalysisViewModel"
              x:Class="MicroVue.Views.ChartView">
 
@@ -14,8 +15,22 @@
     </ContentView.Resources>
 
     <Grid>
-        <lvc:CartesianChart Series="{Binding Charts}" 
-                            ZoomMode="{Binding ZoomMode}">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!--Chart-->
+        <lvc:CartesianChart Grid.Row="0" Grid.Column="0"
+                            Series="{Binding Charts}" 
+                            ZoomMode="{Binding ZoomMode}"
+                            DrawMarginFrame="{Binding DrawMarginFrame}">
             <lvc:CartesianChart.XAxes>
                 <lvc:AxesCollection>
                     <lvc:XamlAxis
@@ -60,5 +75,17 @@
                 </lvc:AxesCollection>
             </lvc:CartesianChart.YAxes>
         </lvc:CartesianChart>
+
+        <!--Side panel-->
+        <v:ChartPanel Grid.Row="0" Grid.Column="1" x:Name="sidePanel" 
+                     HorizontalOptions="Fill" MinimumWidthRequest="250"
+                     IsVisible="False"  BindingContext="{Binding .}"/>
+
+        <!--Bottom panel-->
+        <v:ChartPanel Grid.Row="1" Grid.Column="0" x:Name="bottomPanel" 
+                     HorizontalOptions="Fill" MaximumHeightRequest="240"
+                     IsVisible="True"  BindingContext="{Binding .}"/>
+
+
     </Grid>
 </ContentView>

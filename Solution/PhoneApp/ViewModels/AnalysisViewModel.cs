@@ -151,6 +151,27 @@ namespace MicroVue.ViewModels
         [ObservableProperty]
         LiveChartsCore.Measure.ZoomAndPanMode zoomMode = LiveChartsCore.Measure.ZoomAndPanMode.ZoomX;
 
+        public DrawMarginFrame DrawMarginFrame => new()
+        {
+            Fill = null,
+            Stroke = new SolidColorPaint(SKColor.Parse("3c3c3c"), 1)
+        };
+
+        [ObservableProperty]
+        bool isSpectrum = true;
+
+        [ObservableProperty]
+        bool isWaveform = false;
+
+        [ObservableProperty]
+        bool direction_X = false;
+
+        [ObservableProperty]
+        bool direction_Y = false;
+
+        [ObservableProperty]
+        bool direction_Both = true;
+
         [ObservableProperty]
         bool back;
 
