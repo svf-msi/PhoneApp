@@ -1,13 +1,93 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
+             xmlns:v="clr-namespace:MicroVue.Views"
              x:DataType="vm:AnalysisViewModel"
              x:Class="MicroVue.Views.ChartView">
-    <VerticalStackLayout>
-        <Label 
-            Text="Chart view"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+
+    <ContentView.Resources>
+        <x:String x:Key="gray">#c3c3c3</x:String>
+        <x:String x:Key="gray1">#a0a0a0</x:String>
+        <x:String x:Key="gray2">#5a5a5a</x:String>
+        <x:String x:Key="gray3">#3c3c3c</x:String>
+    </ContentView.Resources>
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!--Chart-->
+        <lvc:CartesianChart Grid.Row="0" Grid.Column="0"
+                            Series="{Binding Lines}" 
+                            Sections="{Binding Sections}"
+                            ZoomMode="{Binding ZoomMode}"
+                            DrawMarginFrame="{Binding DrawMarginFrame}">
+            <lvc:CartesianChart.XAxes>
+                <lvc:AxesCollection>
+                    <lvc:XamlAxis PropertyChanged="XamlAxis_PropertyChanged"
+                        AxisName="{Binding AxisXTitle}"
+                        NamePaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray3}}"
+                        TextSize="18"
+                        LabelsPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray3}}"
+                        SeparatorsPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray2},
+                        StrokeWidth=1}"
+                        SubseparatorsPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray1},
+                        StrokeWidth=0.5}"
+                        SubseparatorsCount="9"
+                        TicksPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray2},
+                        StrokeWidth=1}"
+                        x:Name="xAxis"/>
+                </lvc:AxesCollection>
+            </lvc:CartesianChart.XAxes>
+
+            <lvc:CartesianChart.YAxes>
+                <lvc:AxesCollection>
+                    <lvc:XamlAxis
+                        AxisName="{Binding AxisYTitle}"
+                        NamePaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray3}}"
+                        TextSize="18"
+                        LabelsPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray3}}"
+                        SeparatorsPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray2},
+                        StrokeWidth=1}"
+                        SubseparatorsPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray1},
+                        StrokeWidth=0.5}"
+                        SubseparatorsCount="9"
+                        TicksPaint="{lvc:SolidColorPaint
+                        Color={StaticResource gray3},
+                        StrokeWidth=1}"/>
+                </lvc:AxesCollection>
+            </lvc:CartesianChart.YAxes>
+        </lvc:CartesianChart>
+
+        <!--Side panel-->
+        <v:ChartPanel Grid.Row="0" Grid.Column="1" x:Name="sidePanel" 
+                     HorizontalOptions="Fill" MinimumWidthRequest="250"
+                     IsVisible="False"  BindingContext="{Binding .}"/>
+
+        <!--Bottom panel-->
+        <v:ChartPanel Grid.Row="1" Grid.Column="0" x:Name="bottomPanel" 
+                     HorizontalOptions="Fill" MaximumHeightRequest="300"
+                     IsVisible="True"  BindingContext="{Binding .}"/>
+
+
+    </Grid>
 </ContentView>

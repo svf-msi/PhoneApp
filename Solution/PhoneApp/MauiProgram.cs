@@ -1,8 +1,10 @@
 ﻿using CommunityToolkit.Maui;
 using Emgu.CV;
+using LiveChartsCore.SkiaSharpView.Maui;
 using Microsoft.Extensions.Logging;
 using MicroVue.ViewModels;
 using MicroVue.Views;
+using SkiaSharp.Views.Maui.Controls.Hosting;
 using Syncfusion.Maui.Toolkit.Hosting;
 
 namespace MicroVue
@@ -40,6 +42,8 @@ namespace MicroVue
                 {
                     handlers.AddHandler<MicroVue.Views.CameraPreview, MicroVue.Handlers.CameraPreviewHandler>();
                 })
+                .UseSkiaSharp()
+                .UseLiveCharts()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

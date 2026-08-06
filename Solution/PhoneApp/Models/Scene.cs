@@ -5,11 +5,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
+using StandardLib;
 
 namespace MicroVue.Models
 {
     public partial class Scene : ObservableObject
     {
+        #region Static section
         public static Scene Read(string file)
         {
             if (!File.Exists(file)) return null;
@@ -34,6 +36,10 @@ namespace MicroVue.Models
             }
         }
 
+        #endregion
+
+        #region Fields and Properties
+
         [ObservableProperty]
         string fileName = "";
 
@@ -49,6 +55,14 @@ namespace MicroVue.Models
         [ObservableProperty]
         ObservableCollection<Region> regions = new ObservableCollection<Region>();
 
+        [ObservableProperty]
+        ObservableCollection<Target> targets = new ObservableCollection<Target>();
+
+        [ObservableProperty]
+        ObservableCollection<Foi> fois = new ObservableCollection<Foi>();
+
+        #endregion
+
         public void RefreshRegions()
         {
             //Debug.WriteLine($"[Debug]: --- Reresh regions");
@@ -57,6 +71,20 @@ namespace MicroVue.Models
                 var region = Regions[0];
                 Regions.RemoveAt(0);
                 Regions.Add(region);
+            }
+        }
+
+        public void RefreshTargets(int currentFrame)
+        {
+            if (Targets?.Count > 0)
+            {
+                foreach (var target in Targets)
+                {
+                    if (target != null)
+                    {
+                        target.CurrentFrame = currentFrame;
+                    }
+                }
             }
         }
 

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:f="clr-namespace:Fonts"
+             xmlns:lib="clr-namespace:StandardLib;assembly=StandardLib"
+             xmlns:m="clr-namespace:MicroVue.Models"
+             xmlns:vm="clr-namespace:MicroVue.ViewModels"
+             xmlns:v="clr-namespace:MicroVue.Views"
+             x:DataType="vm:AnalysisViewModel"
+             x:Name="chartPanel"
+             x:Class="MicroVue.Views.ChartPanel">
+
+    <ContentView.Resources>
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+        <v:DirectionToBooleanConverter x:Key="DirectionToBooleanConverter"/>
+    </ContentView.Resources>
+
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto, *" ColumnDefinitions="*">
+
+        <HorizontalStackLayout Grid.Row="0" Margin="5, 0, 5, -5">
+            <Label Text="Chart type:" FontSize="18" FontAttributes="Bold" Margin="5, 0" VerticalOptions="Center"/>
+            <RadioButton Content="Frequency" IsChecked="{Binding IsSpectrum}" FontSize="18" Margin="5, 0"/>
+            <RadioButton Content="Time" IsChecked="{Binding IsSpectrum, Converter={StaticResource InvertedBoolConverter}}" FontSize="18" Margin="5, 0"/>
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout Grid.Row="1" Margin="5, 0">
+            <Label Text="Direction:" FontSize="18" FontAttributes="Bold" Margin="5, 0" VerticalOptions="Center"/>
+            <RadioButton Content="X" FontSize="18" IsChecked="{Binding DataDirection, Converter={StaticResource DirectionToBooleanConverter}, ConverterParameter={x:Static lib:DataDirection.X}}" Margin="5, 0"/>
+            <RadioButton Content="Y" FontSize="18" IsChecked="{Binding DataDirection, Converter={StaticResource DirectionToBooleanConverter}, ConverterParameter={x:Static lib:DataDirection.Y}}" Margin="5, 0"/>
+            <RadioButton Content="Both" FontSize="18" IsChecked="{Binding DataDirection, Converter={StaticResource DirectionToBooleanConverter}, ConverterParameter={x:Static lib:DataDirection.Magnitude}}" Margin="5, 0"/>
+        </HorizontalStackLayout>
+
+        <Button Grid.Row="2" Text="Select Peak Frequency" FontSize="18" TextColor="White" Margin="10"
+                Command="{Binding SelectPeakFrequencyCommand}" IsVisible="{Binding IsSpectrum}"/>
+
+        <Label Grid.Row="3" Text="Selected frequencies:" FontSize="18" FontAttributes="Bold" Margin="10, 5" VerticalOptions="Center"
+               IsVisible="{Binding IsSpectrum}"/>
+
+        <ScrollView Grid.Row="4" Margin="5" IsVisible="{Binding IsSpectrum}">
+
+            <CollectionView ItemsSource="{Binding Scene.Fois}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="m:Foi">
+                        <Border StrokeThickness="1" Stroke="Gray" Margin="10, 1" Padding="5">
+                            <Grid ColumnDefinitions="Auto, Auto">
+                                <Label Grid.Column="0" Text="{Binding Name}" VerticalOptions="Center" Margin="5"/>
+                                <Label Grid.Column="1" Text="{Binding Frequency, StringFormat='{0:N2} Hz'}" VerticalOptions="Center" Margin="5"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </ScrollView>
+
+    </Grid>
+    
+</ContentView>

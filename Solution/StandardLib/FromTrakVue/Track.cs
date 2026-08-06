@@ -44,7 +44,7 @@ namespace StandardLib
         [JsonIgnore]
         public PointState CurrentState { get => CurrentPoint?.State ?? PointState.None; set { if (CurrentPoint != null) CurrentPoint.State = value; } }
 
-        Dictionary<int, TrackPoint> rawPath;
+        Dictionary<int, TrackPoint> rawPath = new Dictionary<int, TrackPoint>();
         public Dictionary<int, TrackPoint> RawPath
         {
             get => rawPath;
@@ -53,6 +53,9 @@ namespace StandardLib
                 rawPath = value;
             }
         }
+
+        [JsonIgnore]
+        public List<TrackPoint> RawPoints => RawPath?.Values?.OrderBy(p => p.Frame).ToList() ?? new List<TrackPoint>();
 
         Dictionary<int, TrackPoint> path;
         [JsonIgnore]

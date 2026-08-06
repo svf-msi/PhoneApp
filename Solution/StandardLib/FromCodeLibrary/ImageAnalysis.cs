@@ -631,9 +631,9 @@ namespace StandardLib
                 video.Transforms = backgroundAnalysis.TransformPoins;
         }
 
-        public static void AnalyzeFrame(int frame, Video_MP4 video, IEnumerable<Target> targets)
+        public static void StartFrame(Image<Gray, byte> image, IEnumerable<Target> targets, int frame = 0)
         {
-            var grayImage = video?.GetRgbImage(frame)?.Convert<Gray, float>();
+            Image<Gray, float> grayImage = image?.Convert<Gray, float>();
             if (grayImage?.Data == null) return;
 
             foreach (var target in targets)
@@ -641,31 +641,51 @@ namespace StandardLib
                 if (target.IsTracked)
                 {
                     //Console.WriteLine($"Analyze frame {frame} for {target?.Text}");
-                    TrackTarget(target, frame, grayImage);
+                    TrackingAnalysis.FindGradientPoints(target, grayImage);
+                    target.Track.RawPath[frame] = target.Reference.TrackPoint;
+                    //target.Track.RawPath[frame] = new TrackPoint()
+                    //{
+                    //    Frame = frame,
+                    //    ReferenceFrame = frame,
+                    //    State = PointState.Reference
+                    //};
                 }
             }
         }
 
-        public static void TrackTarget<T>(Target target, int frame, Image<T, float> image, Func<int, Image<T, float>> getFrameImage = null) where T : struct, IColor
+        public static bool AnalyzeFrame(int frame, Image<Gray, byte> image, IEnumerable<Target> targets)
         {
-            if (typeof(T) != typeof(Rgb) && typeof(T) != typeof(Gray)) return;
-            if (target?.Track?.RawPath == null || target.Track.RawPath.ContainsKey(frame) || target.EndFrame >= frame) return;
+            Image<Gray, float> grayImage = image?.Convert<Gray, float>();
+            if (grayImage?.Data == null) return false;
 
-            target.UpdateReference(frame);
-            target.IsLocked = true;
-            var found = TrackingAnalysis.FindGradientPoints(target, getFrameImage);
-            if (!found) return;
-            //Console.WriteLine($"Check: {frame}, {target.GrayReference}, {target.RgbReference}");
+            var status = false;
+            foreach (var target in targets)
+            {
+                if (target.IsTracked)
+                {
+                    status = TrackTarget(target, frame, grayImage) || status;
+                }
+            }
+            return status;
+        }
+
+        public static bool TrackTarget<T>(Target target, int frame, Image<T, float> image) where T : struct, IColor
+        {
+            if (typeof(T) != typeof(Rgb) && typeof(T) != typeof(Gray)) return false;
+            if (target?.Track?.RawPath == null || target.Track.RawPath.ContainsKey(frame) || target.EndFrame >= frame) return false;
+            if (!target.HasGoodGradientPoints) return false;
+
+            Debug.WriteLine($"[Debug]: Check {target.Name}, {frame}, {target.GrayReference}, {target.RgbReference}");
 
             var rgbImage = image as Image<Rgb, float>;
             var grayImage = image as Image<Gray, float>;
-            if (rgbImage == null && grayImage == null) return;
+            if (rgbImage == null && grayImage == null) return false;
 
             var track = target.Track;
             var roundReference = target.RoundReference;
             var referenceOffset = target.ReferenceOffset;
             var nextPoint = frame == target.PrimaryReferenceFrame ? target.Reference.TrackPoint : ProjectNextPoint(track, frame);
-            //Console.WriteLine($"Projected point for {target.Text}: {frame}, {Utils.ToString(nextPoint)}");
+            Debug.WriteLine($"[Debug]: Projected point for {target.Name}: {frame}, {Utils.ToString(nextPoint)}");
             if (nextPoint != null)
             {
                 nextPoint.ReferenceFrame = target.Reference.FrameNumber;
@@ -675,6 +695,7 @@ namespace StandardLib
                 if (search.IsValid)
                 {
                     var position = search.Find();
+                    Debug.WriteLine($"[Debug]: target found = {search.NotFound}");
                     if (search.NotFound)
                     {
                         target.IsTracked = false;
@@ -683,15 +704,10 @@ namespace StandardLib
                     {
                         var errorLearningRate = 0.2;
                         target.ReferenceError = target.ReferenceError * (1 - errorLearningRate) + errorLearningRate * search.ErrorThreshold;
-                        //Console.WriteLine($"Global position for {target.Text}: {frame}, {Utils.ToString(position)}");
                         var rectangle = Rectangle.Round(roundReference.Rectangle);
                         var referencePosition = roundReference.Position;
                         var globalShift = new Point { X = (int)Math.Round(position.X - referencePosition.X), Y = (int)Math.Round(position.Y - referencePosition.Y) };
-                        //Console.WriteLine($"global shift for {frame}: {globalShift}");
                         rectangle.Offset(globalShift);
-                        //var gray = rgbImage.Convert<Gray, float>();
-                        //var normFactor = ImageAnalysis.FindMaximum(rgbImage, rectangle);
-                        //var scale = ImageAnalysis.FindMaximum(gray, rectangle);
                         var x = 0.0; var y = 0.0;
                         if (rgbImage != null)
                         {
@@ -703,16 +719,15 @@ namespace StandardLib
                             var pattern = ImageAnalysis.PreparePattern(rectangle, grayImage);
                             (x, y) = TrackingAnalysis.CalculateShift(pattern, target.GradientPoints);
                         }
-                        //var shift = CalculateShift(gray, target);
-                        //Console.WriteLine($"local shift for {frame}: {localShift}");
                         nextPoint.X = (float)Math.Round(position.X + x + referenceOffset.X, 3);
                         nextPoint.Y = (float)Math.Round(position.Y + y + referenceOffset.Y, 3);
                         track.RawPath[frame] = nextPoint;
                         target.EndFrame = Math.Max(target.EndFrame, frame);
-                        //Console.WriteLine($"Next point for {target.Text}: {frame}, {nextPoint}");
+                        return true;
                     }
                 }
             }
+            return false;
         }
 
         static TrackPoint ProjectNextPoint(Track track, int frame)

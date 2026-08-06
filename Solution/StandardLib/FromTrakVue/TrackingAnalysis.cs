@@ -141,5 +141,39 @@ namespace StandardLib
             }
             return target.GradientPoints?.Count > 2;
         }
+
+        public static bool FindGradientPoints<T>(Target target, Image<T, float> image) where T : struct, IColor
+        {
+            if (typeof(T) != typeof(Gray) && typeof(T) != typeof(Rgb)) return false;
+            if (target.Reference == null || image == null) return false;
+            if ((typeof(T) == typeof(Rgb) && target.RgbReference != null) ||
+                (typeof(T) == typeof(Gray) && target.GrayReference != null)) return true;
+
+            var referenceRegion = System.Drawing.Rectangle.Round(target.RoundReference.Rectangle);
+            TargetSearch search = null;
+            if (typeof(T) == typeof(Rgb))
+            {
+                target.RgbReference = ImageAnalysis.PreparePattern(referenceRegion, image) as Image<Rgb, float>;
+                target.GrayReference = target.RgbReference?.Convert<Gray, float>();
+                target.GradientPoints = ImageAnalysis.PrepareGradients(target.RgbReference);
+                search = TargetSearch.Make(image as Image<Rgb, float>, target.RgbReference, target.RoundReference);
+            }
+            else if (typeof(T) == typeof(Gray))
+            {
+                target.GrayReference = ImageAnalysis.PreparePattern(referenceRegion, image) as Image<Gray, float>;
+                target.GradientPoints = ImageAnalysis.PrepareGradients(target.GrayReference);
+                search = TargetSearch.Make(image as Image<Gray, float>, target.GrayReference, target.RoundReference);
+            }
+
+            if (search?.IsValid == true)
+            {
+                search.Find();
+                if (target.ReferenceError == 0)
+                {
+                    target.ReferenceError = search.ErrorThreshold;
+                }
+            }
+            return target.HasGoodGradientPoints;
+        }
     }
 }

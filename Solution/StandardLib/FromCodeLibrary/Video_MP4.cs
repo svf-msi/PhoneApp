@@ -1,14 +1,17 @@
 ﻿using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Reg;
 using Emgu.CV.Structure;
 using Newtonsoft.Json;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace StandardLib
 {
@@ -46,17 +49,97 @@ namespace StandardLib
         {
             if (!File.Exists(Path))
             {
-                Console.WriteLine($"File {Path} does not exists.");
+                Debug.WriteLine($"[Debug]: File {Path} does not exists.");
                 return;
             }
 
             Dispose();
             videoCapture = new VideoCapture(Path);
             Length = (int)videoCapture.Get(Emgu.CV.CvEnum.CapProp.FrameCount);
-            FPS = videoCapture.Get(Emgu.CV.CvEnum.CapProp.Fps);
-            //TimeInterval = (decimal)(1 / FPS);
             SetSize();
             IsValid = true;
+        }
+
+        public void Count()
+        {
+            var count = 0;
+            while (ReadFrameMat(out Mat image))
+            {
+                ++count;
+                image.Dispose();
+            }
+            Length = count;
+        }
+
+        public void Reset()
+        {
+            videoCapture?.Dispose();
+            videoCapture = new VideoCapture(Path);
+        }
+
+        public bool ReadFrameMat(out Mat image)
+        {
+            image = new Mat();
+            try
+            {
+                return videoCapture?.Read(image) ?? false;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Error in reading frame: {e}");
+                return false;
+            }
+        }
+        public bool ReadFrameMatWithTimeout(out Mat image, int timeout = 2000)
+        {
+            image = null;
+            if (videoCapture == null) return false;
+
+            var im = new Mat();
+            try
+            {
+                var success = false;
+                var main = Task.Run(() =>
+                {
+                    im = new Mat();
+                    success = videoCapture.Read(im);
+                });
+                var timer = Task.Delay(timeout);
+
+                Task.WaitAny(main, timer);
+
+                if (success)
+                {
+                    image = im; return true;
+                }
+                return false;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Error in reading frame: {e}");
+                return false;
+            }
+        }
+
+        public bool ReadFrame(out Image<Gray, byte> image)
+        {
+            image = null;
+            try
+            {
+                if (ReadFrameMatWithTimeout(out Mat mat))
+                {
+                    Mat grayMat = new Mat();
+                    CvInvoke.CvtColor(mat, grayMat, Emgu.CV.CvEnum.ColorConversion.Bgr2Gray);
+                    image = grayMat.ToImage<Gray, byte>();
+                    return true;
+                }
+                else return false;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Error in reading frame: {e}");
+                return false;
+            }
         }
 
         void SetImage(int i)

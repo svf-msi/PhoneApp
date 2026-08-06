@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using StandardLib;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -46,6 +47,29 @@ namespace MicroVue.Models
             Y = y;
             IsBackgound = isBackgound;
             ColorText = colorText;
+        }
+
+        public Target ToTarget(int frame = 0)
+        {
+            return new Target
+            {
+                Name = Name,
+                ColorText = ColorText,
+                Reference = ToTrackRegion(frame)
+            };
+        }
+
+        public TrackRegion ToTrackRegion(int frame = 0)
+        {
+            return new TrackRegion
+            {
+                Name = Name,
+                FrameNumber = frame,
+                X = (float)X,
+                Y = (float)Y,
+                Width = (float)Size,
+                Height = (float)Size
+            };
         }
 
         void SetRect()
