@@ -28,12 +28,13 @@
 
         <!--Chart-->
         <lvc:CartesianChart Grid.Row="0" Grid.Column="0"
-                            Series="{Binding Charts}" 
+                            Series="{Binding Lines}" 
+                            Sections="{Binding Sections}"
                             ZoomMode="{Binding ZoomMode}"
                             DrawMarginFrame="{Binding DrawMarginFrame}">
             <lvc:CartesianChart.XAxes>
                 <lvc:AxesCollection>
-                    <lvc:XamlAxis
+                    <lvc:XamlAxis PropertyChanged="XamlAxis_PropertyChanged"
                         AxisName="{Binding AxisXTitle}"
                         NamePaint="{lvc:SolidColorPaint
                         Color={StaticResource gray3}}"
@@ -49,7 +50,8 @@
                         SubseparatorsCount="9"
                         TicksPaint="{lvc:SolidColorPaint
                         Color={StaticResource gray2},
-                        StrokeWidth=1}"/>
+                        StrokeWidth=1}"
+                        x:Name="xAxis"/>
                 </lvc:AxesCollection>
             </lvc:CartesianChart.XAxes>
 
@@ -83,7 +85,7 @@
 
         <!--Bottom panel-->
         <v:ChartPanel Grid.Row="1" Grid.Column="0" x:Name="bottomPanel" 
-                     HorizontalOptions="Fill" MaximumHeightRequest="240"
+                     HorizontalOptions="Fill" MaximumHeightRequest="300"
                      IsVisible="True"  BindingContext="{Binding .}"/>
 
 

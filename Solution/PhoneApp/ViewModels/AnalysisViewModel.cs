@@ -153,10 +153,19 @@ namespace MicroVue.ViewModels
         string axisYTitle = "Displacement";
 
         [ObservableProperty]
-        ISeries[] charts = new ISeries[] { };
+        double minX;
 
         [ObservableProperty]
-        LiveChartsCore.Measure.ZoomAndPanMode zoomMode = LiveChartsCore.Measure.ZoomAndPanMode.ZoomX;
+        double maxX;
+
+        [ObservableProperty]
+        ISeries[] lines = new ISeries[] { };
+
+        [ObservableProperty]
+        SectionsCollection sections = new SectionsCollection();
+
+        [ObservableProperty]
+        LiveChartsCore.Measure.ZoomAndPanMode zoomMode = LiveChartsCore.Measure.ZoomAndPanMode.X;
 
         public DrawMarginFrame DrawMarginFrame => new()
         {
@@ -176,6 +185,7 @@ namespace MicroVue.ViewModels
         bool stopAnalysis = false;
 
         Video_MP4 video;
+        double binSize = 1;
 
         partial void OnSceneItemChanged(SceneItem sceneItem)
         {
@@ -257,6 +267,7 @@ namespace MicroVue.ViewModels
             {
                 var direction = DataDirection;
                 var series = new List<ISeries>();
+                MinX = MaxX = 0;
                 foreach (var target in Scene.Targets)
                 {
                     if (target?.IsBackground == false && target.Track?.RawPath?.Count > 0)
@@ -275,12 +286,16 @@ namespace MicroVue.ViewModels
                             var waveform = track.Select(p => p - mean).ToArray();
                             var spectrum = FftAnalysis.Emgu(waveform, WindowType.Hann);
                             var span = spectrum.GetLength(1);
+                            binSize = fps / span;
                             //values.Add(new ObservablePoint(0, 0));
                             for (int i = 5; i < span / 2; ++i)
                             {
                                 var disp = FftAnalysis.Complex(spectrum, 0, 2 * i - 1);
                                 values.Add(new ObservablePoint(i * fps / span, disp.Magnitude));
                             }
+
+                            MinX = 0;
+                            MaxX = fps / 2;
                         }
                         series.Add(new LineSeries<ObservablePoint>
                         {
@@ -296,7 +311,32 @@ namespace MicroVue.ViewModels
                 }
                 AxisXTitle = IsSpectrum ? "Frequency(Hz)" : "Time(secs)";
                 AxisYTitle = DataDirection == DataDirection.X ? "X displacement" : DataDirection == DataDirection.Y ? "Y displacement" : "Total displacement";
-                Charts = series.ToArray();
+                Lines = series.ToArray();
+                UpdateSections();
+            }
+        }
+
+        void UpdateSections()
+        {
+            var foiCollection = new SectionsCollection();
+            if (Scene?.Fois?.Count > 0)
+            {
+                foreach (var foi in Scene.Fois)
+                {
+                    foiCollection.Add(new XamlRectangularSection { Xi = foi.Frequency - binSize, Xj = foi.Frequency + binSize, Fill = new SolidColorPaint(SKColors.DarkMagenta) });
+                }
+            }
+            Sections = foiCollection;
+        }
+
+        void AddFoi(double frequency)
+        {
+            if (Scene != null)
+            {
+                if (Scene.Fois == null) Scene.Fois = new ObservableCollection<Foi>();
+                var id = Scene.Fois.Count == 0 ? 1 : Scene.Fois.Last().Id + 1;
+                var foi = new Foi { Id = id, Name = $"FOI {id}", Frequency = frequency };
+                Scene.Fois.Add(foi);
             }
         }
 
@@ -412,6 +452,30 @@ namespace MicroVue.ViewModels
                     Progress = 0;
                 }
             });
+        }
+
+        [RelayCommand]
+        void SelectPeakFrequency()
+        {
+            if (IsSpectrum && Lines?.Length > 0)
+            {
+                var peak = 0.0;
+                var peakFrequency = 0.0;
+                foreach (var chart in Lines)
+                {
+                    foreach (var value in chart.Values)
+                    {
+                        if (value is ObservablePoint point && point.X >= MinX && point.X <= MaxX && point.Y > peak)
+                        {
+                            peak = point.Y ?? 0;
+                            peakFrequency = point.X ?? 0;
+                        }
+                    }
+                }
+                AddFoi(peakFrequency);
+                UpdateSections();
+                Scene.Save();
+            }
         }
 
         [RelayCommand]

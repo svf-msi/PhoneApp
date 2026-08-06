@@ -11,6 +11,7 @@ namespace MicroVue.Models
 {
     public partial class Scene : ObservableObject
     {
+        #region Static section
         public static Scene Read(string file)
         {
             if (!File.Exists(file)) return null;
@@ -35,6 +36,10 @@ namespace MicroVue.Models
             }
         }
 
+        #endregion
+
+        #region Fields and Properties
+
         [ObservableProperty]
         string fileName = "";
 
@@ -52,6 +57,11 @@ namespace MicroVue.Models
 
         [ObservableProperty]
         ObservableCollection<Target> targets = new ObservableCollection<Target>();
+
+        [ObservableProperty]
+        ObservableCollection<Foi> fois = new ObservableCollection<Foi>();
+
+        #endregion
 
         public void RefreshRegions()
         {
