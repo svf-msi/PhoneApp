@@ -1,5 +1,4 @@
-﻿using Bumptech.Glide.Util;
-using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Emgu.CV;
@@ -26,35 +25,9 @@ namespace MicroVue.ViewModels
     [QueryProperty(nameof(SceneItem), "SceneItem")]
     public partial class AnalysisViewModel : ObservableObject
     {
-        [ObservableProperty]
-        List<string> targetColors = new List<string> { "Red", "Green", "Blue", "Yellow", "Teal", "Purple" };
+        #region Fields and Properties
 
-        [ObservableProperty]
-        SceneItem sceneItem = new SceneItem();
-
-        [ObservableProperty]
-        Scene scene;
-
-        [ObservableProperty]
-        string sceneName;
-
-        [ObservableProperty]
-        string videoPath;
-
-        [ObservableProperty]
-        private ObservableCollection<string> speeds = new() { "x1", "x2", "x10" };
-
-        [ObservableProperty]
-        private int selectedSpeedIndex = 0;
-
-        [ObservableProperty]
-        Models.Region selectedRegion;
-
-        [ObservableProperty]
-        bool isRegionSelected;
-
-        [ObservableProperty]
-        bool isPlaying = false;
+        #region Main
 
         [ObservableProperty]
         bool onMainView = true;
@@ -66,13 +39,61 @@ namespace MicroVue.ViewModels
         bool onVideoView;
 
         [ObservableProperty]
+        bool back;
+        partial void OnBackChanged(bool value)
+        {
+            if (value) _ = GoBack();
+        }
+
+        #endregion
+
+        #region Scene-related
+
+        [ObservableProperty]
+        SceneItem sceneItem = new SceneItem();
+        partial void OnSceneItemChanged(SceneItem sceneItem)
+        {
+            if (sceneItem != null)
+            {
+                SceneName = sceneItem.Name;
+                var scenePath = sceneItem.ItemPath;
+                Scene = Scene.Read(scenePath);
+                if (Scene == null) return;
+                VideoPath = Scene.VideoName;
+                Utilities.GetMetadata(out var data, VideoPath);
+                MediaRotation = (int)data[MetaType.VideoRotation];
+                MediaLength = (int)data[MetaType.FrameCount];
+                FrameRate = data[MetaType.FrameRate];
+                //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(data)}");
+                SetupSource();
+                SetupVideo();
+                UpdateChart();
+            }
+        }
+
+        [ObservableProperty]
+        Scene scene;
+
+        [ObservableProperty]
+        string sceneName;
+
+        #endregion
+
+        #region Video-related
+
+        Video_MP4 video;
+
+        [ObservableProperty]
         ImageSource image;
 
         [ObservableProperty]
-        MediaSource source;
+        string videoPath;
 
         [ObservableProperty]
-        double defaultSize = 100;
+        int videoWidth;
+
+        [ObservableProperty]
+        int videoHeight;
 
         [ObservableProperty]
         int mediaWidth;
@@ -83,13 +104,30 @@ namespace MicroVue.ViewModels
         [ObservableProperty]
         int mediaRotation;
 
+        public bool IsFlipped => MediaRotation == 90 || MediaRotation == -90;
+
         [ObservableProperty]
         int mediaLength;
 
         [ObservableProperty]
         double frameRate;
 
-        public bool IsFlipped => MediaRotation == 90 || MediaRotation == -90;
+        [ObservableProperty]
+        bool isRotated;
+
+        #region Player-related
+
+        [ObservableProperty]
+        MediaSource source;
+
+        [ObservableProperty]
+        bool isPlaying = false;
+
+        [ObservableProperty]
+        private ObservableCollection<string> speeds = new() { "x1", "x2", "x10" };
+
+        [ObservableProperty]
+        private int selectedSpeedIndex = 0;
 
         [ObservableProperty]
         double playerWidth;
@@ -101,20 +139,77 @@ namespace MicroVue.ViewModels
         double playerScale;
 
         [ObservableProperty]
-        int videoWidth;
+        int currentFrame = 0;
+
+        #endregion
+
+        #endregion
+
+        #region Target-related
 
         [ObservableProperty]
-        int videoHeight;
+        List<string> targetColors = new List<string> { "Red", "Green", "Blue", "Yellow", "Teal", "Purple" };
+
+        [ObservableProperty]
+        double defaultSize = 100;
+
+        [ObservableProperty]
+        Models.Region selectedRegion;
+        partial void OnSelectedRegionChanged(Models.Region? oldRegion, Models.Region newRegion)
+        {
+            IsRegionSelected = SelectedRegion != null;
+            OnPropertyChanged(nameof(RegionX));
+            OnPropertyChanged(nameof(RegionY));
+        }
+
+        [ObservableProperty]
+        bool isRegionSelected;
 
         public double RegionX
         {
-            get => IsFlipped ? SelectedRegion?.Y ?? 0 : SelectedRegion?.X ?? 0;
+            get
+            {
+                if (SelectedRegion != null)
+                {
+                    switch (MediaRotation)
+                    {
+                        case -90:
+                        case 270:
+                            return SelectedRegion.Y;
+                        case -180:
+                        case 180:
+                            return MediaWidth - SelectedRegion.X;
+                        case -270:
+                        case 90:
+                            return MediaWidth - SelectedRegion.Y;
+                        default:
+                            return SelectedRegion.X;
+                    }
+                }
+                return 0;
+            }
             set
             {
                 if (SelectedRegion != null)
                 {
-                    if (IsFlipped) SelectedRegion.Y = value;
-                    else SelectedRegion.X = value;
+                    switch (MediaRotation)
+                    {
+                        case -90:
+                        case 270:
+                            SelectedRegion.Y = value;
+                            break;
+                        case -180:
+                        case 180:
+                            SelectedRegion.X = MediaWidth - value;
+                            break;
+                        case -270:
+                        case 90:
+                            SelectedRegion.Y = MediaWidth - value;
+                            break;
+                        default:
+                            SelectedRegion.X = value;
+                            break;
+                    }
                 }
                 OnPropertyChanged();
             }
@@ -122,29 +217,69 @@ namespace MicroVue.ViewModels
 
         public double RegionY
         {
-            get => IsFlipped ? SelectedRegion?.X ?? 0 : SelectedRegion?.Y ?? 0;
+            get
+            {
+                if (SelectedRegion != null)
+                {
+                    switch (MediaRotation)
+                    {
+                        case -90:
+                        case 270:
+                            return MediaHeight - SelectedRegion.X;
+                        case -180:
+                        case 180:
+                            return MediaHeight - SelectedRegion.Y;
+                        case -270:
+                        case 90:
+                            return SelectedRegion.X;
+                        default:
+                            return SelectedRegion.Y;
+                    }
+                }
+                return 0;
+            }
             set
             {
                 if (SelectedRegion != null)
                 {
-                    if (IsFlipped) SelectedRegion.X = value;
-                    else SelectedRegion.Y = value;
+                    switch (MediaRotation)
+                    {
+                        case -90:
+                        case 270:
+                            SelectedRegion.X = MediaHeight - value;
+                            break;
+                        case -180:
+                        case 180:
+                            SelectedRegion.Y = MediaHeight - value;
+                            break;
+                        case -270:
+                        case 90:
+                            SelectedRegion.X = value;
+                            break;
+                        default:
+                            SelectedRegion.Y = value;
+                            break;
+                    }
                 }
                 OnPropertyChanged();
             }
         }
 
-        [ObservableProperty]
-        double progress;
+        #endregion
 
-        [ObservableProperty]
-        int currentFrame = 0;
-
-        [ObservableProperty]
-        bool isRotated;
+        #region Analysis-related
 
         [ObservableProperty]
         bool isAnalizing;
+
+        [ObservableProperty]
+        double progress;
+
+        bool stopAnalysis = false;
+
+        #endregion
+
+        #region Chart-related
 
         [ObservableProperty]
         string axisXTitle = "Time(secs)";
@@ -175,54 +310,25 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         bool isSpectrum = true;
-
-        [ObservableProperty]
-        DataDirection dataDirection = DataDirection.Magnitude;
-
-        [ObservableProperty]
-        bool back;
-
-        bool stopAnalysis = false;
-
-        Video_MP4 video;
-        double binSize = 1;
-
-        partial void OnSceneItemChanged(SceneItem sceneItem)
-        {
-            if (sceneItem != null)
-            {
-                SceneName = sceneItem.Name;
-                var scenePath = sceneItem.ItemPath;
-                Scene = Scene.Read(scenePath);
-                if (Scene == null) return;
-                VideoPath = Scene.VideoName;
-                Utilities.GetMetadata(out var data, VideoPath);
-                MediaRotation = (int)data[MetaType.VideoRotation];
-                MediaLength = (int)data[MetaType.FrameCount];
-                FrameRate = data[MetaType.FrameRate];
-                //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(data)}");
-                SetupSource();
-                SetupVideo(); 
-                UpdateChart();
-            }
-        }
-
-        partial void OnSelectedRegionChanged(Models.Region? oldRegion, Models.Region newRegion)
-        {
-            IsRegionSelected = SelectedRegion != null;
-            OnPropertyChanged(nameof(RegionX));
-            OnPropertyChanged(nameof(RegionY));
-        }
-
         partial void OnIsSpectrumChanged(bool oldValue, bool newValue)
         {
             UpdateChart();
         }
 
+        [ObservableProperty]
+        DataDirection dataDirection = DataDirection.Magnitude;
         partial void OnDataDirectionChanged(DataDirection oldValue, DataDirection newValue)
         {
             UpdateChart();
         }
+
+        double binSize = 1;
+
+        #endregion
+
+        #endregion
+
+        #region Setup
 
         void SetupVideo(bool useImage = false)
         {
@@ -246,19 +352,9 @@ namespace MicroVue.ViewModels
             }
         }
 
-        void SetImage()
-        {
-            if (video == null) return;
-            var bitmap = video.GetFrame(CurrentFrame);
-            if (bitmap == null) return;
+        #endregion
 
-            using (var ms = new MemoryStream())
-            {
-                bitmap.Encode(ms, SKEncodedImageFormat.Png, 100);
-                ms.Position = 0;
-                Image = ImageSource.FromStream(() => new MemoryStream(ms.ToArray()));
-            }
-        }
+        #region Charts
 
         void UpdateChart()
         {
@@ -329,6 +425,24 @@ namespace MicroVue.ViewModels
             Sections = foiCollection;
         }
 
+        #endregion
+
+        #region Miscellaneous
+
+        void SetImage()
+        {
+            if (video == null) return;
+            var bitmap = video.GetFrame(CurrentFrame);
+            if (bitmap == null) return;
+
+            using (var ms = new MemoryStream())
+            {
+                bitmap.Encode(ms, SKEncodedImageFormat.Png, 100);
+                ms.Position = 0;
+                Image = ImageSource.FromStream(() => new MemoryStream(ms.ToArray()));
+            }
+        }
+
         void AddFoi(double frequency)
         {
             if (Scene != null)
@@ -340,10 +454,9 @@ namespace MicroVue.ViewModels
             }
         }
 
-        partial void OnBackChanged(bool value)
-        {
-            if (value) _ = GoBack();
-        }
+        #endregion
+
+        #region Commands
 
         [RelayCommand]
         async Task GoBack()
@@ -352,13 +465,25 @@ namespace MicroVue.ViewModels
         }
 
         [RelayCommand]
-        void Delete(MicroVue.Models.Region region)
+        void DeleteRegion(MicroVue.Models.Region region)
         {
             if (Scene?.Regions != null && region != null)
             {
                 Scene.Regions.Remove(region);
                 SelectedRegion = null;
             }
+            if (Scene?.Targets != null && region != null)
+            {
+                var target = Scene?.Targets.FirstOrDefault(target => target.Name == region.Name);
+                if (target != null) Scene.Targets.Remove(target);
+            }
+        }
+
+        [RelayCommand]
+        void ViewRegion(MicroVue.Models.Region region)
+        {
+            Debug.WriteLine($"[Debug]: select {region?.Name} region");
+            SelectedRegion = region;
         }
 
         [RelayCommand]
@@ -474,7 +599,7 @@ namespace MicroVue.ViewModels
                 }
                 AddFoi(peakFrequency);
                 UpdateSections();
-                Scene.Save();
+                Scene?.Save();
             }
         }
 
@@ -483,5 +608,15 @@ namespace MicroVue.ViewModels
         {
             stopAnalysis = true;
         }
+
+        [RelayCommand]
+        void DeleteFoi(Foi foi)
+        {
+            Scene?.Fois?.Remove(foi);
+            UpdateSections();
+            Scene?.Save();
+        }
+
+        #endregion
     }
 }
