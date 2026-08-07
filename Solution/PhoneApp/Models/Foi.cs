@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace MicroVue.Models
@@ -20,5 +21,14 @@ namespace MicroVue.Models
 
         [ObservableProperty]
         double binSize;
+
+        [ObservableProperty]
+        bool isNotProcessed = true;
+
+        [ObservableProperty]
+        bool isProcessing = false;
+
+        [ObservableProperty]
+        bool isReady = false;
     }
 }

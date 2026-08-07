@@ -458,11 +458,69 @@ namespace MicroVue.ViewModels
 
         #region Commands
 
+        #region Main
+
+        [RelayCommand]
+        void Analyze()
+        {
+            if (video == null || !video.IsValid || Scene.Regions.Count == 0 || MediaLength == 0) return;
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {MediaLength} frames.");
+                    IsAnalizing = true;
+                    stopAnalysis = false;
+                    video.Reset();
+                    if (!video.ReadFrame(out Image<Gray, byte> image)) return;
+                    var targets = new ObservableCollection<Target>(Scene.Regions.Select(region => region.ToTarget()));
+                    ImageAnalysis.StartFrame(image, targets);
+                    var count = 1;
+                    //image.Dispose();
+                    while (video.ReadFrame(out image) && !stopAnalysis)
+                    {
+                        Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
+                        var found = ImageAnalysis.AnalyzeFrame(count, image, targets);
+                        image.Dispose();
+                        if (!found) break;
+                        ++count;
+                        Progress = (double)count / MediaLength;
+                    }
+                    Scene.Targets = targets;
+                    Scene.Save();
+                    UpdateChart();
+                    Debug.WriteLine($"[Debug]: done, frame count = {count}.");
+                    Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(Scene.Targets[0].Track.RawPath, Formatting.Indented)}");
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine($"[Debug]: Error in analysis: {e}");
+                }
+                finally
+                {
+                    IsAnalizing = false;
+                    stopAnalysis = false;
+                    Progress = 0;
+                }
+            });
+        }
+
+        [RelayCommand]
+        void Stop()
+        {
+            stopAnalysis = true;
+        }
+
         [RelayCommand]
         async Task GoBack()
         {
             await Shell.Current.GoToAsync("..");
         }
+
+        #endregion
+
+        #region Target-related
 
         [RelayCommand]
         void DeleteRegion(MicroVue.Models.Region region)
@@ -482,7 +540,7 @@ namespace MicroVue.ViewModels
         [RelayCommand]
         void ViewRegion(MicroVue.Models.Region region)
         {
-            Debug.WriteLine($"[Debug]: select {region?.Name} region");
+            //Debug.WriteLine($"[Debug]: select {region?.Name} region");
             SelectedRegion = region;
         }
 
@@ -533,51 +591,9 @@ namespace MicroVue.ViewModels
             Scene.Save();
         }
 
-        [RelayCommand]
-        void Analyze()
-        {
-            if (video == null || !video.IsValid || Scene.Regions.Count == 0 || MediaLength == 0) return;
+        #endregion
 
-            Task.Run(async () =>
-            {
-                try
-                {
-                    Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {MediaLength} frames.");
-                    IsAnalizing = true;
-                    stopAnalysis = false;
-                    video.Reset();
-                    if (!video.ReadFrame(out Image<Gray, byte> image)) return;
-                    var targets = new ObservableCollection<Target>(Scene.Regions.Select(region => region.ToTarget()));
-                    ImageAnalysis.StartFrame(image, targets);
-                    var count = 1;
-                    //image.Dispose();
-                    while (video.ReadFrame(out image) && !stopAnalysis)
-                    {
-                        Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
-                        var found = ImageAnalysis.AnalyzeFrame(count, image, targets);
-                        image.Dispose();
-                        if (!found) break;
-                        ++count;
-                        Progress = (double)count / MediaLength;
-                    }
-                    Scene.Targets = targets;
-                    Scene.Save();
-                    UpdateChart();
-                    Debug.WriteLine($"[Debug]: done, frame count = {count}.");
-                    Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(Scene.Targets[0].Track.RawPath, Formatting.Indented)}");
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine($"[Debug]: Error in analysis: {e}");
-                }
-                finally
-                {
-                    IsAnalizing = false;
-                    stopAnalysis = false;
-                    Progress = 0;
-                }
-            });
-        }
+        #region Foi-related
 
         [RelayCommand]
         void SelectPeakFrequency()
@@ -604,18 +620,45 @@ namespace MicroVue.ViewModels
         }
 
         [RelayCommand]
-        void Stop()
-        {
-            stopAnalysis = true;
-        }
-
-        [RelayCommand]
         void DeleteFoi(Foi foi)
         {
             Scene?.Fois?.Remove(foi);
             UpdateSections();
             Scene?.Save();
         }
+
+        [RelayCommand]
+        void ProcessFoi(Foi foi)
+        {
+            if (foi != null)
+            {
+                foi.IsNotProcessed = false;
+                foi.IsProcessing = true;
+            }
+        }
+
+        [RelayCommand]
+        void StopProcessFoi(Foi foi)
+        {
+            if (foi != null)
+            {
+                foi.IsNotProcessed = false;
+                foi.IsProcessing = false;
+                foi.IsReady = true;
+            }
+        }
+
+        [RelayCommand]
+        void ViewFoiVideo(Foi foi)
+        {
+            if (foi != null)
+            {
+                foi.IsNotProcessed = true;
+                foi.IsReady = false;
+            }
+        }
+
+        #endregion
 
         #endregion
     }
