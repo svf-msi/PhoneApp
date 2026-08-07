@@ -632,20 +632,43 @@ namespace MicroVue.ViewModels
         {
             if (foi != null)
             {
-                foi.IsNotProcessed = false;
-                foi.IsProcessing = true;
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        foi.IsNotProcessed = false;
+                        foi.IsProcessing = true;
+                        foi.IsReady = false;
+                        foi.Cts = new CancellationTokenSource();
+                        if (ImageAnalysis.FilterFrequency(foi.Frequency, FrameRate, MediaLength, video,
+                            out var real, out var imag, out var average, foi.Cts.Token, (double p) => foi.Progress = p))
+                        {
+                            foi.IsNotProcessed = false;
+                            foi.IsProcessing = false;
+                            foi.IsReady = true;
+                        }
+                        else
+                        {
+                            foi.IsNotProcessed = true;
+                            foi.IsProcessing = false;
+                            foi.IsReady = false;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine($"Error in filtering: {e}");
+                        foi.IsNotProcessed = true;
+                        foi.IsProcessing = false;
+                        foi.IsReady = false;
+                    }
+                });
             }
         }
 
         [RelayCommand]
         void StopProcessFoi(Foi foi)
         {
-            if (foi != null)
-            {
-                foi.IsNotProcessed = false;
-                foi.IsProcessing = false;
-                foi.IsReady = true;
-            }
+            foi.Cts?.Cancel();
         }
 
         [RelayCommand]
@@ -653,8 +676,7 @@ namespace MicroVue.ViewModels
         {
             if (foi != null)
             {
-                foi.IsNotProcessed = true;
-                foi.IsReady = false;
+                
             }
         }
 

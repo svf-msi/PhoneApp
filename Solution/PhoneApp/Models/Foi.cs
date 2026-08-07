@@ -30,5 +30,12 @@ namespace MicroVue.Models
 
         [ObservableProperty]
         bool isReady = false;
+
+        [JsonIgnore]
+        [ObservableProperty]
+        double progress;
+
+        [JsonIgnore]
+        public CancellationTokenSource Cts { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Dnn;
+using Emgu.CV.ImgHash;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using SkiaSharp;
@@ -11,7 +12,9 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace StandardLib
 {
@@ -885,6 +888,53 @@ namespace StandardLib
                     real = real.ConvertScale<float>(1.0 / length, 0);
                     imag = imag.ConvertScale<float>(1.0 / length, 0);
                 }
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error in image filtering: {e}");
+                return false;
+            }
+        }
+
+        public static bool FilterFrequency(double frequency, double frameRate, int length, Video_MP4 video,
+            out Image<Rgb, float> real, out Image<Rgb, float> imag, out Image<Rgb, float> average, 
+            CancellationToken token, Action<double> progress = null)
+        {
+            real = null;
+            imag = null;
+            average = null;
+            if (video == null || length == 0) return false;
+
+            var bin = Math.Round(frequency * length / frameRate);
+            try
+            {
+                if (!video.ReadRgbFrame(out var frame) || frame == null) return false;
+
+                var count = 1;
+                var width = frame.Width;
+                var height = frame.Height; 
+                real = new Image<Rgb, float>(width, height);
+                imag = new Image<Rgb, float>(width, height);
+                var floatFrame = frame.Convert<Rgb, float>();
+                CvInvoke.Accumulate(floatFrame * 2, real);
+                Debug.WriteLine($"[Debug]: Started filtering width={width}, height={height}.");
+
+                for (int i = 1; i < length; ++i)
+                {
+                    if (!video.ReadRgbFrame(out frame) || frame == null) break;
+                    if (token.IsCancellationRequested) return false;
+                    var phase = 2 * Math.PI * i * bin / length;
+                    CvInvoke.Accumulate(frame * Math.Cos(phase) * 2, real);
+                    CvInvoke.Accumulate(frame * Math.Sin(-phase) * 2, imag);
+                    Debug.WriteLine($"[Debug]: Filtered {count} of {length} frames.");
+                    ++count;
+                    progress?.Invoke((double)count / length);
+                }
+
+                real = real.ConvertScale<float>(1.0 / length, 0);
+                imag = imag.ConvertScale<float>(1.0 / length, 0);
+                Debug.WriteLine($"[Debug]: Filtered {count} frames.");
                 return true;
             }
             catch (Exception e)
