@@ -125,13 +125,13 @@
 	  <MauiXaml Update="Views\AboutPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Views\AnalysisPage.xaml">
+	  <MauiXaml Update="Views\AnalysisPage\AnalysisPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\CameraPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Views\ChartView.xaml">
+	  <MauiXaml Update="Views\AnalysisPage\ChartView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\Controls\ChartPanel.xaml">
@@ -143,13 +143,13 @@
 	  <MauiXaml Update="Views\Controls\MainPanel.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Views\MainView.xaml">
+	  <MauiXaml Update="Views\AnalysisPage\MainView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\ScenesPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Views\VideoView.xaml">
+	  <MauiXaml Update="Views\AnalysisPage\VideoView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

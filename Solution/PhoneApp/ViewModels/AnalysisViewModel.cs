@@ -55,9 +55,9 @@ namespace MicroVue.ViewModels
         {
             if (sceneItem != null)
             {
-                SceneName = sceneItem.Name;
                 var scenePath = sceneItem.ItemPath;
                 Scene = Scene.Read(scenePath);
+                SceneName = Scene.Name;
                 if (Scene == null) return;
                 VideoPath = Scene.VideoName;
                 Utilities.GetMetadata(out var data, VideoPath);
@@ -449,7 +449,7 @@ namespace MicroVue.ViewModels
             {
                 if (Scene.Fois == null) Scene.Fois = new ObservableCollection<Foi>();
                 var id = Scene.Fois.Count == 0 ? 1 : Scene.Fois.Last().Id + 1;
-                var foi = new Foi { Id = id, Name = $"FOI {id}", Frequency = frequency };
+                var foi = new Foi { Id = id, Name = $"FOI {id}", SceneName = SceneName, Frequency = frequency };
                 Scene.Fois.Add(foi);
             }
         }
@@ -623,6 +623,7 @@ namespace MicroVue.ViewModels
         void DeleteFoi(Foi foi)
         {
             Scene?.Fois?.Remove(foi);
+            foi?.Remove();
             UpdateSections();
             Scene?.Save();
         }
@@ -643,9 +644,16 @@ namespace MicroVue.ViewModels
                         if (ImageAnalysis.FilterFrequency(foi.Frequency, FrameRate, MediaLength, video,
                             out var real, out var imag, out var average, foi.Cts.Token, (double p) => foi.Progress = p))
                         {
+                            foi.RealImage = real;
+                            foi.ImagImage = imag;
+                            foi.AverageImage = average;
+                            
+                            foi.MakeVideo((double p) => foi.Progress = p);
+
                             foi.IsNotProcessed = false;
                             foi.IsProcessing = false;
                             foi.IsReady = true;
+                            Scene.Save();
                         }
                         else
                         {
@@ -653,6 +661,9 @@ namespace MicroVue.ViewModels
                             foi.IsProcessing = false;
                             foi.IsReady = false;
                         }
+
+                        Debug.WriteLine(Utilities.ListFolderContents(App.FoiDataFolder));
+                        Debug.WriteLine(Utilities.ListFolderContents(App.FoiVideoFolder));
                     }
                     catch (Exception e)
                     {

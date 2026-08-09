@@ -163,6 +163,26 @@ namespace StandardLib
             }
         }
 
+        public bool ReadBgrFrame(out Image<Bgr, byte> image)
+        {
+            image = null;
+            try
+            {
+                if (ReadFrameMatWithTimeout(out Mat mat))
+                {
+                    image = mat.ToImage<Bgr, byte>();
+                    return true;
+                }
+                else return false;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Error in reading frame: {e}");
+                return false;
+            }
+        }
+
+
         void SetImage(int i)
         {
             if (currentFrame != i || image == null)

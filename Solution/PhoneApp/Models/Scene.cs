@@ -94,6 +94,8 @@ namespace MicroVue.Models
             if (file == null) return;
             var text = JsonConvert.SerializeObject(this, Formatting.Indented);
             File.WriteAllText(file, text);
+            FileInfo fileInfo = new FileInfo(file);
+            Debug.WriteLine($"[Debug]: saved {fileInfo.Length / 1024} kbytes to {Name}");
         }
     }
 }
