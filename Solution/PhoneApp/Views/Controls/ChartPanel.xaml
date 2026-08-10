@@ -42,12 +42,37 @@
             <CollectionView ItemsSource="{Binding Scene.Fois}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="m:Foi">
-                        <Border StrokeThickness="1" Stroke="Gray" Margin="10, 1" Padding="5">
-                            <Grid ColumnDefinitions="Auto, Auto">
-                                <Label Grid.Column="0" Text="{Binding Name}" VerticalOptions="Center" Margin="5"/>
-                                <Label Grid.Column="1" Text="{Binding Frequency, StringFormat='{0:N2} Hz'}" VerticalOptions="Center" Margin="5"/>
-                            </Grid>
-                        </Border>
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItemView 
+                                        Command="{Binding Source={x:Reference chartPanel}, Path=BindingContext.DeleteFoiCommand}"
+                                        CommandParameter="{Binding .}">
+                                        <Border BackgroundColor="Red" Margin="5,0">
+                                            <Image Source="{StaticResource IconDelete}" VerticalOptions="Center" WidthRequest="32" Margin="-3, 0"/>
+                                        </Border>
+                                    </SwipeItemView>
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <Border StrokeThickness="1" Stroke="Gray" Margin="10, 1" Padding="5">
+                                <Grid ColumnDefinitions="Auto, Auto, *, Auto" RowDefinitions="Auto, Auto">
+                                    <Label Grid.Row="0" Grid.Column="0" Text="{Binding Name}" VerticalOptions="Center" Margin="5"/>
+                                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding Frequency, StringFormat='{0:N2} Hz'}" VerticalOptions="Center" Margin="5"/>
+                                    <Button Grid.Row="0" Grid.Column="3" Text="Process" TextColor="White" BackgroundColor="Red" Padding="10, 0" Margin="0" CornerRadius="15" MaximumHeightRequest="35"
+                                        Command="{Binding Source={x:Reference chartPanel}, Path=BindingContext.ProcessFoiCommand}"
+                                        CommandParameter="{Binding .}" IsVisible="{Binding IsNotProcessed}"/>
+                                    <Button Grid.Row="0" Grid.Column="3" Text="Stop" TextColor="White" BackgroundColor="DarkOrange" Padding="10, 0" Margin="0" CornerRadius="15" MaximumHeightRequest="35"
+                                        Command="{Binding Source={x:Reference chartPanel}, Path=BindingContext.StopProcessFoiCommand}"
+                                        CommandParameter="{Binding .}" IsVisible="{Binding IsProcessing}"/>
+                                    <Button Grid.Row="0" Grid.Column="3" Text="View" TextColor="White" BackgroundColor="Green" Padding="10, 0" Margin="0" CornerRadius="15" MaximumHeightRequest="35"
+                                        Command="{Binding Source={x:Reference chartPanel}, Path=BindingContext.ViewFoiVideoCommand}"
+                                        CommandParameter="{Binding .}" IsVisible="{Binding IsReady}"/>
+
+                                    <Label Grid.Row="1" Grid.Column="0" Text="Processing:" VerticalOptions="Center" Margin="5" IsVisible="{Binding IsProcessing}"/>
+                                    <ProgressBar Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="5" Progress="{Binding Progress}" VerticalOptions="Center" IsVisible="{Binding IsProcessing}"/>
+                                </Grid>
+                            </Border>
+                        </SwipeView>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>

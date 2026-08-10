@@ -199,6 +199,30 @@ namespace MicroVue.Models
 
             }
         }
+
+        public static string ListFolderContents(string path)
+        {
+            var builder = new StringBuilder();
+            if (Directory.Exists(path))
+            {
+                DirectoryInfo directory = new DirectoryInfo(path);
+                FileInfo[] files = directory.GetFiles();
+
+                builder.AppendLine($"{"File Name",-40} | {"Size (Bytes)",-15}");
+                builder.AppendLine(new string('-', 60));
+
+                foreach (FileInfo file in files)
+                {
+                    builder.AppendLine($"{file.Name,-40} | {file.Length,-15:N0}");
+                }
+                return builder.ToString();
+            }
+            else
+            {
+                Debug.WriteLine("The specified folder path does not exist.");
+                return "";
+            }
+        }
     }
 
     public enum MetaType { FrameRate, FrameCount, VideoWidth, VideoHeight, VideoRotation, Duration }

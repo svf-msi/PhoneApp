@@ -1,6 +1,7 @@
 ﻿using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Dnn;
+using Emgu.CV.ImgHash;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using SkiaSharp;
@@ -11,7 +12,9 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace StandardLib
 {
@@ -885,6 +888,60 @@ namespace StandardLib
                     real = real.ConvertScale<float>(1.0 / length, 0);
                     imag = imag.ConvertScale<float>(1.0 / length, 0);
                 }
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error in image filtering: {e}");
+                return false;
+            }
+        }
+
+        public static bool FilterFrequency(double frequency, double frameRate, int length, Video_MP4 video,
+            out Image<Bgr, float> real, out Image<Bgr, float> imag, out Image<Bgr, float> average, 
+            CancellationToken token, Action<double> progress = null, bool doAverage = true)
+        {
+            real = null;
+            imag = null;
+            average = null;
+            if (video == null || length == 0) return false;
+
+            var bin = Math.Round(frequency * length / frameRate);
+            try
+            {
+                if (!video.ReadBgrFrame(out var frame) || frame == null) return false;
+
+                var count = 1;
+                var width = frame.Width;
+                var height = frame.Height; 
+                real = new Image<Bgr, float>(width, height);
+                imag = new Image<Bgr, float>(width, height);
+                average = new Image<Bgr, float>(width, height);
+
+                var floatFrame = frame.Convert<Bgr, float>();
+                CvInvoke.Accumulate(floatFrame * 2, real);
+                if (doAverage) CvInvoke.Accumulate(floatFrame, average);
+                Debug.WriteLine($"[Debug]: Started filtering width={width}, height={height}.");
+
+                for (int i = 1; i < length; ++i)
+                {
+                    if (!video.ReadBgrFrame(out frame) || frame == null) break;
+                    if (token.IsCancellationRequested) return false;
+
+                    floatFrame = frame.Convert<Bgr, float>();
+                    var phase = 2 * Math.PI * i * bin / length;
+                    CvInvoke.Accumulate(floatFrame * Math.Cos(phase) * 2, real);
+                    CvInvoke.Accumulate(floatFrame * Math.Sin(-phase) * 2, imag);
+                    if (doAverage) CvInvoke.Accumulate(floatFrame, average);
+
+                    ++count;
+                    progress?.Invoke((double)count / length);
+                    Debug.WriteLine($"[Debug]: Filtered {count} of {length} frames.");
+                }
+
+                real = real.ConvertScale<float>(1.0 / length, 0);
+                imag = imag.ConvertScale<float>(1.0 / length, 0);
+                if (doAverage) average = average.ConvertScale<float>(1.0 / length, 0);
                 return true;
             }
             catch (Exception e)
