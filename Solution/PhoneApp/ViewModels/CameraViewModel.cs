@@ -144,6 +144,70 @@ namespace MicroVue.ViewModels
 
         #endregion
 
+        #region Capture countdown / progress
+
+        const int CountdownStart = 5;
+
+        CancellationTokenSource? captureCts;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ProgressVisible))]
+        private bool captureActive;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CountdownVisible))]
+        [NotifyPropertyChangedFor(nameof(ProgressVisible))]
+        private int countdownRemaining;
+
+        public bool CountdownVisible => CountdownRemaining > 0;
+        public bool ProgressVisible => CaptureActive && !CountdownVisible;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ProgressBounds))]
+        private double recordingProgress;
+
+        public Rect ProgressBounds => new(0, 0, RecordingProgress, 1);
+
+        async Task RunCaptureAsync(CancellationToken token)
+        {
+            try
+            {
+                for (int i = CountdownStart; i > 0; i--)
+                {
+                    CountdownRemaining = i;
+                    await Task.Delay(1000, token);
+                }
+                CountdownRemaining = 0;
+
+                var file = $"Capture_{DateTime.Now:yyyyMMdd_HHmmss}.mp4";
+                Camera.StartRecording(App.VideoFolder + file);
+
+                var waitStart = DateTime.UtcNow;
+                while (!Camera.IsRecording && (DateTime.UtcNow - waitStart).TotalSeconds < 5)
+                    await Task.Delay(50, token);
+
+                var duration = Math.Max(1, Camera.RecordingDuration);
+                var recordStart = DateTime.UtcNow;
+                while (Camera.IsRecording)
+                {
+                    RecordingProgress = Math.Clamp((DateTime.UtcNow - recordStart).TotalSeconds / duration, 0, 1);
+                    await Task.Delay(50, token);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Error during capture: {e}");
+            }
+            finally
+            {
+                CountdownRemaining = 0;
+                RecordingProgress = 0;
+                CaptureActive = false;
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region Auto-wired
@@ -163,14 +227,16 @@ namespace MicroVue.ViewModels
         [RelayCommand]
         void Record(object parameter)
         {
-            if (Camera.IsRecording)
+            if (CaptureActive)
             {
-                Camera.StopRecording(true); // discard video if stopped early
+                captureCts?.Cancel();
+                if (Camera.IsRecording) Camera.StopRecording(true); // discard video if stopped early
             }
             else
             {
-                var file = $"Capture_{DateTime.Now:yyyyMMdd_HHmmss}.mp4";
-                Camera.StartRecording(App.VideoFolder + file);
+                CaptureActive = true;
+                captureCts = new CancellationTokenSource();
+                _ = RunCaptureAsync(captureCts.Token);
             }
         }
 

@@ -27,6 +27,18 @@ public partial class CameraPage : ContentPage
         }
     }
 
+    protected override void OnSizeAllocated(double width, double height)
+    {
+        base.OnSizeAllocated(width, height);
+        if (width <= 0 || height <= 0) return;
+
+        TargetOverlay.WidthRequest = TargetOverlay.HeightRequest = Math.Round(Math.Min(width, height) * 0.45);
+
+        bool landscape = width > height;
+        CountdownCard.HorizontalOptions = landscape ? LayoutOptions.Start : LayoutOptions.Center;
+        CountdownCard.VerticalOptions = landscape ? LayoutOptions.Center : LayoutOptions.Start;
+    }
+
     private void OnDialogTapped(object sender, TappedEventArgs e)
     {
         DurationEntry.Unfocus();
