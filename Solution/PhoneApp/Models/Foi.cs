@@ -33,6 +33,9 @@ namespace MicroVue.Models
         bool isProcessing = false;
 
         [ObservableProperty]
+        bool isSaving = false;
+
+        [ObservableProperty]
         bool isReady = false;
 
         [JsonIgnore]

@@ -639,6 +639,7 @@ namespace MicroVue.ViewModels
                     {
                         foi.IsNotProcessed = false;
                         foi.IsProcessing = true;
+                        foi.IsSaving = false;
                         foi.IsReady = false;
                         foi.Cts = new CancellationTokenSource();
                         if (ImageAnalysis.FilterFrequency(foi.Frequency, FrameRate, MediaLength, video,
@@ -652,14 +653,19 @@ namespace MicroVue.ViewModels
 
                             foi.IsNotProcessed = false;
                             foi.IsProcessing = false;
-                            foi.IsReady = true;
+                            foi.IsSaving = true;
+                            
                             Scene.Save();
+
+                            foi.IsSaving = false;
+                            foi.IsReady = true;
                         }
                         else
                         {
                             foi.IsNotProcessed = true;
                             foi.IsProcessing = false;
                             foi.IsReady = false;
+                            foi.IsSaving = false;
                         }
 
                         Debug.WriteLine(Utilities.ListFolderContents(App.FoiDataFolder));
@@ -671,6 +677,7 @@ namespace MicroVue.ViewModels
                         foi.IsNotProcessed = true;
                         foi.IsProcessing = false;
                         foi.IsReady = false;
+                        foi.IsSaving = false;
                     }
                 });
             }

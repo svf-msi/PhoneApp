@@ -69,7 +69,9 @@
                                         CommandParameter="{Binding .}" IsVisible="{Binding IsReady}"/>
 
                                     <Label Grid.Row="1" Grid.Column="0" Text="Processing:" VerticalOptions="Center" Margin="5" IsVisible="{Binding IsProcessing}"/>
+                                    <Label Grid.Row="1" Grid.Column="0" Text="Saving:" VerticalOptions="Center" Margin="5" IsVisible="{Binding IsSaving}"/>
                                     <ProgressBar Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="5" Progress="{Binding Progress}" VerticalOptions="Center" IsVisible="{Binding IsProcessing}"/>
+                                    <ProgressBar Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="5" Progress="1" VerticalOptions="Center" IsVisible="{Binding IsSaving}"/>
                                 </Grid>
                             </Border>
                         </SwipeView>
