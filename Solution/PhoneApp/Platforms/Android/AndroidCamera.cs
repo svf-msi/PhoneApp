@@ -369,6 +369,9 @@ namespace MicroVue.Models
                 requestBuilder.AddTarget(previewSurface);
                 requestBuilder.AddTarget(recorderSurface);
 
+                requestBuilder.Set(CaptureRequest.ControlVideoStabilizationMode, (int)ControlVideoStabilizationMode.Off);
+                requestBuilder.Set(CaptureRequest.LensOpticalStabilizationMode, (int)LensOpticalStabilizationMode.Off);
+
                 bool waitForAe = AutoExposure || useHighSpeed;
                 var onConfigured = (Action<CameraCaptureSession>)(s =>
                 {

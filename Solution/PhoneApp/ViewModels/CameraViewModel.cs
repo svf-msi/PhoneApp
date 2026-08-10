@@ -178,6 +178,8 @@ namespace MicroVue.ViewModels
                     await Task.Delay(1000, token);
                 }
                 CountdownRemaining = 0;
+                RecordingProgress = 0;
+                OnPropertyChanged(nameof(ProgressBounds));
 
                 var file = $"Capture_{DateTime.Now:yyyyMMdd_HHmmss}.mp4";
                 Camera.StartRecording(App.VideoFolder + file);
