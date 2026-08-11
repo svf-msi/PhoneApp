@@ -20,13 +20,16 @@
         <Grid Grid.Row="0" RowDefinitions="Auto, *, Auto, Auto" ColumnDefinitions="*" Margin="5"
               IsVisible="{Binding IsRegionSelected, Converter={StaticResource InvertedBoolConverter}}">
 
-            <Grid Grid.Row="0" ColumnDefinitions="*, *">
+            <Grid Grid.Row="0" ColumnDefinitions="*, *, Auto">
 
-                <Button Grid.Column="0" Text="+ Target" VerticalOptions="Center" Margin="5" WidthRequest="140"
+                <Button Grid.Column="0" Text="+ Target" TextColor="White" VerticalOptions="Center" Margin="5"
                         Command="{Binding AddTargetCommand}"/>
 
-                <Button Grid.Column="1" Text="+ Background" VerticalOptions="Center" Margin="5" WidthRequest="140"
+                <Button Grid.Column="1" Text="+ Anchor" TextColor="White" VerticalOptions="Center" Margin="5"
                         Command="{Binding AddBackgroundCommand}"/>
+
+                <Button Grid.Column="2" Text="{x:Static f:FluentUI.info_24_regular}" FontFamily="{x:Static f:FluentUI.FontFamily}"
+                        TextColor="White" BackgroundColor="Green" VerticalOptions="Center" Margin="5" Pressed="Info_Pressed"/>
 
             </Grid>
 
@@ -66,10 +69,10 @@
 
             </ScrollView>
 
-            <Button Grid.Row="2" Text="Track Targets" VerticalOptions="Center" Margin="10" Command="{Binding AnalyzeCommand}"
+            <Button Grid.Row="2" Text="Track Targets" TextColor="White" VerticalOptions="Center" Margin="10" Command="{Binding AnalyzeCommand}"
                     IsVisible="{Binding IsAnalizing, Converter={StaticResource InvertedBoolConverter}}"/>
 
-            <Button Grid.Row="2" Text="Stop Tracking" VerticalOptions="Center" Margin="10" Command="{Binding StopCommand}"
+            <Button Grid.Row="2" Text="Stop Tracking" TextColor="White" BackgroundColor="Red" VerticalOptions="Center" Margin="10" Command="{Binding StopCommand}"
                     IsVisible="{Binding IsAnalizing}"/>
 
             <ProgressBar Grid.Row="3" Progress="{Binding Progress}" Margin="5" IsVisible="{Binding IsAnalizing}"/>
@@ -99,7 +102,7 @@
 
                 <Label Grid.Row="3" Grid.Column="0" Text="Size:" VerticalOptions="Center" Margin="5"/>
                 <Slider Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Value="{Binding SelectedRegion.Size}" VerticalOptions="Center" Margin="5"
-                Minimum="0" Maximum="2000"/>
+                Minimum="0" Maximum="200"/>
 
             <Label Grid.Row="4" Grid.Column="0" Text="X:" VerticalOptions="Center" Margin="5"/>
             <Slider Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Value="{Binding RegionX}" VerticalOptions="Center" Margin="5"

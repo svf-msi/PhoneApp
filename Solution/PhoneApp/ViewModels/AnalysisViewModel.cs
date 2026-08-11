@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Emgu.CV;
@@ -10,6 +11,7 @@ using LiveChartsCore.SkiaSharpView.Maui;
 using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView.Painting.Effects;
 using MicroVue.Models;
+using MicroVue.Views;
 using Newtonsoft.Json;
 using SkiaSharp;
 using StandardLib;
@@ -37,6 +39,16 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         bool onVideoView;
+        partial void OnOnVideoViewChanged(bool oldValue, bool newValue)
+        {
+            if (OnVideoView)
+            {
+                if (Scene?.Fois?.Count > 0 && SelectedFoi == null)
+                {
+                    SelectedFoi = Scene.Fois[0];
+                }
+            }
+        }
 
         [ObservableProperty]
         bool back;
@@ -60,13 +72,28 @@ namespace MicroVue.ViewModels
                 SceneName = Scene.Name;
                 if (Scene == null) return;
                 VideoPath = Scene.VideoName;
-                Utilities.GetMetadata(out var data, VideoPath);
-                MediaRotation = (int)data[MetaType.VideoRotation];
-                MediaLength = (int)data[MetaType.FrameCount];
-                FrameRate = data[MetaType.FrameRate];
+                SetupVideo();
+
+                if (Scene.ValidParams)
+                {
+                    MediaRotation = Scene.Rotation;
+                    MediaLength = Scene.FrameCount;
+                    FrameRate = Scene.FrameRate;
+                }
+                else
+                {
+                    Utilities.GetMetadata(out var data, VideoPath);
+                    Scene.Rotation = MediaRotation = (int)data[MetaType.VideoRotation];
+                    Scene.FrameCount = MediaLength = (int)data[MetaType.FrameCount];
+                    Scene.FrameRate = FrameRate = data[MetaType.FrameRate];
+                    Scene.Width = VideoWidth;
+                    Scene.Height = VideoHeight;
+                    Scene.ValidParams = true;
+                    Scene.Save();
+                }
+                
                 //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(data)}");
                 SetupSource();
-                SetupVideo();
                 UpdateChart();
             }
         }
@@ -111,9 +138,14 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         double frameRate;
-
-        [ObservableProperty]
-        bool isRotated;
+        partial void OnFrameRateChanged(double oldValue, double newValue)
+        {
+            if (FrameRate > 0 && Scene != null)
+            {
+                Scene.FrameRate = FrameRate;
+                Scene.Save();
+            }
+        }
 
         #region Player-related
 
@@ -326,6 +358,38 @@ namespace MicroVue.ViewModels
 
         #endregion
 
+        #region FOI-related
+
+        [ObservableProperty]
+        Foi selectedFoi;
+        partial void OnSelectedFoiChanged(Foi oldValue, Foi newValue)
+        {
+            OnPropertyChanged(nameof(SelectedFoiName));
+            OnPropertyChanged(nameof(SelectedFoiFrequency));
+            OnPropertyChanged(nameof(SelectedFoiMagnification));
+            SetFoiSource(SelectedFoi);
+        }
+
+        [ObservableProperty]
+        bool isFoiModified;
+
+        [ObservableProperty]
+        bool isModifyingFoi;
+
+        [ObservableProperty]
+        double foiProgress;
+
+        public string SelectedFoiName => SelectedFoi?.Name;
+
+        public double SelectedFoiFrequency => SelectedFoi?.Frequency ?? 0;
+
+        public double SelectedFoiMagnification { get => SelectedFoi?.Magnification ?? 0; set { SelectedFoi.Magnification = (int)value; OnPropertyChanged(); } }
+
+        [ObservableProperty]
+        MediaSource foiVideoSource;
+
+        #endregion
+
         #endregion
 
         #region Setup
@@ -338,8 +402,6 @@ namespace MicroVue.ViewModels
                 CurrentFrame = 0;
                 VideoWidth = video?.Width ?? 0;
                 VideoHeight = video?.Height ?? 0;
-                IsRotated = MediaWidth > 0 && VideoWidth > 0 && VideoWidth == MediaHeight;
-                //video.Count();
                 //if (useImage) SetImage();
             }
         }
@@ -454,6 +516,14 @@ namespace MicroVue.ViewModels
             }
         }
 
+        void SetFoiSource(Foi foi)
+        {
+            if (!string.IsNullOrEmpty(foi?.VideoFile))
+            {
+                FoiVideoSource = MediaSource.FromFile(foi?.VideoFile);
+            }
+        }
+
         #endregion
 
         #region Commands
@@ -469,7 +539,7 @@ namespace MicroVue.ViewModels
             {
                 try
                 {
-                    Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {MediaLength} frames.");
+                    //Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {MediaLength} frames.");
                     IsAnalizing = true;
                     stopAnalysis = false;
                     video.Reset();
@@ -480,7 +550,7 @@ namespace MicroVue.ViewModels
                     //image.Dispose();
                     while (video.ReadFrame(out image) && !stopAnalysis)
                     {
-                        Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
+                        //Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
                         var found = ImageAnalysis.AnalyzeFrame(count, image, targets);
                         image.Dispose();
                         if (!found) break;
@@ -490,8 +560,8 @@ namespace MicroVue.ViewModels
                     Scene.Targets = targets;
                     Scene.Save();
                     UpdateChart();
-                    Debug.WriteLine($"[Debug]: done, frame count = {count}.");
-                    Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(Scene.Targets[0].Track.RawPath, Formatting.Indented)}");
+                    //Debug.WriteLine($"[Debug]: done, frame count = {count}.");
+                    //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(Scene.Targets[0].Track.RawPath, Formatting.Indented)}");
                 }
                 catch (Exception e)
                 {
@@ -534,6 +604,7 @@ namespace MicroVue.ViewModels
             {
                 var target = Scene?.Targets.FirstOrDefault(target => target.Name == region.Name);
                 if (target != null) Scene.Targets.Remove(target);
+                UpdateChart();
             }
         }
 
@@ -640,8 +711,10 @@ namespace MicroVue.ViewModels
                         foi.IsNotProcessed = false;
                         foi.IsProcessing = true;
                         foi.IsReady = false;
+                        foi.IsSaving = false;
+                        video.Reset();
                         foi.Cts = new CancellationTokenSource();
-                        if (ImageAnalysis.FilterFrequency(foi.Frequency, FrameRate, MediaLength, video,
+                        if (ImageAnalysis.FilterFrequency(foi.Frequency, FrameRate > 0 ? FrameRate : 1, MediaLength, video,
                             out var real, out var imag, out var average, foi.Cts.Token, (double p) => foi.Progress = p))
                         {
                             foi.RealImage = real;
@@ -650,20 +723,33 @@ namespace MicroVue.ViewModels
                             
                             foi.MakeVideo((double p) => foi.Progress = p);
 
-                            foi.IsNotProcessed = false;
-                            foi.IsProcessing = false;
-                            foi.IsReady = true;
+                            if (foi.Cts.Token.IsCancellationRequested)
+                            {
+                                foi.IsNotProcessed = true;
+                                foi.IsProcessing = false;
+                                foi.IsReady = false;
+                            }
+                            else
+                            {
+                                foi.IsNotProcessed = false;
+                                foi.IsProcessing = false;
+                                foi.IsReady = true;
+                            }
+
+                            foi.IsSaving = true;
                             Scene.Save();
+                            foi.IsSaving = false;
                         }
                         else
                         {
                             foi.IsNotProcessed = true;
                             foi.IsProcessing = false;
                             foi.IsReady = false;
+                            foi.IsSaving = false;
                         }
 
-                        Debug.WriteLine(Utilities.ListFolderContents(App.FoiDataFolder));
-                        Debug.WriteLine(Utilities.ListFolderContents(App.FoiVideoFolder));
+                        //Debug.WriteLine(Utilities.ListFolderContents(App.FoiDataFolder));
+                        //Debug.WriteLine(Utilities.ListFolderContents(App.FoiVideoFolder));
                     }
                     catch (Exception e)
                     {
@@ -671,6 +757,7 @@ namespace MicroVue.ViewModels
                         foi.IsNotProcessed = true;
                         foi.IsProcessing = false;
                         foi.IsReady = false;
+                        foi.IsSaving = false;
                     }
                 });
             }
@@ -687,8 +774,62 @@ namespace MicroVue.ViewModels
         {
             if (foi != null)
             {
-                
+                SelectedFoi = foi;
+                OnVideoView = true;
             }
+        }
+
+        [RelayCommand]
+        void ModifyFoi(Foi foi)
+        {
+            if (foi != null)
+            {
+                IsFoiModified = true;
+                SelectedFoi = foi;
+            }
+        }
+
+        [RelayCommand]
+        void ReturnFromFoi()
+        {
+            IsFoiModified = false;
+        }
+
+        [RelayCommand]
+        void RemakeFoiVideo()
+        {
+            if (SelectedFoi != null)
+            {
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        FoiProgress = 0;
+                        IsModifyingFoi = true;
+                        SelectedFoi.Cts = new CancellationTokenSource();
+                        SelectedFoi.MakeVideo((double p) => FoiProgress = p);
+                        if (!SelectedFoi.Cts.Token.IsCancellationRequested)
+                        {
+                            Scene.Save();
+                            SetFoiSource(SelectedFoi);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine($"Error in remaking foi: {e}");
+                    }
+                    finally
+                    {
+                        IsModifyingFoi = false;
+                    }
+                });
+            }
+        }
+
+        [RelayCommand]
+        void StopRemakingFoi()
+        {
+            SelectedFoi?.Cts?.Cancel();
         }
 
         #endregion

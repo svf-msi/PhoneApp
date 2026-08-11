@@ -16,6 +16,44 @@ public partial class MainView : ContentView
         player.Speed = 1;
     }
 
+    protected override void OnSizeAllocated(double width, double height)
+    {
+        base.OnSizeAllocated(width, height);
+        if (bottomPanel != null) bottomPanel.IsVisible = width <= height;
+        if (sidePanel != null) sidePanel.IsVisible = width > height;
+        SetupOverlay();
+    }
+
+    void SetupOverlay()
+    {
+        if (player == null) return;
+        var w = player.MediaWidth;
+        var h = player.MediaHeight;
+        //Debug.WriteLine($"[Debug]: player params {player.MediaWidth}, {player.MediaHeight}");
+        if (w == 0 || h == 0) return;
+        var aspect = (double)w / h;
+        var rw = player.Height * aspect;
+        var rh = player.Width / aspect;
+        rw = Math.Min(player.Width, rw);
+        rh = Math.Min(player.Height, rh);
+        var off_x = player.Width - rw;
+        var off_y = player.Height - rh;
+        var bounds = new Rect(off_x / 2, off_y / 2, rw, rh);
+        AbsoluteLayout.SetLayoutBounds(overlay, bounds);
+        AbsoluteLayout.SetLayoutBounds(overlay2, bounds);
+        if (BindingContext is AnalysisViewModel vm)
+        {
+            vm.MediaWidth = player.MediaWidth;
+            vm.MediaHeight = player.MediaHeight;
+            vm.PlayerWidth = rw;
+            vm.PlayerHeight = rh;
+            vm.PlayerScale = rw / w;
+            vm.Scene?.RefreshRegions();
+            vm.Scene?.RefreshTargets(0);
+            //Debug.WriteLine($"[Debug]: media = {vm.MediaWidth}, {vm.MediaHeight}, {vm.MediaRotation}");
+        }
+    }
+
     void Player_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
     {
         if (player != null)
@@ -43,44 +81,6 @@ public partial class MainView : ContentView
                 vm.Scene?.RefreshTargets((int)Math.Round(slider.Value / slider.Maximum * vm.MediaLength));
             }
         }
-    }
-
-    void SetupOverlay()
-    {
-        if (player == null) return;
-        var w = player.MediaWidth;
-        var h = player.MediaHeight;
-        //Debug.WriteLine($"[Debug]: player params {player.MediaWidth}, {player.MediaHeight}");
-        if (w == 0 || h == 0) return;
-        var aspect = (double)w / h;
-        var rw = player.Height * aspect;
-        var rh = player.Width / aspect;
-        rw = Math.Min(player.Width, rw);
-        rh = Math.Min(player.Height, rh);
-        var off_x = player.Width - rw;
-        var off_y = player.Height - rh;
-        var bounds = new Rect(off_x / 2, off_y / 2, rw, rh);
-        AbsoluteLayout.SetLayoutBounds(overlay, bounds);
-        AbsoluteLayout.SetLayoutBounds(overlay2, bounds);
-        if (BindingContext is AnalysisViewModel vm)
-        {
-            vm.MediaWidth = player.MediaWidth;
-            vm.MediaHeight = player.MediaHeight;
-            vm.PlayerWidth = rw; 
-            vm.PlayerHeight = rh; 
-            vm.PlayerScale = rw / w;
-            vm.Scene?.RefreshRegions();
-            vm.Scene?.RefreshTargets(0);
-            //Debug.WriteLine($"[Debug]: media = {vm.MediaWidth}, {vm.MediaHeight}, {vm.MediaRotation}");
-        }
-    }
-
-    protected override void OnSizeAllocated(double width, double height)
-    {
-        base.OnSizeAllocated(width, height);
-        if (bottomPanel != null) bottomPanel.IsVisible = width <= height;
-        if (sidePanel != null) sidePanel.IsVisible = width > height;
-        SetupOverlay();
     }
 
     void OnPlayPauseButtonClicked(object sender, EventArgs args)

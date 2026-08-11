@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:f="clr-namespace:Fonts"
+             xmlns:m="clr-namespace:MicroVue.Models"
+             xmlns:vm="clr-namespace:MicroVue.ViewModels"
+             xmlns:v="clr-namespace:MicroVue.Views"
+             x:DataType="vm:AnalysisViewModel"
+             x:Name="videoPanel"
+             x:Class="MicroVue.Views.VideoPanel">
+
+    <ContentView.Resources>
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </ContentView.Resources>
+
+    <Grid RowDefinitions="*" ColumnDefinitions="*">
+
+        <!--Fois-->
+        <Grid Grid.Row="0" RowDefinitions="Auto, *, Auto, Auto" ColumnDefinitions="*" Margin="5"
+              IsVisible="{Binding IsFoiModified, Converter={StaticResource InvertedBoolConverter}}">
+
+            <Label Grid.Column="0" Text="Magnified filtered videos:" VerticalOptions="Center" Margin="5"/>
+
+            <ScrollView Grid.Row="1" Margin="5">
+
+                <CollectionView ItemsSource="{Binding Scene.Fois}" SelectedItem="{Binding SelectedFoi}" SelectionMode="Single">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="m:Foi">
+                            <Border StrokeThickness="1" Stroke="Gray" Margin="10, 2" Padding="5, 2">
+                                <Grid ColumnDefinitions="Auto, Auto, *, Auto">
+                                    <Label Grid.Column="0" Text="{Binding Name}" VerticalOptions="Center" Margin="5"/>
+                                    <Label Grid.Column="1" Text="{Binding Frequency, StringFormat='{0:N2} Hz'}" VerticalOptions="Center" Margin="5"/>
+                                    <Button Grid.Column="3" Text="Modify" TextColor="White" BackgroundColor="Green" 
+                                            Padding="10, 0" Margin="0" CornerRadius="15" MaximumHeightRequest="35"
+                                            Command="{Binding Source={x:Reference videoPanel}, Path=BindingContext.ModifyFoiCommand}"
+                                            CommandParameter="{Binding .}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </ScrollView>
+
+        </Grid>
+
+        <!--Selected Foi-->
+        <ScrollView Grid.Row="0" IsVisible="{Binding IsFoiModified}">
+
+            <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *, Auto" Margin="5">
+
+                <Button Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Text="Go Back" FontSize="22" CornerRadius="25"
+                        FontFamily="{x:Static f:FluentUI.FontFamily}" TextColor="White" Margin="5"
+                        Command="{Binding ReturnFromFoiCommand}"/>
+
+                <Label Grid.Row="1" Grid.Column="0" Text="Name:" VerticalOptions="Center" Margin="5"/>
+                <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedFoiName}" VerticalOptions="Center" Margin="5"/>
+
+                <Label Grid.Row="2" Grid.Column="0" Text="Frequency:" VerticalOptions="Center" Margin="5"/>
+                <Label Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedFoiFrequency, StringFormat='{0:N2} Hz'}" 
+                       VerticalOptions="Center" Margin="5"/>
+
+                <Label Grid.Row="3" Grid.Column="0" Text="{Binding SelectedFoiMagnification, StringFormat='Mag.({0}):'}" VerticalOptions="Center" Margin="5"/>
+                <Slider Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Value="{Binding SelectedFoiMagnification}" VerticalOptions="Center" Margin="5"
+                        Minimum="0" Maximum="200"/>
+
+                <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Text="Modify Video" TextColor="White" VerticalOptions="Center" Margin="10"
+                        Command="{Binding RemakeFoiVideoCommand}" IsVisible="{Binding IsModifyingFoi, Converter={StaticResource InvertedBoolConverter}}"/>
+
+                <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Text="Stop" TextColor="White" BackgroundColor="Red" VerticalOptions="Center" Margin="10" 
+                        Command="{Binding StopRemakingFoiCommand}" IsVisible="{Binding IsModifyingFoi}"/>
+
+                <ProgressBar Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Progress="{Binding FoiProgress}" Margin="5" IsVisible="{Binding IsModifyingFoi}"/>
+
+            </Grid>
+
+        </ScrollView>
+
+    </Grid>
+    
+</ContentView>

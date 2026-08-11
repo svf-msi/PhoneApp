@@ -50,7 +50,29 @@ namespace MicroVue.Models
         string videoName = "";
 
         [ObservableProperty]
-        double timeInterval = 1;
+        double timeInterval = -1;
+
+        [ObservableProperty]
+        double frameRate = -1;
+        partial void OnFrameRateChanged(double oldValue, double newValue)
+        {
+            if (FrameRate > 0) TimeInterval = 1 / FrameRate;
+        }
+
+        [ObservableProperty]
+        int frameCount = -1;
+
+        [ObservableProperty]
+        int width = -1;
+        
+        [ObservableProperty]
+        int height = -1;
+
+        [ObservableProperty]
+        int rotation = -1;
+
+        [ObservableProperty]
+        bool validParams = false;
 
         [ObservableProperty]
         ObservableCollection<Region> regions = new ObservableCollection<Region>();
@@ -60,6 +82,9 @@ namespace MicroVue.Models
 
         [ObservableProperty]
         ObservableCollection<Foi> fois = new ObservableCollection<Foi>();
+
+        [JsonIgnore]
+        public bool IsSaving { get; private set; }
 
         #endregion
 
@@ -91,11 +116,23 @@ namespace MicroVue.Models
         public void Save(string file = null)
         {
             if (file == null) file = FileName;
-            if (file == null) return;
-            var text = JsonConvert.SerializeObject(this, Formatting.Indented);
-            File.WriteAllText(file, text);
-            FileInfo fileInfo = new FileInfo(file);
-            Debug.WriteLine($"[Debug]: saved {fileInfo.Length / 1024} kbytes to {Name}");
+            if (file == null || IsSaving) return;
+
+            try
+            {
+                IsSaving = true;
+                var text = JsonConvert.SerializeObject(this, Formatting.Indented);
+                File.WriteAllText(file, text);
+                FileInfo fileInfo = new FileInfo(file);
+                
+                //Debug.WriteLine($"[Debug]: {text}");
+                Debug.WriteLine($"[Debug]: saved {fileInfo.Length / 1024} kbytes to {Name}");
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Error in saving scene: {e}");
+            }
+            finally { IsSaving = false; }
         }
     }
 }

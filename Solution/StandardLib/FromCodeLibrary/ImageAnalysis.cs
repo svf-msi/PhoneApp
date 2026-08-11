@@ -678,7 +678,7 @@ namespace StandardLib
             if (target?.Track?.RawPath == null || target.Track.RawPath.ContainsKey(frame) || target.EndFrame >= frame) return false;
             if (!target.HasGoodGradientPoints) return false;
 
-            Debug.WriteLine($"[Debug]: Check {target.Name}, {frame}, {target.GrayReference}, {target.RgbReference}");
+            //Debug.WriteLine($"[Debug]: Check {target.Name}, {frame}, {target.GrayReference}, {target.RgbReference}");
 
             var rgbImage = image as Image<Rgb, float>;
             var grayImage = image as Image<Gray, float>;
@@ -688,7 +688,7 @@ namespace StandardLib
             var roundReference = target.RoundReference;
             var referenceOffset = target.ReferenceOffset;
             var nextPoint = frame == target.PrimaryReferenceFrame ? target.Reference.TrackPoint : ProjectNextPoint(track, frame);
-            Debug.WriteLine($"[Debug]: Projected point for {target.Name}: {frame}, {Utils.ToString(nextPoint)}");
+            //Debug.WriteLine($"[Debug]: Projected point for {target.Name}: {frame}, {Utils.ToString(nextPoint)}");
             if (nextPoint != null)
             {
                 nextPoint.ReferenceFrame = target.Reference.FrameNumber;
@@ -698,7 +698,7 @@ namespace StandardLib
                 if (search.IsValid)
                 {
                     var position = search.Find();
-                    Debug.WriteLine($"[Debug]: target found = {search.NotFound}");
+                    //Debug.WriteLine($"[Debug]: target found = {search.NotFound}");
                     if (search.NotFound)
                     {
                         target.IsTracked = false;
@@ -898,13 +898,13 @@ namespace StandardLib
         }
 
         public static bool FilterFrequency(double frequency, double frameRate, int length, Video_MP4 video,
-            out Image<Bgr, float> real, out Image<Bgr, float> imag, out Image<Bgr, float> average, 
+            out Image<Bgr, float> real, out Image<Bgr, float> imag, out Image<Bgr, float> average,
             CancellationToken token, Action<double> progress = null, bool doAverage = true)
         {
             real = null;
             imag = null;
             average = null;
-            if (video == null || length == 0) return false;
+            if (video == null || length == 0 || frameRate == 0) return false;
 
             var bin = Math.Round(frequency * length / frameRate);
             try
@@ -921,8 +921,11 @@ namespace StandardLib
                 var floatFrame = frame.Convert<Bgr, float>();
                 CvInvoke.Accumulate(floatFrame * 2, real);
                 if (doAverage) CvInvoke.Accumulate(floatFrame, average);
-                Debug.WriteLine($"[Debug]: Started filtering width={width}, height={height}.");
+                frame.Dispose();
+                floatFrame.Dispose();
 
+                //Debug.WriteLine($"[Debug]: Started filtering width={width}, height={height}."); 
+                
                 for (int i = 1; i < length; ++i)
                 {
                     if (!video.ReadBgrFrame(out frame) || frame == null) break;
@@ -930,18 +933,26 @@ namespace StandardLib
 
                     floatFrame = frame.Convert<Bgr, float>();
                     var phase = 2 * Math.PI * i * bin / length;
-                    CvInvoke.Accumulate(floatFrame * Math.Cos(phase) * 2, real);
-                    CvInvoke.Accumulate(floatFrame * Math.Sin(-phase) * 2, imag);
+                    var temp = floatFrame * (float)(Math.Cos(phase) * 2);
+                    var temp2 = floatFrame * (float)(Math.Sin(-phase) * 2);
+                    CvInvoke.Accumulate(temp, real);
+                    CvInvoke.Accumulate(temp2, imag);
                     if (doAverage) CvInvoke.Accumulate(floatFrame, average);
+
+                    temp.Dispose();
+                    temp2.Dispose();
+                    frame.Dispose();
+                    floatFrame.Dispose();
 
                     ++count;
                     progress?.Invoke((double)count / length);
-                    Debug.WriteLine($"[Debug]: Filtered {count} of {length} frames.");
+                    //Debug.WriteLine($"[Debug]: Filtered {count} of {length} frames.");
                 }
 
                 real = real.ConvertScale<float>(1.0 / length, 0);
                 imag = imag.ConvertScale<float>(1.0 / length, 0);
                 if (doAverage) average = average.ConvertScale<float>(1.0 / length, 0);
+
                 return true;
             }
             catch (Exception e)
