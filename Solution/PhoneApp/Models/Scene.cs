@@ -61,6 +61,9 @@ namespace MicroVue.Models
         [ObservableProperty]
         ObservableCollection<Foi> fois = new ObservableCollection<Foi>();
 
+        [JsonIgnore]
+        public bool IsSaving { get; private set; }
+
         #endregion
 
         public void RefreshRegions()
@@ -91,11 +94,23 @@ namespace MicroVue.Models
         public void Save(string file = null)
         {
             if (file == null) file = FileName;
-            if (file == null) return;
-            var text = JsonConvert.SerializeObject(this, Formatting.Indented);
-            File.WriteAllText(file, text);
-            FileInfo fileInfo = new FileInfo(file);
-            Debug.WriteLine($"[Debug]: saved {fileInfo.Length / 1024} kbytes to {Name}");
+            if (file == null || IsSaving) return;
+
+            try
+            {
+                IsSaving = true;
+                var text = JsonConvert.SerializeObject(this, Formatting.Indented);
+                File.WriteAllText(file, text);
+                FileInfo fileInfo = new FileInfo(file);
+                
+                //Debug.WriteLine($"[Debug]: {text}");
+                Debug.WriteLine($"[Debug]: saved {fileInfo.Length / 1024} kbytes to {Name}");
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Error in saving scene: {e}");
+            }
+            finally { IsSaving = false; }
         }
     }
 }

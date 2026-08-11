@@ -1,13 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using Newtonsoft.Json;
 using StandardLib;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace MicroVue.Models
@@ -33,14 +33,15 @@ namespace MicroVue.Models
         bool isProcessing = false;
 
         [ObservableProperty]
-        bool isSaving = false;
-
-        [ObservableProperty]
         bool isReady = false;
 
+        bool isSaving = false;
         [JsonIgnore]
-        [ObservableProperty]
+        public bool IsSaving { get => isSaving; set {  SetProperty(ref isSaving, value); } }
+
         double progress;
+        [JsonIgnore]
+        public double Progress { get => progress; set { SetProperty(ref progress, value); } }
 
         [JsonIgnore]
         public CancellationTokenSource Cts { get; set; }
@@ -178,7 +179,8 @@ namespace MicroVue.Models
             var magnifiedFrame = AverageImage + RealImage * (float)(Magnification * Math.Cos(phase)) - ImagImage * (float)(Magnification * Math.Sin(phase));
             if (minImage != null) CvInvoke.Max(minImage, magnifiedFrame, magnifiedFrame);
             if (maxImage != null) CvInvoke.Min(maxImage, magnifiedFrame, magnifiedFrame);
-            var frame = magnifiedFrame.Convert(f => (byte)Math.Max(0, Math.Min(f, 255)));
+            var frame = magnifiedFrame?.Convert(f => (byte)Math.Max(0, Math.Min(f, 255)));
+            magnifiedFrame?.Dispose();
             return frame;
         }
 
@@ -190,7 +192,7 @@ namespace MicroVue.Models
                 int fourcc = VideoWriter.Fourcc('H', '2', '6', '4');
                 var width = AverageImage.Width;
                 var height = AverageImage.Height;
-                using (var writer = new VideoWriter(name, 0, fourcc, 30, new System.Drawing.Size(width, height), true))
+                using (var writer = new VideoWriter(name, 0, fourcc, 20, new System.Drawing.Size(width, height), true))
                 {
                     for (int i = 0; i < NumberOfSamples; ++i)
                     {
@@ -218,7 +220,6 @@ namespace MicroVue.Models
         public void Remove()
         {
             Dispose();
-            Debug.WriteLine($"[Debug]: real = {RealImageFile}");
             if (!string.IsNullOrWhiteSpace(RealImageFile)) File.Delete(RealImageFile);
             if (!string.IsNullOrWhiteSpace(ImagImageFile)) File.Delete(ImagImageFile);
             if (!string.IsNullOrWhiteSpace(AverageImageFile)) File.Delete(AverageImageFile);

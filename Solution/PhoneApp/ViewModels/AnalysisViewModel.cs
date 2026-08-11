@@ -37,6 +37,16 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         bool onVideoView;
+        partial void OnOnVideoViewChanged(bool oldValue, bool newValue)
+        {
+            if (OnVideoView)
+            {
+                if (Scene?.Fois?.Count > 0)
+                {
+                    SelectedFoi = Scene.Fois[0];
+                }
+            }
+        }
 
         [ObservableProperty]
         bool back;
@@ -326,6 +336,38 @@ namespace MicroVue.ViewModels
 
         #endregion
 
+        #region FOI-related
+
+        [ObservableProperty]
+        Foi selectedFoi;
+        partial void OnSelectedFoiChanged(Foi oldValue, Foi newValue)
+        {
+            OnPropertyChanged(nameof(SelectedFoiName));
+            OnPropertyChanged(nameof(SelectedFoiFrequency));
+            OnPropertyChanged(nameof(SelectedFoiMagnification));
+            SetFoiSource(SelectedFoi);
+        }
+
+        [ObservableProperty]
+        bool isFoiModified;
+        partial void OnIsFoiModifiedChanged(bool oldValue, bool newValue)
+        {
+            //OnPropertyChanged(nameof(SelectedFoiName));
+            //OnPropertyChanged(nameof(SelectedFoiFrequency));
+            //OnPropertyChanged(nameof(SelectedFoiMagnification));
+        }
+
+        public string SelectedFoiName => SelectedFoi?.Name;
+
+        public double SelectedFoiFrequency => SelectedFoi?.Frequency ?? 0;
+
+        public double SelectedFoiMagnification => SelectedFoi?.Magnification ?? 0;
+
+        [ObservableProperty]
+        MediaSource foiVideoSource;
+
+        #endregion
+
         #endregion
 
         #region Setup
@@ -451,6 +493,14 @@ namespace MicroVue.ViewModels
                 var id = Scene.Fois.Count == 0 ? 1 : Scene.Fois.Last().Id + 1;
                 var foi = new Foi { Id = id, Name = $"FOI {id}", SceneName = SceneName, Frequency = frequency };
                 Scene.Fois.Add(foi);
+            }
+        }
+
+        void SetFoiSource(Foi foi)
+        {
+            if (!string.IsNullOrEmpty(foi?.VideoFile))
+            {
+                FoiVideoSource = MediaSource.FromFile(foi?.VideoFile);
             }
         }
 
@@ -639,10 +689,10 @@ namespace MicroVue.ViewModels
                     {
                         foi.IsNotProcessed = false;
                         foi.IsProcessing = true;
-                        foi.IsSaving = false;
                         foi.IsReady = false;
+                        foi.IsSaving = false;
                         foi.Cts = new CancellationTokenSource();
-                        if (ImageAnalysis.FilterFrequency(foi.Frequency, FrameRate, MediaLength, video,
+                        if (ImageAnalysis.FilterFrequency(foi.Frequency, FrameRate > 0 ? FrameRate : 1, MediaLength, video,
                             out var real, out var imag, out var average, foi.Cts.Token, (double p) => foi.Progress = p))
                         {
                             foi.RealImage = real;
@@ -653,12 +703,11 @@ namespace MicroVue.ViewModels
 
                             foi.IsNotProcessed = false;
                             foi.IsProcessing = false;
-                            foi.IsSaving = true;
-                            
-                            Scene.Save();
-
-                            foi.IsSaving = false;
                             foi.IsReady = true;
+                            foi.IsSaving = true;
+
+                            Scene.Save();
+                            foi.IsSaving = false;
                         }
                         else
                         {
@@ -668,8 +717,8 @@ namespace MicroVue.ViewModels
                             foi.IsSaving = false;
                         }
 
-                        Debug.WriteLine(Utilities.ListFolderContents(App.FoiDataFolder));
-                        Debug.WriteLine(Utilities.ListFolderContents(App.FoiVideoFolder));
+                        //Debug.WriteLine(Utilities.ListFolderContents(App.FoiDataFolder));
+                        //Debug.WriteLine(Utilities.ListFolderContents(App.FoiVideoFolder));
                     }
                     catch (Exception e)
                     {
@@ -696,6 +745,22 @@ namespace MicroVue.ViewModels
             {
                 
             }
+        }
+
+        [RelayCommand]
+        void ModifyFoi(Foi foi)
+        {
+            if (foi != null)
+            {
+                IsFoiModified = true;
+                SelectedFoi = foi;
+            }
+        }
+
+        [RelayCommand]
+        void ReturnFromFoi()
+        {
+            IsFoiModified = false;
         }
 
         #endregion
