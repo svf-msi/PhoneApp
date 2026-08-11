@@ -79,7 +79,7 @@ namespace MicroVue.Models
                     rotationAngle = angle;
                 }
                 string fps = retriever.ExtractMetadata(MetadataKey.VideoFrameCount);
-                Debug.WriteLine($"[Debug]: test {fps}");
+                //Debug.WriteLine($"[Debug]: test {fps}");
             }
 #endif
 

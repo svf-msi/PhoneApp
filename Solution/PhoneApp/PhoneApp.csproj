@@ -137,6 +137,9 @@
 	  <MauiXaml Update="Views\Controls\ChartPanel.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\Controls\InfoView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\Controls\VideoPanel.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

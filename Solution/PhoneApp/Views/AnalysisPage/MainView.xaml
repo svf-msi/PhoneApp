@@ -70,7 +70,7 @@
 
                                     <Rectangle Fill="Transparent" 
                                         Stroke="{Binding Color}" 
-                                        StrokeThickness="3" StrokeDashArray="1 1"
+                                        StrokeThickness="2" StrokeDashArray="1 1"
                                         AbsoluteLayout.LayoutBounds="{Binding Rect, 
                                         Converter={StaticResource LayoutRegionConverter},
                                         ConverterParameter={x:Reference mainView}}"
@@ -92,7 +92,7 @@
 
                                     <Rectangle Fill="Transparent" 
                                         Stroke="{Binding ColorText, Converter={StaticResource ColorTextConverter}}" 
-                                        StrokeThickness="3"
+                                        StrokeThickness="2"
                                         AbsoluteLayout.LayoutBounds="{Binding CurrentRegion, 
                                         Converter={StaticResource LayoutTargetConverter},
                                         ConverterParameter={x:Reference mainView}}"

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Emgu.CV;
@@ -10,6 +11,7 @@ using LiveChartsCore.SkiaSharpView.Maui;
 using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView.Painting.Effects;
 using MicroVue.Models;
+using MicroVue.Views;
 using Newtonsoft.Json;
 using SkiaSharp;
 using StandardLib;
@@ -70,13 +72,28 @@ namespace MicroVue.ViewModels
                 SceneName = Scene.Name;
                 if (Scene == null) return;
                 VideoPath = Scene.VideoName;
-                Utilities.GetMetadata(out var data, VideoPath);
-                MediaRotation = (int)data[MetaType.VideoRotation];
-                MediaLength = (int)data[MetaType.FrameCount];
-                FrameRate = data[MetaType.FrameRate];
+                SetupVideo();
+
+                if (Scene.ValidParams)
+                {
+                    MediaRotation = Scene.Rotation;
+                    MediaLength = Scene.FrameCount;
+                    FrameRate = Scene.FrameRate;
+                }
+                else
+                {
+                    Utilities.GetMetadata(out var data, VideoPath);
+                    Scene.Rotation = MediaRotation = (int)data[MetaType.VideoRotation];
+                    Scene.FrameCount = MediaLength = (int)data[MetaType.FrameCount];
+                    Scene.FrameRate = FrameRate = data[MetaType.FrameRate];
+                    Scene.Width = VideoWidth;
+                    Scene.Height = VideoHeight;
+                    Scene.ValidParams = true;
+                    Scene.Save();
+                }
+                
                 //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(data)}");
                 SetupSource();
-                SetupVideo();
                 UpdateChart();
             }
         }
@@ -121,9 +138,14 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         double frameRate;
-
-        [ObservableProperty]
-        bool isRotated;
+        partial void OnFrameRateChanged(double oldValue, double newValue)
+        {
+            if (FrameRate > 0 && Scene != null)
+            {
+                Scene.FrameRate = FrameRate;
+                Scene.Save();
+            }
+        }
 
         #region Player-related
 
@@ -380,8 +402,6 @@ namespace MicroVue.ViewModels
                 CurrentFrame = 0;
                 VideoWidth = video?.Width ?? 0;
                 VideoHeight = video?.Height ?? 0;
-                IsRotated = MediaWidth > 0 && VideoWidth > 0 && VideoWidth == MediaHeight;
-                //video.Count();
                 //if (useImage) SetImage();
             }
         }
@@ -519,7 +539,7 @@ namespace MicroVue.ViewModels
             {
                 try
                 {
-                    Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {MediaLength} frames.");
+                    //Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {MediaLength} frames.");
                     IsAnalizing = true;
                     stopAnalysis = false;
                     video.Reset();
@@ -530,7 +550,7 @@ namespace MicroVue.ViewModels
                     //image.Dispose();
                     while (video.ReadFrame(out image) && !stopAnalysis)
                     {
-                        Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
+                        //Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
                         var found = ImageAnalysis.AnalyzeFrame(count, image, targets);
                         image.Dispose();
                         if (!found) break;
@@ -540,8 +560,8 @@ namespace MicroVue.ViewModels
                     Scene.Targets = targets;
                     Scene.Save();
                     UpdateChart();
-                    Debug.WriteLine($"[Debug]: done, frame count = {count}.");
-                    Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(Scene.Targets[0].Track.RawPath, Formatting.Indented)}");
+                    //Debug.WriteLine($"[Debug]: done, frame count = {count}.");
+                    //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(Scene.Targets[0].Track.RawPath, Formatting.Indented)}");
                 }
                 catch (Exception e)
                 {
@@ -584,6 +604,7 @@ namespace MicroVue.ViewModels
             {
                 var target = Scene?.Targets.FirstOrDefault(target => target.Name == region.Name);
                 if (target != null) Scene.Targets.Remove(target);
+                UpdateChart();
             }
         }
 
@@ -691,6 +712,7 @@ namespace MicroVue.ViewModels
                         foi.IsProcessing = true;
                         foi.IsReady = false;
                         foi.IsSaving = false;
+                        video.Reset();
                         foi.Cts = new CancellationTokenSource();
                         if (ImageAnalysis.FilterFrequency(foi.Frequency, FrameRate > 0 ? FrameRate : 1, MediaLength, video,
                             out var real, out var imag, out var average, foi.Cts.Token, (double p) => foi.Progress = p))

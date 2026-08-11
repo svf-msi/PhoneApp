@@ -678,7 +678,7 @@ namespace StandardLib
             if (target?.Track?.RawPath == null || target.Track.RawPath.ContainsKey(frame) || target.EndFrame >= frame) return false;
             if (!target.HasGoodGradientPoints) return false;
 
-            Debug.WriteLine($"[Debug]: Check {target.Name}, {frame}, {target.GrayReference}, {target.RgbReference}");
+            //Debug.WriteLine($"[Debug]: Check {target.Name}, {frame}, {target.GrayReference}, {target.RgbReference}");
 
             var rgbImage = image as Image<Rgb, float>;
             var grayImage = image as Image<Gray, float>;
@@ -688,7 +688,7 @@ namespace StandardLib
             var roundReference = target.RoundReference;
             var referenceOffset = target.ReferenceOffset;
             var nextPoint = frame == target.PrimaryReferenceFrame ? target.Reference.TrackPoint : ProjectNextPoint(track, frame);
-            Debug.WriteLine($"[Debug]: Projected point for {target.Name}: {frame}, {Utils.ToString(nextPoint)}");
+            //Debug.WriteLine($"[Debug]: Projected point for {target.Name}: {frame}, {Utils.ToString(nextPoint)}");
             if (nextPoint != null)
             {
                 nextPoint.ReferenceFrame = target.Reference.FrameNumber;
@@ -698,7 +698,7 @@ namespace StandardLib
                 if (search.IsValid)
                 {
                     var position = search.Find();
-                    Debug.WriteLine($"[Debug]: target found = {search.NotFound}");
+                    //Debug.WriteLine($"[Debug]: target found = {search.NotFound}");
                     if (search.NotFound)
                     {
                         target.IsTracked = false;
@@ -946,7 +946,7 @@ namespace StandardLib
 
                     ++count;
                     progress?.Invoke((double)count / length);
-                    Debug.WriteLine($"[Debug]: Filtered {count} of {length} frames.");
+                    //Debug.WriteLine($"[Debug]: Filtered {count} of {length} frames.");
                 }
 
                 real = real.ConvertScale<float>(1.0 / length, 0);

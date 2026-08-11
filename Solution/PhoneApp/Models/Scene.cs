@@ -50,7 +50,29 @@ namespace MicroVue.Models
         string videoName = "";
 
         [ObservableProperty]
-        double timeInterval = 1;
+        double timeInterval = -1;
+
+        [ObservableProperty]
+        double frameRate = -1;
+        partial void OnFrameRateChanged(double oldValue, double newValue)
+        {
+            if (FrameRate > 0) TimeInterval = 1 / FrameRate;
+        }
+
+        [ObservableProperty]
+        int frameCount = -1;
+
+        [ObservableProperty]
+        int width = -1;
+        
+        [ObservableProperty]
+        int height = -1;
+
+        [ObservableProperty]
+        int rotation = -1;
+
+        [ObservableProperty]
+        bool validParams = false;
 
         [ObservableProperty]
         ObservableCollection<Region> regions = new ObservableCollection<Region>();

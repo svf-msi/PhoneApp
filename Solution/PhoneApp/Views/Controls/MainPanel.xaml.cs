@@ -1,4 +1,6 @@
+using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using MicroVue.ViewModels;
 using System.Diagnostics;
@@ -12,4 +14,14 @@ public partial class MainPanel : ContentView
 		InitializeComponent();
 	}
 
+    void Info_Pressed(object sender, EventArgs e)
+    {
+        if (BindingContext is AnalysisViewModel vm)
+        {
+            var infoView = new InfoView();
+            infoView.BindingContext = vm;
+
+            Shell.Current.ShowPopupAsync(infoView); 
+        }
+    }
 }

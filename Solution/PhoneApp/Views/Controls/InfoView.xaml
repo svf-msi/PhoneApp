@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:f="clr-namespace:Fonts"
+             xmlns:m="clr-namespace:MicroVue.Models"
+             xmlns:vm="clr-namespace:MicroVue.ViewModels"
+             xmlns:v="clr-namespace:MicroVue.Views"
+             x:Class="MicroVue.Views.InfoView"
+             x:DataType="vm:AnalysisViewModel">
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *">
+
+        <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Video Info:"/>
+
+        <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="1" Text="FPS: " VerticalOptions="Center"/>
+        <Entry Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="1" FontSize="18"
+               Text="{Binding FrameRate, StringFormat='{0:N0}'}" VerticalOptions="Center"/>
+
+        <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="1" Text="Length: "/>
+        <Label Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="1" Text="{Binding MediaLength}"/>
+
+        <Label Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1" Text="Width: "/>
+        <Label Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="1" Text="{Binding VideoWidth}"/>
+
+        <Label Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="1" Text="Height: "/>
+        <Label Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="1" Text="{Binding VideoHeight}"/>
+
+        <Label Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="1" Text="Angle: "/>
+        <Label Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="1" Text="{Binding MediaRotation}"/>
+
+    </Grid>
+</ContentView>
