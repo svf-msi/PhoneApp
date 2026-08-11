@@ -61,12 +61,17 @@
                 <Label Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedFoiFrequency, StringFormat='{0:N2} Hz'}" 
                        VerticalOptions="Center" Margin="5"/>
 
-                <Label Grid.Row="3" Grid.Column="0" Text="Magnification:" VerticalOptions="Center" Margin="5"/>
+                <Label Grid.Row="3" Grid.Column="0" Text="{Binding SelectedFoiMagnification, StringFormat='Mag.({0}):'}" VerticalOptions="Center" Margin="5"/>
                 <Slider Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Value="{Binding SelectedFoiMagnification}" VerticalOptions="Center" Margin="5"
                         Minimum="0" Maximum="200"/>
 
-                <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Text="Modify" VerticalOptions="Center" Margin="10"
-                        Command="{Binding ModifyFoiCommand}"/>
+                <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Text="Modify" TextColor="White" VerticalOptions="Center" Margin="10"
+                        Command="{Binding RemakeFoiVideoCommand}" IsVisible="{Binding IsModifyingFoi, Converter={StaticResource InvertedBoolConverter}}"/>
+
+                <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Text="Stop" TextColor="White" BackgroundColor="Red" VerticalOptions="Center" Margin="10" 
+                        Command="{Binding StopRemakingFoiCommand}" IsVisible="{Binding IsModifyingFoi}"/>
+
+                <ProgressBar Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Progress="{Binding FoiProgress}" Margin="5" IsVisible="{Binding IsModifyingFoi}"/>
 
             </Grid>
 

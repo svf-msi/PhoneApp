@@ -933,13 +933,14 @@ namespace StandardLib
 
                     floatFrame = frame.Convert<Bgr, float>();
                     var phase = 2 * Math.PI * i * bin / length;
-                    var f = (float)(Math.Cos(phase) * 2);
                     var temp = floatFrame * (float)(Math.Cos(phase) * 2);
                     var temp2 = floatFrame * (float)(Math.Sin(-phase) * 2);
                     CvInvoke.Accumulate(temp, real);
                     CvInvoke.Accumulate(temp2, imag);
                     if (doAverage) CvInvoke.Accumulate(floatFrame, average);
 
+                    temp.Dispose();
+                    temp2.Dispose();
                     frame.Dispose();
                     floatFrame.Dispose();
 

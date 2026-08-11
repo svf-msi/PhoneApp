@@ -27,14 +27,14 @@ public partial class VideoView : ContentView
             if (args.PropertyName == nameof(player.Duration))
             {
                 slider.Maximum = player.Duration.TotalSeconds;
-                Debug.WriteLine($"[Debug]: Player duration {player.Duration.TotalSeconds}");
+                //Debug.WriteLine($"[Debug]: Player duration {player.Duration.TotalSeconds}");
             }
         }
     }
 
     void Player_PositionChanged(object sender, MediaPositionChangedEventArgs args)
     {
-        Debug.WriteLine($"[Debug]: Player position changed: {args.Position.TotalSeconds}");
+        //Debug.WriteLine($"[Debug]: Player position changed: {args.Position.TotalSeconds}");
         if (!isDragging)
         {
             slider.Value = args.Position.TotalSeconds;

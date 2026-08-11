@@ -188,11 +188,11 @@ namespace MicroVue.Models
         {
             try
             {
-                var name = GetVideoFileName($"_{Name}_video");
+                var tempname = GetVideoFileName($"_{Name}_video_temp");
                 int fourcc = VideoWriter.Fourcc('H', '2', '6', '4');
                 var width = AverageImage.Width;
                 var height = AverageImage.Height;
-                using (var writer = new VideoWriter(name, 0, fourcc, 20, new System.Drawing.Size(width, height), true))
+                using (var writer = new VideoWriter(tempname, 0, fourcc, 20, new System.Drawing.Size(width, height), true))
                 {
                     for (int i = 0; i < NumberOfSamples; ++i)
                     {
@@ -204,12 +204,23 @@ namespace MicroVue.Models
                         }
                         frame?.Dispose();
                         progress?.Invoke((double)(i + 1) / NumberOfSamples); 
-                        Debug.WriteLine($"Write frame {i+1} to {name}");
+                        Debug.WriteLine($"Write frame {i+1} to {tempname}, mag={Magnification}");
+                        if (Cts?.Token.IsCancellationRequested == true) break;
                     }
                 }
 
-                VideoFile = name;
-                Video = new Video_MP4(name);
+                if (Cts?.Token.IsCancellationRequested == true)
+                {
+                    File.Delete(tempname);
+                }
+                else
+                {
+                    var name = GetVideoFileName($"_{Name}_video");
+                    if (File.Exists(name)) File.Delete(name);
+                    File.Move(tempname, name);
+                    VideoFile = name;
+                    Video = new Video_MP4(name);
+                }
             }
             catch (Exception e)
             {

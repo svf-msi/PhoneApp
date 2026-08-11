@@ -41,7 +41,7 @@ namespace MicroVue.ViewModels
         {
             if (OnVideoView)
             {
-                if (Scene?.Fois?.Count > 0)
+                if (Scene?.Fois?.Count > 0 && SelectedFoi == null)
                 {
                     SelectedFoi = Scene.Fois[0];
                 }
@@ -350,18 +350,18 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         bool isFoiModified;
-        partial void OnIsFoiModifiedChanged(bool oldValue, bool newValue)
-        {
-            //OnPropertyChanged(nameof(SelectedFoiName));
-            //OnPropertyChanged(nameof(SelectedFoiFrequency));
-            //OnPropertyChanged(nameof(SelectedFoiMagnification));
-        }
+
+        [ObservableProperty]
+        bool isModifyingFoi;
+
+        [ObservableProperty]
+        double foiProgress;
 
         public string SelectedFoiName => SelectedFoi?.Name;
 
         public double SelectedFoiFrequency => SelectedFoi?.Frequency ?? 0;
 
-        public double SelectedFoiMagnification => SelectedFoi?.Magnification ?? 0;
+        public double SelectedFoiMagnification { get => SelectedFoi?.Magnification ?? 0; set { SelectedFoi.Magnification = (int)value; OnPropertyChanged(); } }
 
         [ObservableProperty]
         MediaSource foiVideoSource;
@@ -701,11 +701,20 @@ namespace MicroVue.ViewModels
                             
                             foi.MakeVideo((double p) => foi.Progress = p);
 
-                            foi.IsNotProcessed = false;
-                            foi.IsProcessing = false;
-                            foi.IsReady = true;
-                            foi.IsSaving = true;
+                            if (foi.Cts.Token.IsCancellationRequested)
+                            {
+                                foi.IsNotProcessed = true;
+                                foi.IsProcessing = false;
+                                foi.IsReady = false;
+                            }
+                            else
+                            {
+                                foi.IsNotProcessed = false;
+                                foi.IsProcessing = false;
+                                foi.IsReady = true;
+                            }
 
+                            foi.IsSaving = true;
                             Scene.Save();
                             foi.IsSaving = false;
                         }
@@ -743,7 +752,8 @@ namespace MicroVue.ViewModels
         {
             if (foi != null)
             {
-                
+                SelectedFoi = foi;
+                OnVideoView = true;
             }
         }
 
@@ -761,6 +771,43 @@ namespace MicroVue.ViewModels
         void ReturnFromFoi()
         {
             IsFoiModified = false;
+        }
+
+        [RelayCommand]
+        void RemakeFoiVideo()
+        {
+            if (SelectedFoi != null)
+            {
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        FoiProgress = 0;
+                        IsModifyingFoi = true;
+                        SelectedFoi.Cts = new CancellationTokenSource();
+                        SelectedFoi.MakeVideo((double p) => FoiProgress = p);
+                        if (!SelectedFoi.Cts.Token.IsCancellationRequested)
+                        {
+                            Scene.Save();
+                            SetFoiSource(SelectedFoi);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine($"Error in remaking foi: {e}");
+                    }
+                    finally
+                    {
+                        IsModifyingFoi = false;
+                    }
+                });
+            }
+        }
+
+        [RelayCommand]
+        void StopRemakingFoi()
+        {
+            SelectedFoi?.Cts?.Cancel();
         }
 
         #endregion
