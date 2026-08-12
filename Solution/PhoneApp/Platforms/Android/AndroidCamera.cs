@@ -79,6 +79,12 @@ namespace MicroVue.Models
         {
             try
             {
+                if (device != null && Facing == facing)
+                {
+                    StartPreview();
+                    return true;
+                }
+
                 CameraManager manager = (CameraManager)Android.App.Application.Context.GetSystemService(Context.CameraService);
                 string? cameraId = SelectCameraId(manager, facing);
                 Facing = facing;
@@ -165,8 +171,9 @@ namespace MicroVue.Models
                     if (minDurationNs > 0) maxFps = 1_000_000_000.0 / minDurationNs;
 
                     PreviewSize = sizes
+                        .Where(s => s.Width * 9 == s.Height * 16)
                         .OrderByDescending(s => (long)s.Width * s.Height)
-                        .FirstOrDefault() ?? sizes[0];
+                        .FirstOrDefault() ?? largest;
                 }
                 caps.FrameRateRange = new RangeInfo(1, maxFps, 1, 30);
 
@@ -454,6 +461,7 @@ namespace MicroVue.Models
             long bitRate = (long)(videoSize.Width * (double)videoSize.Height * intFps * bitsPerPixel); // make sure bitrate is fine for hi and lo fps
             mediaRecorder.SetVideoEncodingBitRate((int)Math.Min(bitRate, 42_000_000));
             mediaRecorder.SetVideoFrameRate(intFps);
+            mediaRecorder.SetCaptureRate(intFps);
 
             mediaRecorder.SetVideoSize(videoSize.Width, videoSize.Height);
             mediaRecorder.SetVideoEncoder(Android.Media.VideoEncoder.H264);

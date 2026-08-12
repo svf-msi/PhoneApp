@@ -27,6 +27,12 @@ public partial class CameraPage : ContentPage
         }
     }
 
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        if (BindingContext is CameraViewModel vm) vm.Shutdown();
+    }
+
     protected override void OnSizeAllocated(double width, double height)
     {
         base.OnSizeAllocated(width, height);

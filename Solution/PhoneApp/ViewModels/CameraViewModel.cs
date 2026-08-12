@@ -145,7 +145,7 @@ namespace MicroVue.ViewModels
                     scenePath = App.DataFolder + sceneName;
                 }
 
-                var scene = new Scene { Name = sceneName, VideoName = videoPath };
+                var scene = new Scene { Name = sceneName, VideoName = videoPath, FrameRate = Camera?.FrameRate ?? -1 };
                 scene.Save(scenePath);
                 return scenePath;
             }
@@ -159,6 +159,13 @@ namespace MicroVue.ViewModels
         public void Initialize()
         {
             Camera?.Open(CameraFacing.Back);
+        }
+
+        public void Shutdown()
+        {
+            captureCts?.Cancel();
+            if (Camera?.IsRecording == true) Camera.StopRecording(true); // discard a capture left running
+            Camera?.Close();
         }
 
         #region Status

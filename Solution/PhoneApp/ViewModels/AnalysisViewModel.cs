@@ -85,7 +85,8 @@ namespace MicroVue.ViewModels
                     Utilities.GetMetadata(out var data, VideoPath);
                     Scene.Rotation = MediaRotation = (int)data[MetaType.VideoRotation];
                     Scene.FrameCount = MediaLength = (int)data[MetaType.FrameCount];
-                    Scene.FrameRate = FrameRate = data[MetaType.FrameRate];
+                    if (Scene.FrameRate <= 0) Scene.FrameRate = data[MetaType.FrameRate]; // a recorded scene already knows its fps
+                    FrameRate = Scene.FrameRate;
                     Scene.Width = VideoWidth;
                     Scene.Height = VideoHeight;
                     Scene.ValidParams = true;
