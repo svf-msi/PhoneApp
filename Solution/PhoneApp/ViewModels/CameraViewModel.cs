@@ -43,6 +43,30 @@ namespace MicroVue.ViewModels
             }
         }
 
+        string videoName = DefaultVideoName();
+        public string VideoName
+        {
+            get => videoName;
+            set { videoName = value; OnPropertyChanged(); }
+        }
+
+        static string DefaultVideoName() => $"Video {Preferences.Get("cameraVideoCounter", 1)}";
+
+        private string NextVideoPath()
+        {
+            var name = VideoName.Trim();
+            if (name.Length == 0) name = DefaultVideoName();
+
+            var path = $"{App.VideoFolder}{name}.mp4";
+            int n = 1; // prevent duplicates
+            while (File.Exists(path))
+            {
+                n++;
+                path = $"{App.VideoFolder}{name} {n}.mp4";
+            }
+            return path;
+        }
+
         public double RecordingDurationSlider
         {
             get => Math.Clamp(Camera?.RecordingDuration ?? 0, 1, 10);
@@ -82,6 +106,9 @@ namespace MicroVue.ViewModels
         {
             var scenePath = SaveScene(videoPath);
             if (scenePath == null) return;
+
+            Preferences.Set("cameraVideoCounter", Preferences.Get("cameraVideoCounter", 1) + 1);
+            VideoName = DefaultVideoName();
 
             var sceneItem = new SceneItem
             {
@@ -181,8 +208,7 @@ namespace MicroVue.ViewModels
                 RecordingProgress = 0;
                 OnPropertyChanged(nameof(ProgressBounds));
 
-                var file = $"Capture_{DateTime.Now:yyyyMMdd_HHmmss}.mp4";
-                Camera.StartRecording(App.VideoFolder + file);
+                Camera.StartRecording(NextVideoPath());
 
                 var waitStart = DateTime.UtcNow;
                 while (!Camera.IsRecording && (DateTime.UtcNow - waitStart).TotalSeconds < 5)
@@ -213,12 +239,6 @@ namespace MicroVue.ViewModels
         #endregion
 
         #region Auto-wired
-
-        [RelayCommand]
-        void SwitchFacing(object parameter)
-        {
-            Camera.SwitchFacing();
-        }
 
         [RelayCommand]
         void ToggleSettingsOpen(object parameter)

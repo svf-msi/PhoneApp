@@ -42,6 +42,7 @@ public partial class CameraPage : ContentPage
     private void OnDialogTapped(object sender, TappedEventArgs e)
     {
         DurationEntry.Unfocus();
+        VideoNameEntry.Unfocus();
     }
 
 }

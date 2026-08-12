@@ -100,6 +100,12 @@
                              IsEnabled="{Binding Camera.Capabilities.SupportsManualGain}" />
                  </Grid>-->
 
+                    <FlexLayout Wrap="Wrap" AlignItems="Center">
+                        <Label Text="Video name:" Margin="0,0,8,0" VerticalTextAlignment="Center" />
+                        <Entry Text="{Binding VideoName}" x:Name="VideoNameEntry" VerticalTextAlignment="Center"
+                               FlexLayout.Basis="200" FlexLayout.Grow="1" />
+                    </FlexLayout>
+
                     <HorizontalStackLayout>
                         <Label Text="Frame rate: " VerticalTextAlignment="Center" />
                         <Picker ItemsSource="{Binding Camera.Capabilities.AllFrameRates}"
@@ -111,10 +117,6 @@
                         <Entry Text="{Binding RecordingDurationStr}" x:Name="DurationEntry" Keyboard="Numeric" WidthRequest="80" VerticalTextAlignment="Center" />
                         <Slider Minimum="1" Maximum="10" Value="{Binding RecordingDurationSlider}" VerticalOptions="Center" FlexLayout.Basis="200" FlexLayout.Grow="1" Margin="4,0,0,0" />
                     </FlexLayout>
-
-                    <HorizontalStackLayout Spacing="8">
-                        <Button VerticalOptions="Center" TextColor="White" Command="{Binding SwitchFacingCommand}" Text="Flip Camera" />
-                    </HorizontalStackLayout>
 
                 </VerticalStackLayout>
             </Border>

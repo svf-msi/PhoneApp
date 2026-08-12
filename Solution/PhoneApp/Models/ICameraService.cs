@@ -37,7 +37,6 @@ namespace MicroVue.Models
 
         void StartRecording(string outputPath);
         void StopRecording(bool discard);
-        Task SwitchFacing();
 
         #endregion
 

@@ -293,14 +293,6 @@ namespace MicroVue.Models
             OnPropertyChanged(nameof(Gain));
         }
 
-        public async Task SwitchFacing()
-        {
-            var next = Facing == CameraFacing.Back ? CameraFacing.Front : CameraFacing.Back;
-
-            Close();
-            await Open(next);
-        }
-
         void ApplyToBuilder(CameraCaptureSession.CaptureCallback? callback = null)
         {
             if (requestBuilder == null || Capabilities == null) return;

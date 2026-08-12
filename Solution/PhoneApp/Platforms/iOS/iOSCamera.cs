@@ -304,44 +304,6 @@ namespace MicroVue.Models
             return value;
         }
 
-        public Task SwitchFacing()
-        {
-            var next = Facing == CameraFacing.Back ? CameraFacing.Front : CameraFacing.Back;
-
-            cameraQueue.DispatchAsync(() =>
-            {
-                if (session == null) return;
-                var dev = SelectDevice(next);
-                if (dev == null) return;
-
-                session.BeginConfiguration();
-                if (input != null) session.RemoveInput(input);
-
-                var newInput = AVCaptureDeviceInput.FromDevice(dev, out var e);
-                if (newInput != null && session.CanAddInput(newInput))
-                {
-                    session.AddInput(newInput);
-                    input = newInput;
-                    device = dev;
-                    Facing = next;
-                }
-                else if (input != null)
-                {
-                    session.AddInput(input); // rollback
-                }
-                session.CommitConfiguration();
-
-                ReadCapabilities(device!);
-                SetSettingsFields(
-                    ae: true,
-                    fps: Capabilities!.FrameRateRange.Default,
-                    exposureUs: Capabilities.ExposureRange.Default,
-                    iso: Capabilities.GainRange.Default);
-                ApplyToDeviceCore();
-            });
-            return Task.CompletedTask;
-        }
-
         // closes the entire camera
         public void Close()
         {
