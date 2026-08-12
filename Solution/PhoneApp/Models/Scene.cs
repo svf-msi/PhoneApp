@@ -40,11 +40,20 @@ namespace MicroVue.Models
 
         #region Fields and Properties
 
+        #region Main
+
         [ObservableProperty]
         string fileName = "";
 
         [ObservableProperty]
         string name = "None";
+
+        [JsonIgnore]
+        public bool IsSaving { get; private set; }
+
+        #endregion
+
+        #region Video-related
 
         [ObservableProperty]
         string videoName = "";
@@ -63,16 +72,39 @@ namespace MicroVue.Models
         int frameCount = -1;
 
         [ObservableProperty]
-        int width = -1;
+        int videoWidth = -1;
         
         [ObservableProperty]
-        int height = -1;
+        int videoHeight = -1;
 
         [ObservableProperty]
         int rotation = -1;
 
         [ObservableProperty]
         bool validParams = false;
+
+        #endregion
+
+        #region Calibration-related
+
+        public Calibration Calibration { get; set; } = new Calibration();
+
+        [JsonIgnore]
+        public double FovWidth { get => Calibration.FovWidth; set { Calibration.FovWidth = value; OnPropertyChanged(); OnPropertyChanged(nameof(FovHeight)); } }
+
+        [JsonIgnore]
+        public double FovHeight { get => Calibration.FovHeight; set { Calibration.FovHeight = value; OnPropertyChanged(); OnPropertyChanged(nameof(FovWidth)); } }
+
+        [JsonIgnore]
+        public DistanceUnits DistanceUnits { get => Calibration.InputUnits; set { Calibration.InputUnits = value; OnPropertyChanged(); } }
+
+        [JsonIgnore]
+        public bool ScaleCalibrated => Calibration.Calibrated;
+
+        [JsonIgnore]
+        public double CalibrationScale => Calibration.Scale;
+
+        #endregion
 
         [ObservableProperty]
         ObservableCollection<Region> regions = new ObservableCollection<Region>();
@@ -82,9 +114,6 @@ namespace MicroVue.Models
 
         [ObservableProperty]
         ObservableCollection<Foi> fois = new ObservableCollection<Foi>();
-
-        [JsonIgnore]
-        public bool IsSaving { get; private set; }
 
         #endregion
 

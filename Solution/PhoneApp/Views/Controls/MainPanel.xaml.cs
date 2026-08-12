@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using MicroVue.ViewModels;
+using Newtonsoft.Json;
 using System.Diagnostics;
 
 namespace MicroVue.Views;
@@ -21,7 +22,19 @@ public partial class MainPanel : ContentView
             var infoView = new InfoView();
             infoView.BindingContext = vm;
 
-            Shell.Current.ShowPopupAsync(infoView); 
+            Task.Run(async () =>
+            {
+                var scale = vm.Scene.CalibrationScale;
+                var units = vm.Scene.DistanceUnits;
+                await Shell.Current.ShowPopupAsync(infoView);
+                if (scale != vm.Scene.CalibrationScale || units != vm.Scene.DistanceUnits)
+                {
+                    vm.UpdateChart();
+                    vm.Scene.Save();
+                }
+                //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(vm.Scene.Calibration)}");
+
+            });
         }
     }
 }
