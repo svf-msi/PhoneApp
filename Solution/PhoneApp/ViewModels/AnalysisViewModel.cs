@@ -65,38 +65,7 @@ namespace MicroVue.ViewModels
         SceneItem sceneItem = new SceneItem();
         partial void OnSceneItemChanged(SceneItem sceneItem)
         {
-            if (sceneItem != null)
-            {
-                var scenePath = sceneItem.ItemPath;
-                Scene = Scene.Read(scenePath);
-                SceneName = Scene.Name;
-                if (Scene == null) return;
-                VideoPath = Scene.VideoName;
-                SetupVideo();
-
-                if (Scene.ValidParams)
-                {
-                    MediaRotation = Scene.Rotation;
-                    MediaLength = Scene.FrameCount;
-                    FrameRate = Scene.FrameRate;
-                }
-                else
-                {
-                    Utilities.GetMetadata(out var data, VideoPath);
-                    Scene.Rotation = MediaRotation = (int)data[MetaType.VideoRotation];
-                    Scene.FrameCount = MediaLength = (int)data[MetaType.FrameCount];
-                    if (Scene.FrameRate <= 0) Scene.FrameRate = data[MetaType.FrameRate]; // a recorded scene already knows its fps
-                    FrameRate = Scene.FrameRate;
-                    Scene.Width = VideoWidth;
-                    Scene.Height = VideoHeight;
-                    Scene.ValidParams = true;
-                    Scene.Save();
-                }
-                
-                //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(data)}");
-                SetupSource();
-                UpdateChart();
-            }
+            Initialize(sceneItem);
         }
 
         [ObservableProperty]
@@ -119,7 +88,7 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         int videoWidth;
-
+        
         [ObservableProperty]
         int videoHeight;
 
@@ -132,7 +101,9 @@ namespace MicroVue.ViewModels
         [ObservableProperty]
         int mediaRotation;
 
-        public bool IsFlipped => MediaRotation == 90 || MediaRotation == -90;
+        public string Resolution => $"{VideoWidth}x{VideoHeight}";
+
+        public bool IsFlipped => MediaRotation == 90 || MediaRotation == -90 || MediaRotation == 270 || MediaRotation == -270;
 
         [ObservableProperty]
         int mediaLength;
@@ -310,6 +281,11 @@ namespace MicroVue.ViewModels
 
         bool stopAnalysis = false;
 
+        public List<Models.DistanceUnits> Units => new List<Models.DistanceUnits>
+        {
+            Models.DistanceUnits.inches, Models.DistanceUnits.feet, Models.DistanceUnits.cm, Models.DistanceUnits.meters
+        };
+
         #endregion
 
         #region Chart-related
@@ -395,6 +371,45 @@ namespace MicroVue.ViewModels
 
         #region Setup
 
+        void Initialize(SceneItem sceneItem)
+        {
+            if (sceneItem != null)
+            {
+                var scenePath = sceneItem.ItemPath;
+                Scene = Scene.Read(scenePath);
+                SceneName = Scene.Name;
+                if (Scene == null) return;
+                VideoPath = Scene.VideoName;
+                SetupVideo();
+
+                if (Scene.ValidParams)
+                {
+                    MediaRotation = Scene.Rotation;
+                    MediaLength = Scene.FrameCount;
+                    FrameRate = Scene.FrameRate;
+                }
+                else
+                {
+                    Utilities.GetMetadata(out var data, VideoPath);
+                    Scene.Rotation = MediaRotation = (int)data[MetaType.VideoRotation];
+                    Scene.FrameCount = MediaLength = (int)data[MetaType.FrameCount];
+                    if (Scene.FrameRate <= 0) Scene.FrameRate = data[MetaType.FrameRate]; // a recorded scene already knows its fps
+                    FrameRate = Scene.FrameRate;
+                    Scene.VideoWidth = VideoWidth;
+                    Scene.VideoHeight = VideoHeight;
+                    Scene.ValidParams = true;
+                    Scene.Save();
+                    //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(data)}");
+                }
+
+                Scene.Calibration.MediaWidth = IsFlipped ? VideoHeight : VideoWidth;
+                Scene.Calibration.MediaHeight = IsFlipped ? VideoWidth : VideoHeight;
+
+                SetupSource();
+                UpdateChart();
+            }
+        }
+
         void SetupVideo(bool useImage = false)
         {
             if (!string.IsNullOrEmpty(VideoPath))
@@ -419,14 +434,26 @@ namespace MicroVue.ViewModels
 
         #region Charts
 
-        void UpdateChart()
+        public void UpdateChart()
         {
             //Debug.WriteLine($"[Debug]: Update chart");
             if (Scene?.Targets?.Count > 0)
             {
                 var direction = DataDirection;
+                if (direction != DataDirection.Magnitude && IsFlipped)
+                {
+                    direction = direction == DataDirection.X ? DataDirection.Y : DataDirection.X;
+                }
                 var series = new List<ISeries>();
                 MinX = MaxX = 0;
+                var scale = Scene.CalibrationScale;
+                var units = Scene.DistanceUnits;
+                var label = units == Models.DistanceUnits.meters || units == Models.DistanceUnits.cm ? "mm" : "mil";
+                if (units == Models.DistanceUnits.inches) scale *= 1e3;
+                if (units == Models.DistanceUnits.feet) scale *= 1.2e4;
+                if (units == Models.DistanceUnits.cm) scale *= 1e2;
+                if (units == Models.DistanceUnits.meters) scale *= 1e3;
+
                 foreach (var target in Scene.Targets)
                 {
                     if (target?.IsBackground == false && target.Track?.RawPath?.Count > 0)
@@ -436,13 +463,13 @@ namespace MicroVue.ViewModels
                         if (!IsSpectrum)
                         {
                             var start = target.Track.RawPoints[0][direction.ToString()];
-                            values = target.Track.RawPoints.Select(p => new ObservablePoint(p.Frame / fps, p[direction.ToString()] - start)).ToList();
+                            values = target.Track.RawPoints.Select(p => new ObservablePoint(p.Frame / fps, scale * (p[direction.ToString()] - start))).ToList();
                         }
                         else
                         {
                             var track = target.Track.RawPoints.Select(p => (double)p[direction.ToString()]).ToArray();
                             var mean = track.Average();
-                            var waveform = track.Select(p => p - mean).ToArray();
+                            var waveform = track.Select(p => scale * (p - mean)).ToArray();
                             var spectrum = FftAnalysis.Emgu(waveform, WindowType.Hann);
                             var span = spectrum.GetLength(1);
                             binSize = fps / span;
@@ -469,7 +496,8 @@ namespace MicroVue.ViewModels
                     }
                 }
                 AxisXTitle = IsSpectrum ? "Frequency(Hz)" : "Time(secs)";
-                AxisYTitle = DataDirection == DataDirection.X ? "X displacement" : DataDirection == DataDirection.Y ? "Y displacement" : "Total displacement";
+                AxisYTitle = (DataDirection == DataDirection.X ? "X displacement" : DataDirection == DataDirection.Y ? "Y displacement" : "Total displacement");
+                if (Scene.ScaleCalibrated) AxisYTitle += $"({label})";
                 Lines = series.ToArray();
                 UpdateSections();
             }
@@ -628,8 +656,8 @@ namespace MicroVue.ViewModels
             }
 
             var color = TargetColors[(id - 1) % TargetColors.Count];
-            var width = IsFlipped ? MediaHeight : MediaWidth;
-            var height = IsFlipped ? MediaWidth : MediaHeight;
+            var width = VideoWidth; // IsFlipped ? MediaHeight : MediaWidth;
+            var height = VideoHeight; // IsFlipped ? MediaWidth : MediaHeight;
             var target = new Models.Region(id, $"Target {id}", DefaultSize, width / 2, height / 2, false, color);
             Scene.Regions.Add(target);
             SelectedRegion = target;
@@ -648,8 +676,8 @@ namespace MicroVue.ViewModels
             }
 
             var color = "White";
-            var width = IsFlipped ? MediaHeight : MediaWidth;
-            var height = IsFlipped ? MediaWidth : MediaHeight;
+            var width = VideoWidth; // IsFlipped ? MediaHeight : MediaWidth;
+            var height = VideoHeight; // IsFlipped ? MediaWidth : MediaHeight;
             var target = new Models.Region(id, $"Background {id}", DefaultSize, width / 2, height / 2, true, color);
             Scene.Regions.Add(target);
             SelectedRegion = target;
