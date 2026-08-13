@@ -47,8 +47,10 @@ namespace MicroVue.ViewModels
         public string VideoName
         {
             get => videoName;
-            set { videoName = value; OnPropertyChanged(); }
+            set { videoName = value; OnPropertyChanged(); OnPropertyChanged(nameof(VideoNameTaken)); }
         }
+
+        public bool VideoNameTaken => File.Exists($"{App.VideoFolder}{videoName.Trim()}.mp4");
 
         static string DefaultVideoName() => $"Video {Preferences.Get("cameraVideoCounter", 1)}";
 
@@ -63,7 +65,7 @@ namespace MicroVue.ViewModels
             {
                 n++;
                 path = $"{App.VideoFolder}{name} {n}.mp4";
-            }
+        }
             return path;
         }
 
@@ -102,9 +104,9 @@ namespace MicroVue.ViewModels
             }
         }
 
-        void OnRecordingSaved(string videoPath)
+        void OnRecordingSaved(string videoPath, double frameRate)
         {
-            var scenePath = SaveScene(videoPath);
+            var scenePath = SaveScene(videoPath, frameRate);
             if (scenePath == null) return;
 
             Preferences.Set("cameraVideoCounter", Preferences.Get("cameraVideoCounter", 1) + 1);
@@ -131,21 +133,15 @@ namespace MicroVue.ViewModels
             }
         }
 
-        string? SaveScene(string videoPath)
+        string? SaveScene(string videoPath, double frameRate)
         {
             try
             {
                 var baseName = Path.GetFileNameWithoutExtension(videoPath);
-                var sceneName = baseName;
-                var scenePath = App.DataFolder + sceneName;
-                int n = 2;
-                while (File.Exists(scenePath))
-                {
-                    sceneName = $"{baseName}_{n++}";
-                    scenePath = App.DataFolder + sceneName;
-                }
+                var scenePath = App.DataFolder + baseName;
+                var sceneName = Path.GetFileName(scenePath);
 
-                var scene = new Scene { Name = sceneName, VideoName = videoPath, FrameRate = Camera?.FrameRate ?? -1 };
+                var scene = new Scene { Name = sceneName, VideoName = videoPath, FrameRate = frameRate };
                 scene.Save(scenePath);
                 return scenePath;
             }
@@ -263,6 +259,7 @@ namespace MicroVue.ViewModels
             }
             else
             {
+                if (VideoNameTaken) return;
                 CaptureActive = true;
                 captureCts = new CancellationTokenSource();
                 _ = RunCaptureAsync(captureCts.Token);

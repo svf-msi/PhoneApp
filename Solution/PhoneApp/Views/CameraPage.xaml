@@ -48,9 +48,12 @@
                     <Setter Property="Text" Value="Record" />
                     <Setter Property="BackgroundColor" Value="#A9D32F2F" />
                     <Style.Triggers>
+                        <DataTrigger Binding="{Binding VideoNameTaken}" Value="True" TargetType="{x:Type Button}">
+                            <Setter Property="BackgroundColor" Value="#B3444444" />
+                        </DataTrigger>
                         <DataTrigger Binding="{Binding CaptureActive}" Value="True" TargetType="{x:Type Button}">
                             <Setter Property="Text" Value="Stop" />
-                            <Setter Property="BackgroundColor" Value="#B3202020" />
+                            <Setter Property="BackgroundColor" Value="#B3444444" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
@@ -103,7 +106,13 @@
                     <FlexLayout Wrap="Wrap" AlignItems="Center">
                         <Label Text="Video name:" Margin="0,0,8,0" VerticalTextAlignment="Center" />
                         <Entry Text="{Binding VideoName}" x:Name="VideoNameEntry" VerticalTextAlignment="Center"
-                               FlexLayout.Basis="200" FlexLayout.Grow="1" />
+                               FlexLayout.Basis="200" FlexLayout.Grow="1">
+                            <Entry.Triggers>
+                                <DataTrigger TargetType="Entry" Binding="{Binding VideoNameTaken}" Value="True">
+                                    <Setter Property="TextColor" Value="Red" />
+                                </DataTrigger>
+                            </Entry.Triggers>
+                        </Entry>
                     </FlexLayout>
 
                     <HorizontalStackLayout>

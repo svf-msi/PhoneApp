@@ -34,7 +34,7 @@ namespace MicroVue.Models
         private Android.Views.Surface? recorderSurface;
         private MediaStoreVideo? output;
         private string? requestedOutputPath;
-        public event Action<string>? RecordingSaved;
+        public event Action<string, double>? RecordingSaved;
         private ASize videoSize = new ASize(1920, 1080);
         ASize defaultVideoSize = new ASize(1920, 1080);
         private int sensorOrientation;
@@ -167,13 +167,14 @@ namespace MicroVue.Models
                 if (sizes != null && sizes.Length > 0)
                 {
                     var largest = sizes.OrderByDescending(s => (long)s.Width * s.Height).First();
-                    long minDurationNs = map.GetOutputMinFrameDuration(previewClass, largest);
-                    if (minDurationNs > 0) maxFps = 1_000_000_000.0 / minDurationNs;
 
                     PreviewSize = sizes
                         .Where(s => s.Width * 9 == s.Height * 16)
                         .OrderByDescending(s => (long)s.Width * s.Height)
                         .FirstOrDefault() ?? largest;
+
+                    long minDurationNs = map.GetOutputMinFrameDuration(previewClass, PreviewSize);
+                    if (minDurationNs > 0) maxFps = 1_000_000_000.0 / minDurationNs;
                 }
                 caps.FrameRateRange = new RangeInfo(1, maxFps, 1, 30);
 
@@ -266,6 +267,15 @@ namespace MicroVue.Models
         public void Close()
         {
             CloseSession();
+
+            if (mediaRecorder != null)
+            {
+                CleanupRecorder();
+                if (!recorderStarted && requestedOutputPath != null)
+                    try { File.Delete(requestedOutputPath); } catch { }
+                requestedOutputPath = null;
+            }
+
             try { device?.Close(); } catch { }
             device = null;
             requestBuilder = null;
@@ -340,6 +350,7 @@ namespace MicroVue.Models
         #region Recording
 
         int recordFps;
+        double recordedFps; // fps actually configured on the encoder, may be lower than FrameRate
 
         public void StartRecording(string outputPath)
         {
@@ -457,11 +468,12 @@ namespace MicroVue.Models
                 }
             }
             int intFps = (int)Math.Round(fps);
+            recordedFps = intFps;
             const double bitsPerPixel = 0.15;
             long bitRate = (long)(videoSize.Width * (double)videoSize.Height * intFps * bitsPerPixel); // make sure bitrate is fine for hi and lo fps
             mediaRecorder.SetVideoEncodingBitRate((int)Math.Min(bitRate, 42_000_000));
             mediaRecorder.SetVideoFrameRate(intFps);
-            mediaRecorder.SetCaptureRate(intFps);
+            if (recordFps > 0) mediaRecorder.SetCaptureRate(recordFps);
 
             mediaRecorder.SetVideoSize(videoSize.Width, videoSize.Height);
             mediaRecorder.SetVideoEncoder(Android.Media.VideoEncoder.H264);
@@ -533,7 +545,11 @@ namespace MicroVue.Models
 
                 StartPreview();
 
-                if (kept && requestedOutputPath != null) RecordingSaved?.Invoke(requestedOutputPath);
+                if (kept && requestedOutputPath != null)
+                {
+                    var savedPath = requestedOutputPath;
+                    MainThread.BeginInvokeOnMainThread(() => RecordingSaved?.Invoke(savedPath, recordedFps));
+                }
                 requestedOutputPath = null;
             }
         }
