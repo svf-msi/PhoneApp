@@ -55,6 +55,7 @@ namespace MicroVue.Models
             {
                 Name = Name,
                 ColorText = ColorText,
+                IsBackground = IsBackgound,
                 Reference = ToTrackRegion(frame)
             };
         }

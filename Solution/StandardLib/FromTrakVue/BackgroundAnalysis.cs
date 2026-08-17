@@ -27,21 +27,26 @@ namespace StandardLib
                 path = value;
             }
         }
+
+        Dictionary<int, TransformPoint> transformPoins;
         [JsonIgnore]
         public Dictionary<int, TransformPoint> TransformPoins
         {
             get
             {
+                if (transformPoins != null) return transformPoins;
+
                 if (Path == null) return null;
-                var transforms = new Dictionary<int, TransformPoint>();
+                transformPoins = new Dictionary<int, TransformPoint>();
                 foreach (var i in Path.Keys)
                 {
                     var transform = new Transform(Path[i]);
                     var invT = transform.InvT;
-                    transforms[i] = new TransformPoint { X = invT.At(0), Y = invT.At(1), Angle = -transform.Angle };
+                    transformPoins[i] = new TransformPoint { X = invT.At(0), Y = invT.At(1), Angle = -transform.Angle };
                 }
-                return transforms;
+                return transformPoins;
             }
+            set => transformPoins = value;
         }
 
         public void Process(IEnumerable<Target> targets)
@@ -112,7 +117,7 @@ namespace StandardLib
             var count = backgrounds?.Count ?? 0;
 
             //Console.WriteLine($"Process background: 2D = {count > 1}");
-            if (count == 0) // 1D case
+            if (count == 0) // no correction case
             {
                 Path = new Dictionary<int, TrackPoint>();
             }

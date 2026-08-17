@@ -115,6 +115,8 @@ namespace MicroVue.Models
         [ObservableProperty]
         ObservableCollection<Foi> fois = new ObservableCollection<Foi>();
 
+        public BackgroundAnalysis BackgroundAnalysis { get; set; } = new BackgroundAnalysis();
+
         #endregion
 
         public void RefreshRegions()

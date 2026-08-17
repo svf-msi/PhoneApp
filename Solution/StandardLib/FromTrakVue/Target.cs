@@ -42,6 +42,11 @@ namespace StandardLib
         int endFrame = 0;
         public int EndFrame { get => endFrame; set { endFrame = value; NotifyPropertyChanged(); } }
 
+        int completion = 0;
+        public int Completion { get => completion; set { completion = value; NotifyPropertyChanged(); NotifyPropertyChanged(nameof(IsComplete)); } }
+
+        public bool IsComplete => Completion == 100;
+
         TargetType type = TargetType.Static;
         public TargetType Type { get => type; set { type = value; NotifyPropertyChanged(); } }
 

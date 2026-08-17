@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -279,6 +280,9 @@ namespace MicroVue.ViewModels
         [ObservableProperty]
         double progress;
 
+        [ObservableProperty]
+        string analysisResults;
+
         bool stopAnalysis = false;
 
         public List<Models.DistanceUnits> Units => new List<Models.DistanceUnits>
@@ -435,7 +439,7 @@ namespace MicroVue.ViewModels
 
         public void UpdateChart()
         {
-            //Debug.WriteLine($"[Debug]: Update chart");
+            Debug.WriteLine($"[Debug]: Update chart");
             if (Scene?.Targets?.Count > 0)
             {
                 var direction = DataDirection;
@@ -455,6 +459,7 @@ namespace MicroVue.ViewModels
 
                 foreach (var target in Scene.Targets)
                 {
+                    Debug.WriteLine($"[Debug]: target={target.Name}, back={target.IsBackground}, points={target.Track.Path?.Count()}");
                     if (target?.IsBackground == false && target.Track?.RawPath?.Count > 0)
                     {
                         var fps = FrameRate > 0 ? FrameRate : 1;
@@ -552,6 +557,18 @@ namespace MicroVue.ViewModels
             }
         }
 
+        void ShowAnalysisResutls()
+        {
+            var analysisView = new AnalysisView();
+            analysisView.BindingContext = this;
+
+            Task.Run(async () =>
+            {
+                await Shell.Current.ShowPopupAsync(analysisView);
+
+            });
+        }
+
         #endregion
 
         #region Commands
@@ -567,7 +584,7 @@ namespace MicroVue.ViewModels
             {
                 try
                 {
-                    //Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {MediaLength} frames.");
+                    Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {MediaLength} frames.");
                     IsAnalizing = true;
                     stopAnalysis = false;
                     video.Reset();
@@ -578,28 +595,60 @@ namespace MicroVue.ViewModels
                     //image.Dispose();
                     while (video.ReadFrame(out image) && !stopAnalysis)
                     {
-                        //Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
+                        Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
                         var found = ImageAnalysis.AnalyzeFrame(count, image, targets);
                         image.Dispose();
                         if (!found) break;
                         ++count;
                         Progress = (double)count / MediaLength;
                     }
+
+                    var completed = true;
+                    foreach (var target in targets)
+                    {
+                        target.Completion = (int)Math.Round((double)(target.EndFrame - target.StartFrame + 1) / (MediaLength - target.StartFrame) * 100);
+                        if (target.Completion < 100) completed = false;
+                    }
+
                     Scene.Targets = targets;
+                    ImageAnalysis.ProcessBackground(Scene.BackgroundAnalysis, targets);
+                    Scene.BackgroundAnalysis.TransformPoins = null;
+
+                    // Reset filtered videos
+                    if (Scene.Fois?.Count > 0)
+                    {
+                        foreach (var foi in Scene.Fois)
+                        {
+                            foi?.Reset();
+                        }
+                    }
+
                     Scene.Save();
                     UpdateChart();
-                    //Debug.WriteLine($"[Debug]: done, frame count = {count}.");
+                    Debug.WriteLine($"[Debug]: done, frame count = {count} out of {MediaLength} requested.");
                     //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(Scene.Targets[0].Track.RawPath, Formatting.Indented)}");
+
+                    if (completed)
+                    {
+                        AnalysisResults = "Success!";
+                    }
+                    else
+                    {
+                        AnalysisResults = "Incomplete!";
+                    }
                 }
                 catch (Exception e)
                 {
                     Debug.WriteLine($"[Debug]: Error in analysis: {e}");
+                    AnalysisResults = "Error!";
                 }
                 finally
                 {
                     IsAnalizing = false;
                     stopAnalysis = false;
                     Progress = 0;
+
+                    ShowAnalysisResutls();
                 }
             });
         }
@@ -655,9 +704,10 @@ namespace MicroVue.ViewModels
             }
 
             var color = TargetColors[(id - 1) % TargetColors.Count];
-            var width = VideoWidth; // IsFlipped ? MediaHeight : MediaWidth;
-            var height = VideoHeight; // IsFlipped ? MediaWidth : MediaHeight;
+            var width = VideoWidth; 
+            var height = VideoHeight; 
             var target = new Models.Region(id, $"Target {id}", DefaultSize, width / 2, height / 2, false, color);
+            Debug.WriteLine($"[Debug]: add target {Utils.ToString(target)}");
             Scene.Regions.Add(target);
             SelectedRegion = target;
             Scene.Save();
@@ -675,9 +725,10 @@ namespace MicroVue.ViewModels
             }
 
             var color = "White";
-            var width = VideoWidth; // IsFlipped ? MediaHeight : MediaWidth;
-            var height = VideoHeight; // IsFlipped ? MediaWidth : MediaHeight;
+            var width = VideoWidth; 
+            var height = VideoHeight; 
             var target = new Models.Region(id, $"Background {id}", DefaultSize, width / 2, height / 2, true, color);
+            Debug.WriteLine($"[Debug]: add background {Utils.ToString(target)}");
             Scene.Regions.Add(target);
             SelectedRegion = target;
             Scene.Save();
@@ -741,6 +792,7 @@ namespace MicroVue.ViewModels
                         foi.IsReady = false;
                         foi.IsSaving = false;
                         video.Reset();
+                        video.Transforms = Scene.BackgroundAnalysis.TransformPoins;
                         foi.Cts = new CancellationTokenSource();
                         if (ImageAnalysis.FilterFrequency(foi.Frequency, FrameRate > 0 ? FrameRate : 1, MediaLength, video,
                             out var real, out var imag, out var average, foi.Cts.Token, (double p) => foi.Progress = p))

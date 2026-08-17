@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using AndroidX.Media3.Common;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using Newtonsoft.Json;
@@ -226,6 +227,19 @@ namespace MicroVue.Models
             {
                 Debug.WriteLine($"Error in making foi video: {e}");
             }
+        }
+
+        public void Reset()
+        {
+            Remove();
+            RealImage = null;
+            ImagImage = null;
+            AverageImage = null;
+            VideoFile = null;
+            IsNotProcessed = true;
+            IsProcessing = false;
+            IsReady = false;
+            IsSaving = false;
         }
 
         public void Remove()

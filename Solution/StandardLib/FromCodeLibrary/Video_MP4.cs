@@ -90,7 +90,7 @@ namespace StandardLib
                 return false;
             }
         }
-        public bool ReadFrameMatWithTimeout(out Mat image, int timeout = 2000)
+        public bool ReadFrameMatWithTimeout(out Mat image, int timeout = 1000)
         {
             image = null;
             if (videoCapture == null) return false;

@@ -626,12 +626,10 @@ namespace StandardLib
             //ProcessBackground();
         }
 
-        public static void ProcessBackground(BackgroundAnalysis backgroundAnalysis, IEnumerable<Target> targets, Video_MP4 video)
+        public static void ProcessBackground(BackgroundAnalysis backgroundAnalysis, IEnumerable<Target> targets)
         {
             backgroundAnalysis?.Process2D(targets);
             backgroundAnalysis?.Subtract(targets);
-            if (video != null)
-                video.Transforms = backgroundAnalysis.TransformPoins;
         }
 
         public static void StartFrame(Image<Gray, byte> image, IEnumerable<Target> targets, int frame = 0)
@@ -643,15 +641,8 @@ namespace StandardLib
             {
                 if (target.IsTracked)
                 {
-                    //Console.WriteLine($"Analyze frame {frame} for {target?.Text}");
                     TrackingAnalysis.FindGradientPoints(target, grayImage);
                     target.Track.RawPath[frame] = target.Reference.TrackPoint;
-                    //target.Track.RawPath[frame] = new TrackPoint()
-                    //{
-                    //    Frame = frame,
-                    //    ReferenceFrame = frame,
-                    //    State = PointState.Reference
-                    //};
                 }
             }
         }
@@ -666,7 +657,9 @@ namespace StandardLib
             {
                 if (target.IsTracked)
                 {
-                    status = TrackTarget(target, frame, grayImage) || status;
+                    var targetStatus = TrackTarget(target, frame, grayImage);
+                    status = targetStatus|| status;
+                    Debug.WriteLine($"[Debug]: target={target.Name}, track status={targetStatus}, back={target.IsBackground}");
                 }
             }
             return status;
@@ -698,14 +691,14 @@ namespace StandardLib
                 if (search.IsValid)
                 {
                     var position = search.Find();
-                    //Debug.WriteLine($"[Debug]: target found = {search.NotFound}");
+                    Debug.WriteLine($"[Debug]: target found = {!search.NotFound}");
                     if (search.NotFound)
                     {
                         target.IsTracked = false;
                     }
                     else
                     {
-                        var errorLearningRate = 0.2;
+                        var errorLearningRate = 0.5;
                         target.ReferenceError = target.ReferenceError * (1 - errorLearningRate) + errorLearningRate * search.ErrorThreshold;
                         var rectangle = Rectangle.Round(roundReference.Rectangle);
                         var referencePosition = roundReference.Position;
