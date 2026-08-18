@@ -793,13 +793,14 @@ namespace MicroVue.ViewModels
                         foi.IsSaving = false;
                         video.Reset();
                         video.Transforms = Scene.BackgroundAnalysis.TransformPoins;
+                        video.UseTransform = !Scene.BackgroundAnalysis.Empty;
                         foi.Cts = new CancellationTokenSource();
                         if (ImageAnalysis.FilterFrequency(foi.Frequency, FrameRate > 0 ? FrameRate : 1, MediaLength, video,
                             out var real, out var imag, out var average, foi.Cts.Token, (double p) => foi.Progress = p))
                         {
-                            foi.RealImage = real;
-                            foi.ImagImage = imag;
-                            foi.AverageImage = average;
+                            foi.RealImage = real; 
+                            foi.ImagImage = imag; 
+                            foi.AverageImage = average; 
                             
                             foi.MakeVideo((double p) => foi.Progress = p);
 

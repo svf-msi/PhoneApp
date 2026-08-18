@@ -14,7 +14,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace StandardLib
 {
@@ -911,6 +910,13 @@ namespace StandardLib
                 imag = new Image<Bgr, float>(width, height);
                 average = new Image<Bgr, float>(width, height);
 
+                if (video.UseTransform && video?.Transforms?.ContainsKey(0) == true)
+                {
+                    var oldImage = frame;
+                    frame = ImageAnalysis.Transform(frame, video.Transforms[0]);
+                    oldImage?.Dispose();
+                }
+
                 var floatFrame = frame.Convert<Bgr, float>();
                 CvInvoke.Accumulate(floatFrame * 2, real);
                 if (doAverage) CvInvoke.Accumulate(floatFrame, average);
@@ -923,6 +929,13 @@ namespace StandardLib
                 {
                     if (!video.ReadBgrFrame(out frame) || frame == null) break;
                     if (token.IsCancellationRequested) return false;
+
+                    if (video.UseTransform && video?.Transforms?.ContainsKey(i) == true)
+                    {
+                        var oldImage = frame;
+                        frame = ImageAnalysis.Transform(frame, video.Transforms[0]);
+                        oldImage?.Dispose();
+                    }
 
                     floatFrame = frame.Convert<Bgr, float>();
                     var phase = 2 * Math.PI * i * bin / length;

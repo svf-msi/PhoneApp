@@ -42,7 +42,9 @@
                     <AbsoluteLayout IsClippedToBounds="True">
 
                         <!--Video player-->
-                        <toolkit:MediaElement Source="{Binding FoiVideoSource}"
+                        <toolkit:MediaElement Source="{Binding FoiVideoSource}" 
+                            Rotation="{Binding MediaRotation, Mode=OneWay}"
+                            AndroidViewType="TextureView"
                             ShouldAutoPlay="False" 
                             ShouldLoopPlayback="True"
                             ShouldShowPlaybackControls="False" 

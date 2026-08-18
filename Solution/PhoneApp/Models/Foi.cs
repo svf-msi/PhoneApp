@@ -1,7 +1,7 @@
-﻿using AndroidX.Media3.Common;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using MicroVue.ViewModels;
 using Newtonsoft.Json;
 using StandardLib;
 using System;
@@ -191,21 +191,24 @@ namespace MicroVue.Models
             {
                 var tempname = GetVideoFileName($"_{Name}_video_temp");
                 int fourcc = VideoWriter.Fourcc('H', '2', '6', '4');
-                var width = AverageImage.Width;
-                var height = AverageImage.Height;
-                using (var writer = new VideoWriter(tempname, 0, fourcc, 20, new System.Drawing.Size(width, height), true))
+
+                // beware - only few widths are acceptable at the moment: 640, 960, 1280, 1920.
+                using (var writer = new VideoWriter(tempname, 0, fourcc, 20, AverageImage.Size, true))
                 {
                     for (int i = 0; i < NumberOfSamples; ++i)
                     {
                         var phase = 2 * Math.PI * i / NumberOfSamples;
                         var frame = GetFrame(phase);
+
                         if (frame != null)
                         {
                             writer.Write(frame);
                         }
-                        frame?.Dispose();
+                        else break;
+
                         progress?.Invoke((double)(i + 1) / NumberOfSamples); 
-                        Debug.WriteLine($"Write frame {i+1} to {tempname}, mag={Magnification}");
+                        //Debug.WriteLine($"[Debug]: Write frame {i+1} to {tempname}, mag={Magnification}");
+                        frame?.Dispose();
                         if (Cts?.Token.IsCancellationRequested == true) break;
                     }
                 }
@@ -225,7 +228,7 @@ namespace MicroVue.Models
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"Error in making foi video: {e}");
+                Debug.WriteLine($"[Debug]: Error in making foi video: {e}");
             }
         }
 
