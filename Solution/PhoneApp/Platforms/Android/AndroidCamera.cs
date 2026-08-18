@@ -21,16 +21,16 @@ namespace MicroVue.Models
 
         static double Num(Java.Lang.Object o) => ((Java.Lang.Number)o).DoubleValue();
 
-        private CameraDevice? device;
-        private CameraCaptureSession? session;
-        private CaptureRequest.Builder? requestBuilder;
+        private CameraDevice? device; // hardware camera instance, is open all the time (controlled via Open() / Close())
+        private CameraCaptureSession? session; // session records frames and can output them to multiple buffers, in our case a previewSurface and a recorderSurface, we only give recorderSurface frames while recording
+        private CaptureRequest.Builder? requestBuilder; // controls settings like exposure etc using ApplyToBuilder(), SubmitRequest sends changes to camera
 
         private Android.Views.Surface? previewSurface;
         private SurfaceTexture? previewTexture;
         private Android.OS.HandlerThread? backgroundThread;
         private Android.OS.Handler? backgroundHandler;
 
-        private Android.Media.MediaRecorder? mediaRecorder;
+        private Android.Media.MediaRecorder? mediaRecorder; // created per recording, bound to recorderSurface via SetInputSurface.
         private Android.Views.Surface? recorderSurface;
         private MediaStoreVideo? output;
         private string? requestedOutputPath;
@@ -42,7 +42,6 @@ namespace MicroVue.Models
         StreamConfigurationMap? configMap;
         ARange[]? aeFpsRanges;
 
-        private bool recorderStarted;
         private bool useHighSpeed;
 
         [ObservableProperty]
@@ -53,7 +52,17 @@ namespace MicroVue.Models
 
         [ObservableProperty]
         private double frameRate;
-        partial void OnFrameRateChanged(double value) => ApplyToBuilder();
+        partial void OnFrameRateChanged(double value)
+        {
+            // switching into or out of (or between) high speed modes needs a different session
+            bool wantHighSpeed = FrameRate > 60 && Capabilities.HighSpeedModes.Any(m => m.MaxFrameRate == (int)Math.Round(FrameRate));
+            if (session != null && !IsRecording && (useHighSpeed || wantHighSpeed))
+            {
+                CloseSession();
+                StartPreview();
+            }
+            else ApplyToBuilder();
+        }
 
         [ObservableProperty]
         private double exposure;
@@ -232,19 +241,44 @@ namespace MicroVue.Models
 
         #region Preview
 
-        // start capturing preview session
         public void StartPreview()
         {
             if (device == null || previewSurface == null || session != null) return;
             try
             {
-                useHighSpeed = false;
-                previewTexture?.SetDefaultBufferSize(PreviewSize.Width, PreviewSize.Height);
+                int targetFps = (int)Math.Round(FrameRate);
+                useHighSpeed = FrameRate > 60 && Capabilities.HighSpeedModes.Any(m => m.MaxFrameRate == (int)Math.Round(FrameRate));
+                recordFps = useHighSpeed ? targetFps : 0;
+                videoSize = useHighSpeed
+                    ? Capabilities.HighSpeedModes.Where(m => m.MaxFrameRate == targetFps)
+                        .OrderByDescending(m => (long)m.Width * m.Height)
+                        .Select(m => new ASize(m.Width, m.Height)).First()
+                    : defaultVideoSize;
+                var previewBuf = useHighSpeed ? videoSize : PreviewSize;
+                previewTexture?.SetDefaultBufferSize(previewBuf.Width, previewBuf.Height);
 
-                requestBuilder = device.CreateCaptureRequest(CameraTemplate.Preview);
+                // recorderSurface requires a dummy to set size
+                recorderSurface ??= Android.Media.MediaCodec.CreatePersistentInputSurface();
+                var dummy = CreateRecorder(System.IO.Path.Combine(FileSystem.CacheDirectory, "recorder-init.mp4"));
+                try { dummy.Prepare(); } finally { dummy.Release(); }
+
+                requestBuilder = device.CreateCaptureRequest(CameraTemplate.Record);
                 requestBuilder.AddTarget(previewSurface);
-                device.CreateCaptureSession(new List<Android.Views.Surface> { previewSurface },
-                    new SessionStateCallback(this, _ => ApplyToBuilder()), backgroundHandler);
+                requestBuilder.Set(CaptureRequest.ControlVideoStabilizationMode, (int)ControlVideoStabilizationMode.Off);
+                requestBuilder.Set(CaptureRequest.LensOpticalStabilizationMode, (int)LensOpticalStabilizationMode.Off);
+
+                var surfaces = new List<Android.Views.Surface> { previewSurface, recorderSurface };
+                if (useHighSpeed)
+                {
+                    var ranges = configMap!.GetHighSpeedVideoFpsRangesFor(videoSize).Where(r => (int)Num(r.Upper) == targetFps).ToList();
+                    var range = ranges.FirstOrDefault(r => (int)Num(r.Lower) == targetFps) ?? ranges.First();
+                    requestBuilder.Set(CaptureRequest.ControlAeTargetFpsRange, range);
+                    device.CreateConstrainedHighSpeedCaptureSession(surfaces, new SessionStateCallback(this, _ => SubmitRequest()), backgroundHandler);
+                }
+                else
+                {
+                    device.CreateCaptureSession(surfaces, new SessionStateCallback(this, _ => ApplyToBuilder()), backgroundHandler);
+                }
             }
             catch (Exception e) { Console.WriteLine($"Error starting preview: {e.Message}"); }
         }
@@ -266,15 +300,11 @@ namespace MicroVue.Models
         // closes entire camera
         public void Close()
         {
+            if (IsRecording) StopRecording(true);
             CloseSession();
 
-            if (mediaRecorder != null)
-            {
-                CleanupRecorder();
-                if (!recorderStarted && requestedOutputPath != null)
-                    try { File.Delete(requestedOutputPath); } catch { }
-                requestedOutputPath = null;
-            }
+            try { recorderSurface?.Release(); } catch { }
+            recorderSurface = null;
 
             try { device?.Close(); } catch { }
             device = null;
@@ -310,7 +340,7 @@ namespace MicroVue.Models
             OnPropertyChanged(nameof(Gain));
         }
 
-        void ApplyToBuilder(CameraCaptureSession.CaptureCallback? callback = null)
+        void ApplyToBuilder()
         {
             if (requestBuilder == null || Capabilities == null) return;
             if (useHighSpeed) return; // cannot change params in high speed mode
@@ -341,8 +371,20 @@ namespace MicroVue.Models
                 if (range != null) requestBuilder.Set(CaptureRequest.ControlAeTargetFpsRange, range);
             }
 
-            try { session?.SetRepeatingRequest(requestBuilder.Build(), callback, backgroundHandler); }
-            catch (Exception e) { Console.WriteLine(e.Message); }
+            SubmitRequest();
+        }
+
+        void SubmitRequest()
+        {
+            if (session == null || requestBuilder == null) return;
+            try
+            {
+                if (session is CameraConstrainedHighSpeedCaptureSession hs)
+                    hs.SetRepeatingBurst(hs.CreateHighSpeedRequestList(requestBuilder.Build()), null, backgroundHandler);
+                else
+                    session.SetRepeatingRequest(requestBuilder.Build(), null, backgroundHandler);
+            }
+            catch (Exception e) { Console.WriteLine($"Submitting request failed: {e.Message}"); }
         }
 
         #endregion
@@ -354,104 +396,48 @@ namespace MicroVue.Models
 
         public void StartRecording(string outputPath)
         {
-            if (device == null || previewSurface == null || IsRecording) return;
+            if (session == null || requestBuilder == null || recorderSurface == null || IsRecording)
+            {
+                Console.WriteLine($"StartRecording skipped!");
+                return;
+            }
             requestedOutputPath = outputPath;
-            recorderStarted = false;
             try
             {
-                CloseSession(); // tear down preview-only session so we can make recording + preview
+                mediaRecorder = CreateRecorder(outputPath);
+                if (RecordingDuration > 0) // 0 = unlimited
+                {
+                    mediaRecorder.SetMaxDuration((int)(RecordingDuration * 1000)); // set in ms
+                    mediaRecorder.Info += (_, e) =>
+                    {
+                        if (e.What == Android.Media.MediaRecorderInfo.MaxDurationReached)
+                            backgroundHandler?.Post(() => StopRecording(false));
+                    };
+                }
+                mediaRecorder.Prepare();
 
-                int targetFps = (int)Math.Round(FrameRate);
-                var hsModes = Capabilities.HighSpeedModes
-                    .Where(m => m.MaxFrameRate == targetFps)
-                    .OrderByDescending(m => (long)m.Width * m.Height)
-                    .ToList();
-                useHighSpeed = FrameRate > 60 && hsModes.Count > 0;
-                recordFps = useHighSpeed ? targetFps : 0;
-                videoSize = useHighSpeed ? new ASize(hsModes[0].Width, hsModes[0].Height) : defaultVideoSize;
-                if (useHighSpeed)
-                    previewTexture?.SetDefaultBufferSize(videoSize.Width, videoSize.Height);
-
-                SetupMediaRecorder();
-                recorderSurface = mediaRecorder.Surface;
-
-                requestBuilder = device.CreateCaptureRequest(CameraTemplate.Record);
-                requestBuilder.AddTarget(previewSurface);
                 requestBuilder.AddTarget(recorderSurface);
-
-                requestBuilder.Set(CaptureRequest.ControlVideoStabilizationMode, (int)ControlVideoStabilizationMode.Off);
-                requestBuilder.Set(CaptureRequest.LensOpticalStabilizationMode, (int)LensOpticalStabilizationMode.Off);
-
-                bool waitForAe = AutoExposure || useHighSpeed;
-                var onConfigured = (Action<CameraCaptureSession>)(s =>
-                {
-                    var aeCb = waitForAe ? new AeConvergeCallback(this) : null;
-
-                    if (useHighSpeed && s is CameraConstrainedHighSpeedCaptureSession hs)
-                    {
-                        try
-                        {
-                            // high-speed sessions require burst submission
-                            var burst = hs.CreateHighSpeedRequestList(requestBuilder.Build());
-                            hs.SetRepeatingBurst(burst, aeCb, backgroundHandler);
-                        }
-                        catch (Exception e) { Console.WriteLine($"High-speed burst failed: {e}"); }
-                    }
-                    else
-                    {
-                        ApplyToBuilder(aeCb);
-                    }
-
-                    // When recording the auto-exposure retriggers, so we have to wait a bit.
-                    if (waitForAe)
-                        backgroundHandler?.PostDelayed(BeginRecorder, 1200);
-                    else
-                        BeginRecorder();
-                });
-
-                if (useHighSpeed)
-                {
-                    var ranges = configMap!.GetHighSpeedVideoFpsRangesFor(videoSize).Where(r => (int)Num(r.Upper) == targetFps).ToList();
-                    var range = ranges.FirstOrDefault(r => (int)Num(r.Lower) == targetFps) ?? ranges.First();
-
-                    requestBuilder.Set(CaptureRequest.ControlAeTargetFpsRange, range);
-                    device.CreateConstrainedHighSpeedCaptureSession(
-                        new List<Android.Views.Surface> { previewSurface, recorderSurface },
-                        new SessionStateCallback(this, onConfigured), backgroundHandler);
-                }
-                else
-                {
-                    device.CreateCaptureSession(new List<Android.Views.Surface> { previewSurface, recorderSurface },
-                        new SessionStateCallback(this, onConfigured), backgroundHandler);
-                }
+                SubmitRequest();
+                mediaRecorder.Start();
+                IsRecording = true;
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Error starting recording: {e}");
+                requestBuilder.RemoveTarget(recorderSurface);
+                SubmitRequest();
                 CleanupRecorder();
-                StartPreview();
+                try { File.Delete(outputPath); } catch { }
+                requestedOutputPath = null;
             }
         }
 
-        internal void BeginRecorder()
+        Android.Media.MediaRecorder CreateRecorder(string outputPath)
         {
-            if (recorderStarted || mediaRecorder == null) return;
-            recorderStarted = true;
-            try
-            {
-                mediaRecorder.Start();
-                IsRecording = true;
-            }
-            catch (Exception e) { Console.WriteLine($"MediaRecorder.Start failed: {e}"); }
-        }
-
-        // get recording surface, set fps and orientation
-        void SetupMediaRecorder()
-        {
-            mediaRecorder = new Android.Media.MediaRecorder();
+            var mediaRecorder = new Android.Media.MediaRecorder();
             mediaRecorder.SetVideoSource(Android.Media.VideoSource.Surface);
             mediaRecorder.SetOutputFormat(Android.Media.OutputFormat.Mpeg4);
-            mediaRecorder.SetOutputFile(requestedOutputPath);
+            mediaRecorder.SetOutputFile(outputPath);
 
             double fps;
             if (recordFps > 0)
@@ -491,17 +477,8 @@ namespace MicroVue.Models
             var orientationHint = (sensorOrientation - deviceRotation * sign + 360) % 360;
             mediaRecorder.SetOrientationHint(orientationHint);
 
-            if (RecordingDuration > 0) // 0 = unlimited
-            {
-                mediaRecorder.SetMaxDuration((int)(RecordingDuration * 1000)); // set in ms
-                mediaRecorder.Info += (_, e) =>
-                {
-                    if (e.What == Android.Media.MediaRecorderInfo.MaxDurationReached)
-                        backgroundHandler?.Post(() => StopRecording(false));
-                };
-            }
-
-            mediaRecorder.Prepare();
+            mediaRecorder.SetInputSurface(recorderSurface!);
+            return mediaRecorder;
         }
 
         void CleanupRecorder()
@@ -511,8 +488,6 @@ namespace MicroVue.Models
             mediaRecorder = null;
             output?.Dispose(); // close the ParcelFileDescriptor so the file is flushed
             output = null;
-            try { recorderSurface?.Release(); } catch { }
-            recorderSurface = null;
         }
 
         public void StopRecording(bool discard)
@@ -521,7 +496,8 @@ namespace MicroVue.Models
             bool kept = false;
             try
             {
-                try { session?.StopRepeating(); } catch { }
+                requestBuilder?.RemoveTarget(recorderSurface);
+                SubmitRequest();
 
                 if (!discard)
                 {
@@ -538,12 +514,9 @@ namespace MicroVue.Models
             {
                 if (discard) output?.Delete();
                 IsRecording = false;
-                CloseSession();
                 CleanupRecorder();
 
                 if (!kept && requestedOutputPath != null) try { File.Delete(requestedOutputPath); } catch { }
-
-                StartPreview();
 
                 if (kept && requestedOutputPath != null)
                 {
@@ -616,28 +589,6 @@ namespace MicroVue.Models
 
             public override void OnConfigureFailed(CameraCaptureSession s)
                 => Console.WriteLine("Session configuration failed");
-        }
-
-        class AeConvergeCallback : CameraCaptureSession.CaptureCallback
-        {
-            readonly AndroidCamera svc;
-            bool done;
-            public AeConvergeCallback(AndroidCamera svc) => this.svc = svc;
-
-            public override void OnCaptureCompleted(
-                CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result)
-            {
-                if (done) return;
-                var ae = (result.Get(CaptureResult.ControlAeState) as Java.Lang.Integer)?.IntValue();
-                if (ae == null
-                    || ae == (int)ControlAEState.Converged
-                    || ae == (int)ControlAEState.Locked
-                    || ae == (int)ControlAEState.FlashRequired)
-                {
-                    done = true;
-                    svc.BeginRecorder();
-                }
-            }
         }
 
         // pending mediastore (photos app) entry
