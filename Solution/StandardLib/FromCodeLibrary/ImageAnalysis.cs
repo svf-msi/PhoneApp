@@ -933,7 +933,7 @@ namespace StandardLib
                     if (video.UseTransform && video?.Transforms?.ContainsKey(i) == true)
                     {
                         var oldImage = frame;
-                        frame = ImageAnalysis.Transform(frame, video.Transforms[0]);
+                        frame = ImageAnalysis.Transform(frame, video.Transforms[i]);
                         oldImage?.Dispose();
                     }
 

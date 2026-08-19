@@ -65,6 +65,10 @@ public partial class MainView : ContentView
             else if (args.PropertyName == nameof(player.Duration))
             {
                 slider.Maximum = player.Duration.TotalSeconds;
+                if (BindingContext is AnalysisViewModel vm)
+                {
+                    vm.Duration = slider.Maximum;
+                }
                 //Debug.WriteLine($"[Debug]: Player duration {player.Duration.TotalSeconds}");
             }
         }
@@ -79,6 +83,7 @@ public partial class MainView : ContentView
             if (BindingContext is AnalysisViewModel vm)
             {
                 vm.Scene?.RefreshTargets((int)Math.Round(slider.Value / slider.Maximum * vm.MediaLength));
+                vm.CurrentTime = slider.Value;
             }
         }
     }
@@ -111,6 +116,7 @@ public partial class MainView : ContentView
             if (BindingContext is AnalysisViewModel vm)
             {
                 vm.Scene?.RefreshTargets((int)Math.Round(slider.Value / slider.Maximum * vm.MediaLength));
+                vm.CurrentTime = slider.Value;
             }
             isDragging = false;
         }

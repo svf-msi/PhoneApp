@@ -83,6 +83,12 @@ namespace MicroVue.Models
         [ObservableProperty]
         bool validParams = false;
 
+        [ObservableProperty]
+        double startTime;
+
+        [ObservableProperty]
+        double endTime;
+
         #endregion
 
         #region Calibration-related

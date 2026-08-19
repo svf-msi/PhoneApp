@@ -26,10 +26,6 @@
 
         <Label Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Text="Video Info:" Margin="0, 5"/>
 
-        <Label Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="1" Text="FPS: " VerticalOptions="Center"/>
-        <Entry Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" FontSize="16" Keyboard="Numeric" Margin="0, -5" 
-               Text="{Binding FrameRate, StringFormat='{0:G4}'}" VerticalOptions="Center"/>
-
         <Label Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="1" Text="Size: "/>
         <Label Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="1" Text="{Binding Resolution}"/>
 

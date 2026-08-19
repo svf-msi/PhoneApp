@@ -110,6 +110,9 @@ namespace MicroVue.ViewModels
         int mediaLength;
 
         [ObservableProperty]
+        double duration;
+
+        [ObservableProperty]
         double frameRate;
         partial void OnFrameRateChanged(double oldValue, double newValue)
         {
@@ -144,7 +147,7 @@ namespace MicroVue.ViewModels
         double playerScale;
 
         [ObservableProperty]
-        int currentFrame = 0;
+        double currentTime = 0;
 
         #endregion
 
@@ -163,9 +166,30 @@ namespace MicroVue.ViewModels
         partial void OnSelectedRegionChanged(Models.Region? oldRegion, Models.Region newRegion)
         {
             IsRegionSelected = SelectedRegion != null;
+            if (IsRegionSelected)
+            {
+                if (IsRegionsShown) IsRegionsShown = false;
+                if (IsRangeShown) IsRangeShown = false;
+                if (IsCalibrationShown) IsCalibrationShown = false;
+            }
+            else
+            {
+                if (!IsRegionsShown) IsRegionsShown = true;
+                if (IsRangeShown) IsRangeShown = false;
+                if (IsCalibrationShown) IsCalibrationShown = false;
+            }
             OnPropertyChanged(nameof(RegionX));
             OnPropertyChanged(nameof(RegionY));
         }
+
+        [ObservableProperty]
+        bool isRegionsShown = true;
+
+        [ObservableProperty]
+        bool isRangeShown;
+
+        [ObservableProperty]
+        bool isCalibrationShown;
 
         [ObservableProperty]
         bool isRegionSelected;
@@ -273,6 +297,10 @@ namespace MicroVue.ViewModels
         #endregion
 
         #region Analysis-related
+
+        public double StartTime { get => Scene?.StartTime ?? 0; set { Scene.StartTime = value; OnPropertyChanged(); } }
+
+        public double EndTime { get => Scene?.EndTime ?? 0; set { Scene.EndTime = value; OnPropertyChanged(); } }
 
         [ObservableProperty]
         bool isAnalizing;
@@ -418,7 +446,6 @@ namespace MicroVue.ViewModels
             if (!string.IsNullOrEmpty(VideoPath))
             {
                 video = new Video_MP4(VideoPath);
-                CurrentFrame = 0;
                 VideoWidth = video?.Width ?? 0;
                 VideoHeight = video?.Height ?? 0;
                 //if (useImage) SetImage();
@@ -527,7 +554,7 @@ namespace MicroVue.ViewModels
         void SetImage()
         {
             if (video == null) return;
-            var bitmap = video.GetFrame(CurrentFrame);
+            var bitmap = video.GetFrame(0);
             if (bitmap == null) return;
 
             using (var ms = new MemoryStream())
@@ -574,6 +601,36 @@ namespace MicroVue.ViewModels
         #region Commands
 
         #region Main
+
+        [RelayCommand]
+        void ShowRange()
+        {
+            IsRegionsShown = false;
+            IsRangeShown = true;
+        }
+
+        [RelayCommand]
+        void ShowCalibration()
+        {
+            IsRegionsShown = false;
+            IsCalibrationShown = true;
+        }
+
+        [RelayCommand]
+        void SetTime(object parameter)
+        {
+            if (parameter is string time)
+            {
+                if (time == "Start")
+                {
+                    StartTime = CurrentTime;
+                }
+                else if (time == "End")
+                {
+                    EndTime = CurrentTime;
+                }
+            }
+        }
 
         [RelayCommand]
         void Analyze()
@@ -707,7 +764,7 @@ namespace MicroVue.ViewModels
             var width = VideoWidth; 
             var height = VideoHeight; 
             var target = new Models.Region(id, $"Target {id}", DefaultSize, width / 2, height / 2, false, color);
-            Debug.WriteLine($"[Debug]: add target {Utils.ToString(target)}");
+            //Debug.WriteLine($"[Debug]: add target {Utils.ToString(target)}");
             Scene.Regions.Add(target);
             SelectedRegion = target;
             Scene.Save();
@@ -727,8 +784,8 @@ namespace MicroVue.ViewModels
             var color = "White";
             var width = VideoWidth; 
             var height = VideoHeight; 
-            var target = new Models.Region(id, $"Background {id}", DefaultSize, width / 2, height / 2, true, color);
-            Debug.WriteLine($"[Debug]: add background {Utils.ToString(target)}");
+            var target = new Models.Region(id, $"Anchor {id}", DefaultSize, width / 2, height / 2, true, color);
+            //Debug.WriteLine($"[Debug]: add background {Utils.ToString(target)}");
             Scene.Regions.Add(target);
             SelectedRegion = target;
             Scene.Save();
@@ -739,6 +796,9 @@ namespace MicroVue.ViewModels
         {
             SelectedRegion = null;
             Scene.Save();
+            IsRegionsShown = true;
+            IsRangeShown = false;
+            IsCalibrationShown = false;
         }
 
         #endregion
