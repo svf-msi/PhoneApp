@@ -416,6 +416,7 @@ namespace MicroVue.Models
                 }
                 mediaRecorder.Prepare();
 
+                requestBuilder.Set(CaptureRequest.ControlAfMode, (int)ControlAFMode.Auto);
                 requestBuilder.AddTarget(recorderSurface);
                 SubmitRequest();
                 mediaRecorder.Start();
@@ -425,6 +426,7 @@ namespace MicroVue.Models
             {
                 Console.WriteLine($"Error starting recording: {e}");
                 requestBuilder.RemoveTarget(recorderSurface);
+                requestBuilder.Set(CaptureRequest.ControlAfMode, (int)ControlAFMode.ContinuousVideo);
                 SubmitRequest();
                 CleanupRecorder();
                 try { File.Delete(outputPath); } catch { }
@@ -497,6 +499,7 @@ namespace MicroVue.Models
             try
             {
                 requestBuilder?.RemoveTarget(recorderSurface);
+                requestBuilder?.Set(CaptureRequest.ControlAfMode, (int)ControlAFMode.ContinuousVideo);
                 SubmitRequest();
 
                 if (!discard)
