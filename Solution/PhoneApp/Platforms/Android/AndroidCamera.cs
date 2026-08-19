@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,7 +35,7 @@ namespace MicroVue.Models
         private Android.Views.Surface? recorderSurface;
         private MediaStoreVideo? output;
         private string? requestedOutputPath;
-        public event Action<string, double>? RecordingSaved;
+        public event Action<RecordingInfo>? RecordingSaved;
         private ASize videoSize = new ASize(1920, 1080);
         ASize defaultVideoSize = new ASize(1920, 1080);
         private int sensorOrientation;
@@ -80,6 +81,11 @@ namespace MicroVue.Models
         [ObservableProperty]
         private double recordingDuration;
 
+        // actual sensor values reported by capture results while recording
+        private double measuredExposure = -1;
+        private double measuredGain = -1;
+        private ResultCallback? resultCallback;
+
         #endregion
 
         #region Opening and capabilities
@@ -100,13 +106,13 @@ namespace MicroVue.Models
 
                 if (cameraId == null)
                 {
-                    Console.WriteLine($"No matching Android camera");
+                    Debug.WriteLine($"No matching Android camera");
                     return false;
                 }
 
                 ReadCapabilities(manager.GetCameraCharacteristics(cameraId));
 
-                Console.WriteLine($"Camera capabilities:\n{Capabilities}");
+                Debug.WriteLine($"Camera capabilities:\n{Capabilities}");
 
                 double defaultFPS = Capabilities.AllFrameRates.Contains(120) ? 120 : Capabilities.FrameRateRange.Default;
 
@@ -127,7 +133,7 @@ namespace MicroVue.Models
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error opening Android camera: {e}");
+                Debug.WriteLine($"Error opening Android camera: {e}");
                 return false;
             }
         }
@@ -146,7 +152,6 @@ namespace MicroVue.Models
                 if (firstMatch == null) firstMatch = id; // backup if no high speed capable options
 
                 var caps = chars.Get(CameraCharacteristics.RequestAvailableCapabilities)?.ToArray<int>() ?? Array.Empty<int>();
-                Console.WriteLine($"Camera {id}, high speed: {caps.Contains((int)RequestAvailableCapabilities.ConstrainedHighSpeedVideo)}");
                 if (caps.Contains((int)RequestAvailableCapabilities.ConstrainedHighSpeedVideo)) return id;
             }
             return firstMatch ?? manager.GetCameraIdList().FirstOrDefault();
@@ -189,29 +194,20 @@ namespace MicroVue.Models
 
                 var rates = new SortedSet<double>();
                 aeFpsRanges = chars.Get(CameraCharacteristics.ControlAeAvailableTargetFpsRanges)?.ToArray<ARange>();
-                Console.WriteLine($"FPS ranges #: {aeFpsRanges?.Length}");
                 if (aeFpsRanges != null)
                 {
-                    foreach (var r in aeFpsRanges)
-                    {
-                        Console.WriteLine($"FPS option: {Num(r.Lower)}-{Num(r.Upper)}");
-                        rates.Add(Num(r.Upper));
-                    }
+                    foreach (var r in aeFpsRanges) rates.Add(Num(r.Upper));
                 }
                 caps.FrameRates = rates.ToList();
 
                 List<Resolution> highSpeedModes = new List<Resolution>();
                 var hsSizes = map.GetHighSpeedVideoSizes();
-                Console.WriteLine($"High speed sizes #: {hsSizes?.Length}");
                 if (hsSizes != null && hsSizes.Length > 0)
                 {
                     foreach (var size in hsSizes)
                     {
                         foreach (var range in map.GetHighSpeedVideoFpsRangesFor(size))
-                        {
-                            Console.WriteLine($"High speed option: {size.Width}x{size.Height} {Num(range.Lower)}-{Num(range.Upper)}");
                             highSpeedModes.Add(new Resolution(size.Width, size.Height, (int)Num(range.Upper)));
-                        }
                     }
                 }
                 caps.HighSpeedModes = highSpeedModes;
@@ -280,7 +276,7 @@ namespace MicroVue.Models
                     device.CreateCaptureSession(surfaces, new SessionStateCallback(this, _ => ApplyToBuilder()), backgroundHandler);
                 }
             }
-            catch (Exception e) { Console.WriteLine($"Error starting preview: {e.Message}"); }
+            catch (Exception e) { Debug.WriteLine($"Error starting preview: {e.Message}"); }
         }
 
         public void SetPreviewTexture(SurfaceTexture? texture)
@@ -379,12 +375,13 @@ namespace MicroVue.Models
             if (session == null || requestBuilder == null) return;
             try
             {
+                resultCallback ??= new ResultCallback(this);
                 if (session is CameraConstrainedHighSpeedCaptureSession hs)
-                    hs.SetRepeatingBurst(hs.CreateHighSpeedRequestList(requestBuilder.Build()), null, backgroundHandler);
+                    hs.SetRepeatingBurst(hs.CreateHighSpeedRequestList(requestBuilder.Build()), resultCallback, backgroundHandler);
                 else
-                    session.SetRepeatingRequest(requestBuilder.Build(), null, backgroundHandler);
+                    session.SetRepeatingRequest(requestBuilder.Build(), resultCallback, backgroundHandler);
             }
-            catch (Exception e) { Console.WriteLine($"Submitting request failed: {e.Message}"); }
+            catch (Exception e) { Debug.WriteLine($"Submitting request failed: {e.Message}"); }
         }
 
         #endregion
@@ -398,7 +395,7 @@ namespace MicroVue.Models
         {
             if (session == null || requestBuilder == null || recorderSurface == null || IsRecording)
             {
-                Console.WriteLine($"StartRecording skipped!");
+                Debug.WriteLine($"StartRecording skipped!");
                 return;
             }
             requestedOutputPath = outputPath;
@@ -416,7 +413,10 @@ namespace MicroVue.Models
                 }
                 mediaRecorder.Prepare();
 
+                measuredExposure = -1;
+                measuredGain = -1;
                 requestBuilder.Set(CaptureRequest.ControlAfMode, (int)ControlAFMode.Auto);
+                requestBuilder.Set(CaptureRequest.ControlAeLock, (Java.Lang.Boolean)true);
                 requestBuilder.AddTarget(recorderSurface);
                 SubmitRequest();
                 mediaRecorder.Start();
@@ -424,9 +424,10 @@ namespace MicroVue.Models
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error starting recording: {e}");
+                Debug.WriteLine($"Error starting recording: {e}");
                 requestBuilder.RemoveTarget(recorderSurface);
                 requestBuilder.Set(CaptureRequest.ControlAfMode, (int)ControlAFMode.ContinuousVideo);
+                requestBuilder.Set(CaptureRequest.ControlAeLock, (Java.Lang.Boolean)false);
                 SubmitRequest();
                 CleanupRecorder();
                 try { File.Delete(outputPath); } catch { }
@@ -500,6 +501,7 @@ namespace MicroVue.Models
             {
                 requestBuilder?.RemoveTarget(recorderSurface);
                 requestBuilder?.Set(CaptureRequest.ControlAfMode, (int)ControlAFMode.ContinuousVideo);
+                requestBuilder?.Set(CaptureRequest.ControlAeLock, (Java.Lang.Boolean)false);
                 SubmitRequest();
 
                 if (!discard)
@@ -510,7 +512,7 @@ namespace MicroVue.Models
                         output?.Finish();
                         kept = true;
                     }
-                    catch (Exception e) { Console.WriteLine($"MediaRecorder.Stop failed: {e}"); }
+                    catch (Exception e) { Debug.WriteLine($"MediaRecorder.Stop failed: {e}"); }
                 }
             }
             finally
@@ -524,7 +526,14 @@ namespace MicroVue.Models
                 if (kept && requestedOutputPath != null)
                 {
                     var savedPath = requestedOutputPath;
-                    MainThread.BeginInvokeOnMainThread(() => RecordingSaved?.Invoke(savedPath, recordedFps));
+                    var info = new RecordingInfo
+                    {
+                        Path = savedPath,
+                        FrameRate = recordedFps,
+                        Exposure = measuredExposure,
+                        Gain = measuredGain,
+                    };
+                    MainThread.BeginInvokeOnMainThread(() => RecordingSaved?.Invoke(info));
                 }
                 requestedOutputPath = null;
             }
@@ -533,6 +542,21 @@ namespace MicroVue.Models
         #endregion
 
         #region Helper classes
+
+        class ResultCallback : CameraCaptureSession.CaptureCallback
+        {
+            readonly AndroidCamera svc;
+            public ResultCallback(AndroidCamera svc) => this.svc = svc;
+
+            public override void OnCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result)
+            {
+                if (!svc.IsRecording) return;
+                if (result.Get(CaptureResult.SensorExposureTime) is Java.Lang.Long exposureNs)
+                    svc.measuredExposure = exposureNs.LongValue() / 1000.0; // ns -> us
+                if (result.Get(CaptureResult.SensorSensitivity) is Java.Lang.Integer iso)
+                    svc.measuredGain = iso.IntValue();
+            }
+        }
 
         class DeviceStateCallback : CameraDevice.StateCallback
         {
@@ -555,17 +579,17 @@ namespace MicroVue.Models
             public override void OnError(CameraDevice camera, CameraError error)
             {
                 camera.Close(); svc.device = null;
-                Console.WriteLine($"Camera device error: {error}");
+                Debug.WriteLine($"Camera device error: {error}");
                 opened.TrySetResult(false);
 
                 if (error == CameraError.CameraDisabled)
                 {
-                    Console.WriteLine($"Camera disabled, aborting");
+                    Debug.WriteLine($"Camera disabled, aborting");
                     return;
                 }
                 if (openRetries++ >= 2)
                 {
-                    Console.WriteLine($"Max retry attempts exceeded, aborting");
+                    Debug.WriteLine($"Max retry attempts exceeded, aborting");
                     return;
                 }
 
@@ -591,7 +615,7 @@ namespace MicroVue.Models
             }
 
             public override void OnConfigureFailed(CameraCaptureSession s)
-                => Console.WriteLine("Session configuration failed");
+                => Debug.WriteLine("Session configuration failed");
         }
 
         // pending mediastore (photos app) entry

@@ -83,6 +83,16 @@ namespace MicroVue.Models
         [ObservableProperty]
         bool validParams = false;
 
+        [ObservableProperty]
+        double exposure = -1;
+        partial void OnExposureChanged(double value) => OnPropertyChanged(nameof(ExposureMs));
+
+        [JsonIgnore]
+        public double ExposureMs => Exposure / 1000.0;
+
+        [ObservableProperty]
+        double gain = -1;
+
         #endregion
 
         #region Calibration-related

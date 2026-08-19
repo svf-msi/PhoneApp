@@ -104,9 +104,9 @@ namespace MicroVue.ViewModels
             }
         }
 
-        void OnRecordingSaved(string videoPath, double frameRate)
+        void OnRecordingSaved(RecordingInfo recording)
         {
-            var scenePath = SaveScene(videoPath, frameRate);
+            var scenePath = SaveScene(recording);
             if (scenePath == null) return;
 
             Preferences.Set("cameraVideoCounter", Preferences.Get("cameraVideoCounter", 1) + 1);
@@ -133,15 +133,22 @@ namespace MicroVue.ViewModels
             }
         }
 
-        string? SaveScene(string videoPath, double frameRate)
+        string? SaveScene(RecordingInfo recording)
         {
             try
             {
-                var baseName = Path.GetFileNameWithoutExtension(videoPath);
+                var baseName = Path.GetFileNameWithoutExtension(recording.Path);
                 var scenePath = App.DataFolder + baseName;
                 var sceneName = Path.GetFileName(scenePath);
 
-                var scene = new Scene { Name = sceneName, VideoName = videoPath, FrameRate = frameRate };
+                var scene = new Scene
+                {
+                    Name = sceneName,
+                    VideoName = recording.Path,
+                    FrameRate = recording.FrameRate,
+                    Exposure = recording.Exposure,
+                    Gain = recording.Gain,
+                };
                 scene.Save(scenePath);
                 return scenePath;
             }
@@ -176,7 +183,7 @@ namespace MicroVue.ViewModels
 
         #region Capture countdown / progress
 
-        const int CountdownStart = 5;
+        const int CountdownStart = 3;
 
         CancellationTokenSource? captureCts;
 

@@ -94,6 +94,18 @@ namespace MicroVue.Models
 
     #endregion
 
+    #region Recording
+
+    public class RecordingInfo
+    {
+        public string Path { get; set; } = "";
+        public double FrameRate { get; set; } = -1;
+        public double Exposure { get; set; } = -1;
+        public double Gain { get; set; } = -1;
+    }
+
+    #endregion
+
     #region Settings
 
     public class CameraSettings

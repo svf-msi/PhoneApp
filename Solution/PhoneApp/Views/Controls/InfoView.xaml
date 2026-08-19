@@ -8,7 +8,7 @@
              xmlns:v="clr-namespace:MicroVue.Views"
              x:Class="MicroVue.Views.InfoView"
              x:DataType="vm:AnalysisViewModel">
-    <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *">
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *">
 
         <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Field of View:"/>
 
@@ -38,6 +38,12 @@
 
         <Label Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="1" Text="Length: "/>
         <Label Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="1" Text="{Binding MediaLength}"/>
+
+        <Label Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="1" Text="Exposure: "/>
+        <Label Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="1" Text="{Binding Scene.ExposureMs, StringFormat='{0:0.###} ms'}"/>
+
+        <Label Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="1" Text="Gain: "/>
+        <Label Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="1" Text="{Binding Scene.Gain}"/>
 
     </Grid>
 </ContentView>

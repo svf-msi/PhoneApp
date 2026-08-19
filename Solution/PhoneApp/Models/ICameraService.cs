@@ -16,7 +16,7 @@ namespace MicroVue.Models
         CameraCapabilities Capabilities { get; }
 
         // raised on the main thread once a recording has stopped and its file is ready at the given path
-        event Action<string, double>? RecordingSaved;
+        event Action<RecordingInfo>? RecordingSaved;
 
         #endregion
 
