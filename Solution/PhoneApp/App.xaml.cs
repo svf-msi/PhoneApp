@@ -31,7 +31,14 @@ namespace MicroVue
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new AppShell());
+            var window = new Window(new AppShell());
+
+            window.Created += (s, e) =>
+            {
+                DeviceDisplay.KeepScreenOn = true;
+            };
+
+            return window;
         }
     }
 }

@@ -111,6 +111,7 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         double duration;
+        public void SetDuration(double value) => Duration = value * playbackRate / FrameRate;
 
         [ObservableProperty]
         double frameRate;
@@ -122,6 +123,8 @@ namespace MicroVue.ViewModels
                 Scene.Save();
             }
         }
+
+        double playbackRate = 30;
 
         #region Player-related
 
@@ -148,6 +151,8 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         double currentTime = 0;
+        public void SetCurrentTime(double time) => CurrentTime = time * playbackRate / FrameRate;
+        public double GetCurrentTime() => CurrentTime * FrameRate / playbackRate;
 
         #endregion
 
@@ -460,13 +465,22 @@ namespace MicroVue.ViewModels
             }
         }
 
+        public void Refresh()
+        {
+            OnPropertyChanged(nameof(Duration));
+            OnPropertyChanged(nameof(StartTime));
+            OnPropertyChanged(nameof(EndTime));
+        }
+
+        public double GetStartPosition() => StartTime * FrameRate / playbackRate;
+
         #endregion
 
         #region Charts
 
         public void UpdateChart()
         {
-            Debug.WriteLine($"[Debug]: Update chart");
+            //Debug.WriteLine($"[Debug]: Update chart");
             if (Scene?.Targets?.Count > 0)
             {
                 var direction = DataDirection;
@@ -486,7 +500,7 @@ namespace MicroVue.ViewModels
 
                 foreach (var target in Scene.Targets)
                 {
-                    Debug.WriteLine($"[Debug]: target={target.Name}, back={target.IsBackground}, points={target.Track.Path?.Count()}");
+                    //Debug.WriteLine($"[Debug]: target={target.Name}, back={target.IsBackground}, points={target.Track.Path?.Count()}");
                     if (target?.IsBackground == false && target.Track?.RawPath?.Count > 0)
                     {
                         var fps = FrameRate > 0 ? FrameRate : 1;
@@ -619,6 +633,7 @@ namespace MicroVue.ViewModels
         [RelayCommand]
         void SetTime(object parameter)
         {
+            //Debug.WriteLine($"[Debug]: set time {parameter} to {CurrentTime}");
             if (parameter is string time)
             {
                 if (time == "Start")
@@ -633,6 +648,23 @@ namespace MicroVue.ViewModels
         }
 
         [RelayCommand]
+        void GoToTime(object parameter)
+        {
+            if (parameter is string time)
+            {
+                if (time == "Start")
+                {
+                    CurrentTime = StartTime;
+                }
+                else if (time == "End")
+                {
+                    CurrentTime = EndTime;
+                }
+            }
+        }
+
+
+        [RelayCommand]
         void Analyze()
         {
             if (video == null || !video.IsValid || Scene.Regions.Count == 0 || MediaLength == 0) return;
@@ -641,14 +673,29 @@ namespace MicroVue.ViewModels
             {
                 try
                 {
-                    Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) in {MediaLength} frames.");
                     IsAnalizing = true;
                     stopAnalysis = false;
+
+                    var startFrame = Math.Max(0, (int)Math.Round(StartTime * FrameRate));
+                    var endFrame = (int)Math.Round(EndTime * FrameRate);
+                    endFrame = endFrame > startFrame ? endFrame : MediaLength - 1;
+                    var length = endFrame - startFrame + 1;
+
+                    Debug.WriteLine($"[Debug]: Starting analysis for {Scene.Regions.Count} region(s) from {startFrame} to {endFrame} frames.");
+
                     video.Reset();
-                    if (!video.ReadFrame(out Image<Gray, byte> image)) return;
-                    var targets = new ObservableCollection<Target>(Scene.Regions.Select(region => region.ToTarget()));
-                    ImageAnalysis.StartFrame(image, targets);
-                    var count = 1;
+
+                    var count = 0;
+                    Image<Gray, byte> image = null;
+                    var targets = new ObservableCollection<Target>(Scene.Regions.Select(region => region.ToTarget(startFrame)));
+
+                    while (count <= startFrame)
+                    {
+                        if (!video.ReadFrame(out image)) return;
+                        ++count;
+                    }
+                    ImageAnalysis.StartFrame(image, targets, startFrame);
+
                     //image.Dispose();
                     while (video.ReadFrame(out image) && !stopAnalysis)
                     {
@@ -656,14 +703,16 @@ namespace MicroVue.ViewModels
                         var found = ImageAnalysis.AnalyzeFrame(count, image, targets);
                         image.Dispose();
                         if (!found) break;
+
+                        Progress = (double)(count - startFrame + 1) / length;
                         ++count;
-                        Progress = (double)count / MediaLength;
+                        if (count > endFrame) break;
                     }
 
                     var completed = true;
                     foreach (var target in targets)
                     {
-                        target.Completion = (int)Math.Round((double)(target.EndFrame - target.StartFrame + 1) / (MediaLength - target.StartFrame) * 100);
+                        target.Completion = (int)Math.Round((double)(target.EndFrame - target.StartFrame + 1) / length * 100);
                         if (target.Completion < 100) completed = false;
                     }
 
@@ -682,7 +731,7 @@ namespace MicroVue.ViewModels
 
                     Scene.Save();
                     UpdateChart();
-                    Debug.WriteLine($"[Debug]: done, frame count = {count} out of {MediaLength} requested.");
+                    Debug.WriteLine($"[Debug]: done, frame count = {count} out of {MediaLength}, {startFrame}-{endFrame} requested.");
                     //Debug.WriteLine($"[Debug]: {JsonConvert.SerializeObject(Scene.Targets[0].Track.RawPath, Formatting.Indented)}");
 
                     if (completed)

@@ -83,11 +83,9 @@ namespace MicroVue.Models
         [ObservableProperty]
         bool validParams = false;
 
-        [ObservableProperty]
-        double startTime;
+        public double StartTime { get; set; }
 
-        [ObservableProperty]
-        double endTime;
+        public double EndTime { get; set; }
 
         #endregion
 

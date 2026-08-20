@@ -37,7 +37,7 @@
 
                 <Button Grid.Column="3" Text="{x:Static f:FluentUI.ruler_24_regular}" 
                         FontFamily="{x:Static f:FluentUI.FontFamily}"  FontSize="22" Padding="-2, 0"
-                        TextColor="White" VerticalOptions="Center" Margin="2" BackgroundColor="OrangeRed"
+                        TextColor="White" VerticalOptions="Center" Margin="2" BackgroundColor="CadetBlue"
                         Command="{Binding ShowCalibrationCommand}"/>
 
                 <Button Grid.Column="4" Text="{x:Static f:FluentUI.info_24_regular}" 
@@ -133,27 +133,51 @@
         <!--Range-->
         <ScrollView Grid.Row="0" IsVisible="{Binding IsRangeShown}">
 
+            <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, *" ColumnDefinitions="*, *" Margin="5">
+
+                <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" 
+                       Text="Use slider to set range:" VerticalOptions="Center" HorizontalOptions="Start" Margin="5"/>
+                <Button Grid.Row="0" Grid.Column="1" Text="Back" VerticalOptions="Center" HorizontalOptions="End" Margin="5" 
+                        TextColor="White" Command="{Binding ShowRegionsCommand}"/>
+
+                <Label Grid.Row="1" Grid.Column="0" Text="{Binding StartTime, StringFormat='Start time: {0:N2}s'}" 
+                       VerticalOptions="Center" HorizontalOptions="Center" Margin="5"/>
+                <Button Grid.Row="2" Grid.Column="0" Text="Set Start" VerticalOptions="Center" Margin="5" TextColor="White"
+                        Command="{Binding SetTimeCommand}" CommandParameter="Start" BackgroundColor="Orange"/>
+                <Button Grid.Row="3" Grid.Column="0" Text="Go To Start" VerticalOptions="Center" Margin="5" TextColor="White"
+                        Command="{Binding GoToTimeCommand}" CommandParameter="Start" BackgroundColor="Orange"/>
+
+                <Label Grid.Row="1" Grid.Column="1" Text="{Binding EndTime, StringFormat='End time: {0:N2}s'}" 
+                       VerticalOptions="Center" HorizontalOptions="Center" Margin="5"/>
+                <Button Grid.Row="2" Grid.Column="1" Text="Set End" VerticalOptions="Center" Margin="5" TextColor="White"
+                        Command="{Binding SetTimeCommand}" CommandParameter="End" BackgroundColor="Orange"/>
+                <Button Grid.Row="3" Grid.Column="1" Text="Go To End" VerticalOptions="Center" Margin="5" TextColor="White"
+                        Command="{Binding GoToTimeCommand}" CommandParameter="End" BackgroundColor="Orange"/>
+
+            </Grid>
+
+        </ScrollView>
+
+        <!--Calibration-->
+        <ScrollView Grid.Row="0" IsVisible="{Binding IsCalibrationShown}">
+
             <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *, Auto" Margin="5">
 
-                <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Analysis range:" VerticalOptions="Center" Margin="5"/>
+                <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Calibrate Field of View:" VerticalOptions="Center" Margin="5"/>
                 <Button Grid.Row="0" Grid.Column="2" Text="Back" VerticalOptions="Center" Margin="5" TextColor="White"
-                        Command="{Binding ShowRegionsCommand}"/>
+                Command="{Binding ShowRegionsCommand}"/>
 
-                <Label Grid.Row="1" Grid.Column="0" Text="Start:" VerticalOptions="Center" Margin="5"/>
-                <Slider Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="1" Value="{Binding StartTime}" VerticalOptions="Center" Margin="5"
-                        Minimum="0" Maximum="{Binding Duration}"/>
-                <Button Grid.Row="1" Grid.Column="2" Text="Set" VerticalOptions="Center" Margin="5" TextColor="White"
-                        Command="{Binding SetTimeCommand}" CommandParameter="Start"/>
+                <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="1" Text="Width: " VerticalOptions="Center" Margin="5"/>
+                <Entry Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="1" FontSize="16" Keyboard="Numeric" Margin="0, -5" 
+                       Text="{Binding Scene.FovWidth}" VerticalOptions="Center" HorizontalOptions="Start"/>
 
-                <Label Grid.Row="2" Grid.Column="0" Text="End:" VerticalOptions="Center" Margin="5"/>
-                <Slider Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="1" Value="{Binding EndTime}" VerticalOptions="Center" Margin="5"
-                        Minimum="0" Maximum="{Binding Duration}"/>
-                <Button Grid.Row="2" Grid.Column="2" Text="Set" VerticalOptions="Center" Margin="5" TextColor="White"
-                        Command="{Binding SetTimeCommand}" CommandParameter="End"/>
+                <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="1" Text="Height: " VerticalOptions="Center" Margin="5"/>
+                <Entry Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="1" FontSize="16" Keyboard="Numeric" Margin="0, -5" 
+                       Text="{Binding Scene.FovHeight}" VerticalOptions="Center" HorizontalOptions="Start"/>
 
-                <Label Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1" Text="FPS: " VerticalOptions="Center"/>
-                <Entry Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" FontSize="16" Keyboard="Numeric" Margin="0, -5" 
-                       Text="{Binding FrameRate, StringFormat='{0:G4}'}" VerticalOptions="Center"/>
+                <Label Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1" Text="Units: " VerticalOptions="Center" Margin="5"/>
+                <Picker Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="1" FontSize="16" VerticalOptions="Center" Margin="0, -5" 
+                        ItemsSource="{Binding Units}" SelectedItem="{Binding Scene.DistanceUnits}" HorizontalOptions="Start"/>
 
             </Grid>
 

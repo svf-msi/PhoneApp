@@ -16,6 +16,18 @@ public partial class MainView : ContentView
         player.Speed = 1;
     }
 
+    void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+    {
+        if (sender is AnalysisViewModel vm)
+        {
+            if (args.PropertyName == nameof(vm.CurrentTime))
+            {
+                //Debug.WriteLine($"[Debug]: current time = {vm.CurrentTime} => {vm.GetCurrentTime()}");
+                player.SeekTo(TimeSpan.FromSeconds(vm.GetCurrentTime()), CancellationToken.None);
+            }
+        }
+    }
+
     protected override void OnSizeAllocated(double width, double height)
     {
         base.OnSizeAllocated(width, height);
@@ -67,9 +79,18 @@ public partial class MainView : ContentView
                 slider.Maximum = player.Duration.TotalSeconds;
                 if (BindingContext is AnalysisViewModel vm)
                 {
-                    vm.Duration = slider.Maximum;
+                    vm.SetDuration(slider.Maximum);
+                    if (vm.EndTime == 0)
+                    {
+                        vm.EndTime = vm.Duration;
+                    }
+                    vm.Refresh();
+                    var position = vm.GetStartPosition();
+                    player.SeekTo(TimeSpan.FromSeconds(position), CancellationToken.None);
+                    vm.PropertyChanged += ViewModel_PropertyChanged;
+
+                    //Debug.WriteLine($"[Debug]: Player duration {player.Duration.TotalSeconds}, {vm.Duration}, {vm.EndTime}");
                 }
-                //Debug.WriteLine($"[Debug]: Player duration {player.Duration.TotalSeconds}");
             }
         }
     }
@@ -83,7 +104,7 @@ public partial class MainView : ContentView
             if (BindingContext is AnalysisViewModel vm)
             {
                 vm.Scene?.RefreshTargets((int)Math.Round(slider.Value / slider.Maximum * vm.MediaLength));
-                vm.CurrentTime = slider.Value;
+                vm.SetCurrentTime(slider.Value);
             }
         }
     }
@@ -116,7 +137,7 @@ public partial class MainView : ContentView
             if (BindingContext is AnalysisViewModel vm)
             {
                 vm.Scene?.RefreshTargets((int)Math.Round(slider.Value / slider.Maximum * vm.MediaLength));
-                vm.CurrentTime = slider.Value;
+                vm.SetCurrentTime(slider.Value);
             }
             isDragging = false;
         }

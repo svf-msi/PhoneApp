@@ -642,6 +642,7 @@ namespace StandardLib
                 {
                     TrackingAnalysis.FindGradientPoints(target, grayImage);
                     target.Track.RawPath[frame] = target.Reference.TrackPoint;
+                    target.PrimaryReferenceFrame = frame;
                 }
             }
         }
