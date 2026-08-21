@@ -20,7 +20,7 @@ public partial class MainView : ContentView
     {
         if (sender is AnalysisViewModel vm)
         {
-            if (args.PropertyName == nameof(vm.CurrentTime))
+            if (args.PropertyName == nameof(vm.CurrentTime) && player.CurrentState != MediaElementState.Playing)
             {
                 //Debug.WriteLine($"[Debug]: current time = {vm.CurrentTime} => {vm.GetCurrentTime()}");
                 player.SeekTo(TimeSpan.FromSeconds(vm.GetCurrentTime()), CancellationToken.None);
@@ -95,17 +95,22 @@ public partial class MainView : ContentView
         }
     }
 
+    void UpdateCurrentTime()
+    {
+        if (BindingContext is AnalysisViewModel vm)
+        {
+            vm.Scene?.RefreshTargets((int)Math.Round(slider.Value / slider.Maximum * (vm.MediaLength - 1)));
+            vm.SetCurrentTime(slider.Value);
+        }
+    }
+
     void Player_PositionChanged(object sender, MediaPositionChangedEventArgs args)
     {
-        //Debug.WriteLine($"[Debug]: Player position changed: {args.Position.TotalSeconds}");
+        var pos = args.Position.TotalSeconds;
         if (!isDragging)
         {
             slider.Value = args.Position.TotalSeconds;
-            if (BindingContext is AnalysisViewModel vm)
-            {
-                vm.Scene?.RefreshTargets((int)Math.Round(slider.Value / slider.Maximum * vm.MediaLength));
-                vm.SetCurrentTime(slider.Value);
-            }
+            UpdateCurrentTime();
         }
     }
 
@@ -134,11 +139,7 @@ public partial class MainView : ContentView
             var targetPosition = TimeSpan.FromSeconds(slider.Value);
 
             await player.SeekTo(targetPosition, CancellationToken.None);
-            if (BindingContext is AnalysisViewModel vm)
-            {
-                vm.Scene?.RefreshTargets((int)Math.Round(slider.Value / slider.Maximum * vm.MediaLength));
-                vm.SetCurrentTime(slider.Value);
-            }
+            UpdateCurrentTime();
             isDragging = false;
         }
     }

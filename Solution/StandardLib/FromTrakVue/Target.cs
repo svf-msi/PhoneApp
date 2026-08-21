@@ -189,7 +189,7 @@ namespace StandardLib
                 if (Track != null) Track.CurrentFrame = value;
                 currentFrame = value;
 
-                Console.WriteLine($"Frame changed in {Name}: {currentFrame}");
+                //Debug.WriteLine($"[Debug]: Frame changed in {Name}: {currentFrame}");
                 if (Type == TargetType.Dynamic)
                 {
                     Reference = CurrentReference;

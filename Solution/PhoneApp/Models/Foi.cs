@@ -15,6 +15,8 @@ namespace MicroVue.Models
 {
     public partial class Foi : ObservableObject
     {
+        #region Fields and Properties
+
         [ObservableProperty]
         int id;
 
@@ -63,7 +65,7 @@ namespace MicroVue.Models
             {
                 if (realImage == null && !string.IsNullOrEmpty(RealImageFile))
                 {
-                    realImage = new Image<Bgr, float>(RealImageFile);
+                    realImage = new Image<Bgr, float>(GetFullPath(RealImageFile));
                 }
                 return realImage;
             }
@@ -72,14 +74,14 @@ namespace MicroVue.Models
                 realImage = value;
                 if (realImage != null)
                 {
-                    RealImageFile = GetImageFileName($"_{Name}_real");
-                    realImage.Save(RealImageFile);
+                    RealImageFile = GetFileName($"real_{Name}");
+                    realImage.Save(GetFullPath(RealImageFile));
                 }
                 else
                 {
                     if (!string.IsNullOrEmpty(RealImageFile))
                     {
-                        File.Delete(RealImageFile);
+                        File.Delete(GetFullPath(RealImageFile));
                         RealImageFile = null;
                     }
                 }
@@ -94,7 +96,7 @@ namespace MicroVue.Models
             {
                 if (imagImage == null && !string.IsNullOrEmpty(ImagImageFile))
                 {
-                    imagImage = new Image<Bgr, float>(ImagImageFile);
+                    imagImage = new Image<Bgr, float>(GetFullPath(ImagImageFile));
                 }
                 return imagImage;
             }
@@ -103,14 +105,14 @@ namespace MicroVue.Models
                 imagImage = value;
                 if (imagImage != null)
                 {
-                    ImagImageFile = GetImageFileName($"_{Name}_imag");
-                    imagImage.Save(ImagImageFile);
+                    ImagImageFile = GetFileName($"imag_{Name}");
+                    imagImage.Save(GetFullPath(ImagImageFile));
                 }
                 else
                 {
                     if (!string.IsNullOrEmpty(ImagImageFile))
                     {
-                        File.Delete(ImagImageFile);
+                        File.Delete(GetFullPath(ImagImageFile));
                         ImagImageFile = null;
                     }
                 }
@@ -125,7 +127,7 @@ namespace MicroVue.Models
             {
                 if (averageImage == null && !string.IsNullOrEmpty(AverageImageFile))
                 {
-                    averageImage = new Image<Bgr, float>(AverageImageFile);
+                    averageImage = new Image<Bgr, float>(GetFullPath(AverageImageFile));
                 }
                 return averageImage;
             }
@@ -134,14 +136,14 @@ namespace MicroVue.Models
                 averageImage = value;
                 if (averageImage != null)
                 {
-                    AverageImageFile = GetImageFileName("average");
-                    averageImage.Save(AverageImageFile);
+                    AverageImageFile = GetFileName("average");
+                    averageImage.Save(GetFullPath(AverageImageFile));
                 }
                 else
                 {
                     if (!string.IsNullOrEmpty(AverageImageFile))
                     {
-                        File.Delete(AverageImageFile);
+                        File.Delete(GetFullPath(AverageImageFile));
                         AverageImageFile = null;
                     }
                 }
@@ -157,20 +159,7 @@ namespace MicroVue.Models
 
         public string VideoFile { get; set; }
 
-        Video_MP4 video;
-        [JsonIgnore]
-        public Video_MP4 Video
-        {
-            get
-            {
-                if (video == null && !string.IsNullOrWhiteSpace(VideoFile))
-                {
-                    video = new Video_MP4(VideoFile);
-                }
-                return video;
-            }
-            protected set => video = value;
-        }
+        #endregion
 
         public Image<Bgr, byte> GetFrame(double phase) 
         {
@@ -189,7 +178,7 @@ namespace MicroVue.Models
         {
             try
             {
-                var tempname = GetVideoFileName($"_{Name}_video_temp");
+                var tempname = GetFullPath(GetFileName($"video_temp_{Name}", "mp4"));
                 int fourcc = VideoWriter.Fourcc('H', '2', '6', '4');
 
                 // beware - only few widths are acceptable at the moment: 640, 960, 1280, 1920.
@@ -219,11 +208,11 @@ namespace MicroVue.Models
                 }
                 else
                 {
-                    var name = GetVideoFileName($"_{Name}_video");
-                    if (File.Exists(name)) File.Delete(name);
-                    File.Move(tempname, name);
+                    var name = GetFileName($"video_{Name}", "mp4");
+                    var path = GetFullPath(name);
+                    if (File.Exists(path)) File.Delete(path);
+                    File.Move(tempname, path);
                     VideoFile = name;
-                    Video = new Video_MP4(name);
                 }
             }
             catch (Exception e)
@@ -245,15 +234,13 @@ namespace MicroVue.Models
             IsSaving = false;
         }
 
-        public void Remove()
+        public void Remove(bool deleteAverage = false)
         {
             Dispose();
-            if (!string.IsNullOrWhiteSpace(RealImageFile)) File.Delete(RealImageFile);
-            if (!string.IsNullOrWhiteSpace(ImagImageFile)) File.Delete(ImagImageFile);
-            if (!string.IsNullOrWhiteSpace(AverageImageFile)) File.Delete(AverageImageFile);
-            if (!string.IsNullOrWhiteSpace(VideoFile)) File.Delete(VideoFile);
-
-            Debug.WriteLine(Utilities.ListFolderContents(App.FoiDataFolder));
+            if (!string.IsNullOrWhiteSpace(RealImageFile)) File.Delete(GetFullPath(RealImageFile));
+            if (!string.IsNullOrWhiteSpace(ImagImageFile)) File.Delete(GetFullPath(ImagImageFile));
+            if (!string.IsNullOrWhiteSpace(AverageImageFile) && deleteAverage) File.Delete(GetFullPath(AverageImageFile));
+            if (!string.IsNullOrWhiteSpace(VideoFile)) File.Delete(GetFullPath(VideoFile));
         }
 
         public void Dispose()
@@ -263,7 +250,6 @@ namespace MicroVue.Models
             AverageImage?.Dispose();
             minImage?.Dispose();
             maxImage?.Dispose();
-            Video?.Dispose();
         }
 
         void MakeMinMaxImages()
@@ -273,8 +259,7 @@ namespace MicroVue.Models
             maxImage = AverageImage.Dilate(2);
         }
 
-        string GetImageFileName(string suffix, string ext = "tiff") => App.FoiDataFolder + $"{SceneName}_{suffix}.{ext}";
-
-        string GetVideoFileName(string suffix, string ext = "mp4") => App.FoiVideoFolder + $"{SceneName}_{suffix}.{ext}";
+        public string GetFileName(string name, string ext = "tiff") => $"{name}.{ext}";
+        public string GetFullPath(string name) => Scene.CurrentFolder + $"/{name}";
     }
 }

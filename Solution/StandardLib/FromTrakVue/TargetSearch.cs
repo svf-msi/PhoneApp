@@ -123,7 +123,7 @@ namespace StandardLib
                     }
                 }
 
-                Debug.WriteLine($"[Debug]: Search: range={range}, step={step}, threshold={threshold}, minError={MinGlobalError}");
+                //Debug.WriteLine($"[Debug]: Search: range={range}, step={step}, threshold={threshold}, minError={MinGlobalError}");
                 if (threshold == 0 || MinGlobalError <= threshold) break;
                 else
                 {
@@ -188,7 +188,7 @@ namespace StandardLib
                     }
                 }
             }
-            Debug.WriteLine($"[Debug]: update error threshold = {newThreshold}");
+            //Debug.WriteLine($"[Debug]: update error threshold = {newThreshold}");
             return newThreshold;
         }
 

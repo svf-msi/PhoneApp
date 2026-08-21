@@ -59,38 +59,17 @@ namespace MicroVue.ViewModels
             {
                 if (!FileSelected || !File.Exists(FilePath)) return;
 
-                var scenePath = App.DataFolder + SceneName;
-                if (File.Exists(scenePath))
+                if (Scene.Create(FilePath, SceneName, out var scene, out var duplicate))
                 {
-                    DuplicateScene = true;
-                    return;
+                    FileName = FilePath = "";
+                    FileSelected = false;
+                    _ = GoBack();
                 }
-
-                var file = FileName;
-                var videoPath = App.VideoFolder + file;
-                while (File.Exists(videoPath))
+                else
                 {
-                    file = "Copy_" + file;
-                    videoPath = App.VideoFolder + file;
+                    DuplicateScene = duplicate;
                 }
-                File.Copy(FilePath, videoPath, true);
-
-                var scene = new Scene { Name = SceneName, VideoName = videoPath };
-                //var text = JsonConvert.SerializeObject(scene, Formatting.Indented);
-                //File.WriteAllText(scenePath, text);
-                scene.Save(scenePath);
-
-                FileName = FilePath = "";
-                FileSelected = false;
-
-                //string[] files = Directory.GetFiles(App.VideoFolder);
-                //foreach (string f in files)
-                //{
-                //    Debug.WriteLine(Path.GetFileName(f));
-                //    File.Delete(f);
-                //}
-
-                _ = GoBack();
+                
             }
             catch (Exception e)
             {

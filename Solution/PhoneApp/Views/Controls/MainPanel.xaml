@@ -86,7 +86,7 @@
             <Button Grid.Row="2" Text="Track Targets" TextColor="White" VerticalOptions="Center" Margin="10" Command="{Binding AnalyzeCommand}"
                     IsVisible="{Binding IsAnalizing, Converter={StaticResource InvertedBoolConverter}}"/>
 
-            <Button Grid.Row="2" Text="Stop Tracking" TextColor="White" BackgroundColor="Red" VerticalOptions="Center" Margin="10" Command="{Binding StopCommand}"
+            <Button Grid.Row="2" Text="Stop Tracking" TextColor="White" VerticalOptions="Center" Margin="10" Command="{Binding StopCommand}"
                     IsVisible="{Binding IsAnalizing}"/>
 
             <ProgressBar Grid.Row="3" Progress="{Binding Progress}" Margin="5" IsVisible="{Binding IsAnalizing}"/>

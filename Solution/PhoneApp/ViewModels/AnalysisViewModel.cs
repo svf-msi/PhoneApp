@@ -79,13 +79,12 @@ namespace MicroVue.ViewModels
 
         #region Video-related
 
+        string videoPath;
+
         Video_MP4 video;
 
         [ObservableProperty]
         ImageSource image;
-
-        [ObservableProperty]
-        string videoPath;
 
         [ObservableProperty]
         int videoWidth;
@@ -410,13 +409,13 @@ namespace MicroVue.ViewModels
 
         void Initialize(SceneItem sceneItem)
         {
-            if (sceneItem != null)
+            if (sceneItem != null && sceneItem.Type == ItemType.SceneFolder)
             {
-                var scenePath = sceneItem.ItemPath;
-                Scene = Scene.Read(scenePath);
+                Scene = Scene.Open(sceneItem.ItemPath);
                 SceneName = Scene.Name;
                 if (Scene == null) return;
-                VideoPath = Scene.VideoName;
+                videoPath = $"{Scene.CurrentFolder}/{Scene.VideoName}";
+                //Debug.WriteLine($"[Debug]: video = {videoPath}, {Scene.CurrentFolder}, {Scene.VideoName}");
                 SetupVideo();
 
                 if (Scene.ValidParams)
@@ -427,7 +426,7 @@ namespace MicroVue.ViewModels
                 }
                 else
                 {
-                    Utilities.GetMetadata(out var data, VideoPath);
+                    Utilities.GetMetadata(out var data, videoPath);
                     Scene.Rotation = MediaRotation = (int)data[MetaType.VideoRotation];
                     Scene.FrameCount = MediaLength = (int)data[MetaType.FrameCount];
                     Scene.FrameRate = FrameRate = data[MetaType.FrameRate];
@@ -448,9 +447,9 @@ namespace MicroVue.ViewModels
 
         void SetupVideo(bool useImage = false)
         {
-            if (!string.IsNullOrEmpty(VideoPath))
+            if (!string.IsNullOrEmpty(videoPath))
             {
-                video = new Video_MP4(VideoPath);
+                video = new Video_MP4(videoPath);
                 VideoWidth = video?.Width ?? 0;
                 VideoHeight = video?.Height ?? 0;
                 //if (useImage) SetImage();
@@ -459,9 +458,9 @@ namespace MicroVue.ViewModels
 
         void SetupSource()
         {
-            if (!string.IsNullOrEmpty(VideoPath))
+            if (!string.IsNullOrEmpty(videoPath))
             {
-                Source = MediaSource.FromFile(VideoPath);
+                Source = MediaSource.FromFile(videoPath);
             }
         }
 
@@ -594,7 +593,7 @@ namespace MicroVue.ViewModels
         {
             if (!string.IsNullOrEmpty(foi?.VideoFile))
             {
-                FoiVideoSource = MediaSource.FromFile(foi?.VideoFile);
+                FoiVideoSource = MediaSource.FromFile(foi.GetFullPath(foi?.VideoFile));
             }
         }
 
@@ -677,7 +676,7 @@ namespace MicroVue.ViewModels
                     stopAnalysis = false;
 
                     var startFrame = Math.Max(0, (int)Math.Round(StartTime * FrameRate));
-                    var endFrame = (int)Math.Round(EndTime * FrameRate);
+                    var endFrame = Math.Min((int)Math.Round(EndTime * FrameRate), MediaLength - 1);
                     endFrame = endFrame > startFrame ? endFrame : MediaLength - 1;
                     var length = endFrame - startFrame + 1;
 
@@ -686,6 +685,7 @@ namespace MicroVue.ViewModels
                     video.Reset();
 
                     var count = 0;
+
                     Image<Gray, byte> image = null;
                     var targets = new ObservableCollection<Target>(Scene.Regions.Select(region => region.ToTarget(startFrame)));
 
@@ -699,13 +699,13 @@ namespace MicroVue.ViewModels
                     //image.Dispose();
                     while (video.ReadFrame(out image) && !stopAnalysis)
                     {
-                        Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
-                        var found = ImageAnalysis.AnalyzeFrame(count, image, targets);
+                        //Debug.WriteLine($"[Debug]: - frame={count}, image={image}");
+                        var found = ImageAnalysis.AnalyzeFrame(startFrame + count, image, targets);
                         image.Dispose();
                         if (!found) break;
 
-                        Progress = (double)(count - startFrame + 1) / length;
                         ++count;
+                        Progress = (double)(count - startFrame) / length;
                         if (count > endFrame) break;
                     }
 

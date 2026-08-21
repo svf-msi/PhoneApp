@@ -659,7 +659,7 @@ namespace StandardLib
                 {
                     var targetStatus = TrackTarget(target, frame, grayImage);
                     status = targetStatus|| status;
-                    Debug.WriteLine($"[Debug]: target={target.Name}, track status={targetStatus}, back={target.IsBackground}");
+                    //Debug.WriteLine($"[Debug]: target={target.Name}, track status={targetStatus}, back={target.IsBackground}");
                 }
             }
             return status;
@@ -691,7 +691,7 @@ namespace StandardLib
                 if (search.IsValid)
                 {
                     var position = search.Find();
-                    Debug.WriteLine($"[Debug]: target found = {!search.NotFound}");
+                    //Debug.WriteLine($"[Debug]: target found = {!search.NotFound}");
                     if (search.NotFound)
                     {
                         target.IsTracked = false;
