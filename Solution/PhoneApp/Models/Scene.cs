@@ -12,11 +12,32 @@ namespace MicroVue.Models
     public partial class Scene : ObservableObject
     {
         #region Static section
-        public static Scene Read(string file)
-        {
-            if (!File.Exists(file)) return null;
 
-            var text = File.ReadAllText(file);
+        public static string DefaultExtension { get; private set; } = ".data";
+
+        public static string DefaultName { get; private set; } = "scene" + DefaultExtension;
+
+        public static string CurrentFolder { get; set; } = "";
+
+        public static Scene Open(string folder)
+        {
+            var scenePath = folder + "/" + DefaultName;
+            if (!File.Exists(scenePath))
+            {
+                var files = Directory.GetFiles(folder, $"*{DefaultExtension}");
+                if (files.Length > 0)
+                {
+                    scenePath = files[0];
+                }
+            }
+            return Read(scenePath);
+        }
+
+        public static Scene Read(string filePath)
+        {
+            if (!File.Exists(filePath)) return null;
+
+            var text = File.ReadAllText(filePath);
             if (string.IsNullOrEmpty(text)) return null;
 
             try
@@ -26,7 +47,9 @@ namespace MicroVue.Models
                     ObjectCreationHandling = ObjectCreationHandling.Replace
                 };
                 var scene = JsonConvert.DeserializeObject<Scene>(text, settings);
-                scene.FileName = file;
+                scene.FileName = filePath;
+                CurrentFolder = Path.GetDirectoryName(filePath);
+                //Debug.WriteLine($"[Debug]: {Utils.ToString(scene)}");
                 return scene;
             }
             catch (Exception e)
@@ -36,14 +59,40 @@ namespace MicroVue.Models
             }
         }
 
+        public static bool Create(string videoPath, string sceneName, out Scene scene, out bool duplicate, string folder = "")
+        {
+            scene = null;
+            duplicate = false;
+
+            if (string.IsNullOrEmpty(sceneName) || !File.Exists(videoPath)) return false;
+
+            var scenePath = $"{App.DataFolder}{folder}{sceneName}{SceneItem.DefaultExtension}/";
+            if (Directory.Exists(scenePath))
+            {
+                duplicate = true;
+                return false;
+            }
+            Directory.CreateDirectory(scenePath);
+
+            var videoFile = Path.GetFileName(videoPath);
+            var newPath = scenePath + videoFile;
+            File.Copy(videoPath, newPath, true);
+
+            var sceneFile = scenePath + DefaultName;
+            scene = new Scene { Name = sceneName, VideoName = videoFile };
+            scene.Save(sceneFile);
+            //Debug.WriteLine($"[Debug]: created {sceneName} for {videoFile}, check {sceneFile}");
+            return true;
+        }
+
         #endregion
 
         #region Fields and Properties
 
         #region Main
 
-        [ObservableProperty]
-        string fileName = "";
+        [JsonIgnore]
+        public string FileName { get; set; } = "";
 
         [ObservableProperty]
         string name = "None";
@@ -93,6 +142,10 @@ namespace MicroVue.Models
         [ObservableProperty]
         double gain = -1;
 
+        public double StartTime { get; set; }
+
+        public double EndTime { get; set; }
+
         #endregion
 
         #region Calibration-related
@@ -124,6 +177,8 @@ namespace MicroVue.Models
 
         [ObservableProperty]
         ObservableCollection<Foi> fois = new ObservableCollection<Foi>();
+
+        public BackgroundAnalysis BackgroundAnalysis { get; set; } = new BackgroundAnalysis();
 
         #endregion
 

@@ -626,12 +626,10 @@ namespace StandardLib
             //ProcessBackground();
         }
 
-        public static void ProcessBackground(BackgroundAnalysis backgroundAnalysis, IEnumerable<Target> targets, Video_MP4 video)
+        public static void ProcessBackground(BackgroundAnalysis backgroundAnalysis, IEnumerable<Target> targets)
         {
             backgroundAnalysis?.Process2D(targets);
             backgroundAnalysis?.Subtract(targets);
-            if (video != null)
-                video.Transforms = backgroundAnalysis.TransformPoins;
         }
 
         public static void StartFrame(Image<Gray, byte> image, IEnumerable<Target> targets, int frame = 0)
@@ -643,15 +641,9 @@ namespace StandardLib
             {
                 if (target.IsTracked)
                 {
-                    //Console.WriteLine($"Analyze frame {frame} for {target?.Text}");
                     TrackingAnalysis.FindGradientPoints(target, grayImage);
                     target.Track.RawPath[frame] = target.Reference.TrackPoint;
-                    //target.Track.RawPath[frame] = new TrackPoint()
-                    //{
-                    //    Frame = frame,
-                    //    ReferenceFrame = frame,
-                    //    State = PointState.Reference
-                    //};
+                    target.PrimaryReferenceFrame = frame;
                 }
             }
         }
@@ -666,7 +658,9 @@ namespace StandardLib
             {
                 if (target.IsTracked)
                 {
-                    status = TrackTarget(target, frame, grayImage) || status;
+                    var targetStatus = TrackTarget(target, frame, grayImage);
+                    status = targetStatus|| status;
+                    //Debug.WriteLine($"[Debug]: target={target.Name}, track status={targetStatus}, back={target.IsBackground}");
                 }
             }
             return status;
@@ -698,14 +692,14 @@ namespace StandardLib
                 if (search.IsValid)
                 {
                     var position = search.Find();
-                    //Debug.WriteLine($"[Debug]: target found = {search.NotFound}");
+                    //Debug.WriteLine($"[Debug]: target found = {!search.NotFound}");
                     if (search.NotFound)
                     {
                         target.IsTracked = false;
                     }
                     else
                     {
-                        var errorLearningRate = 0.2;
+                        var errorLearningRate = 0.5;
                         target.ReferenceError = target.ReferenceError * (1 - errorLearningRate) + errorLearningRate * search.ErrorThreshold;
                         var rectangle = Rectangle.Round(roundReference.Rectangle);
                         var referencePosition = roundReference.Position;
@@ -897,26 +891,41 @@ namespace StandardLib
             }
         }
 
-        public static bool FilterFrequency(double frequency, double frameRate, int length, Video_MP4 video,
+        public static bool FilterFrequency(double frequency, double frameRate, int start, int end, Video_MP4 video,
             out Image<Bgr, float> real, out Image<Bgr, float> imag, out Image<Bgr, float> average,
             CancellationToken token, Action<double> progress = null, bool doAverage = true)
         {
             real = null;
             imag = null;
             average = null;
-            if (video == null || length == 0 || frameRate == 0) return false;
+            if (video == null || end - start == 0 || frameRate == 0) return false;
 
+            var length = end - start + 1;
+            var count = 0;
             var bin = Math.Round(frequency * length / frameRate);
+            Image<Bgr, byte> frame = null;
+
+            video.Reset();
             try
             {
-                if (!video.ReadBgrFrame(out var frame) || frame == null) return false;
+                while (count <= start)
+                {
+                    if (!video.ReadBgrFrame(out frame)) return false;
+                    ++count;
+                }
 
-                var count = 1;
                 var width = frame.Width;
                 var height = frame.Height; 
                 real = new Image<Bgr, float>(width, height);
                 imag = new Image<Bgr, float>(width, height);
                 average = new Image<Bgr, float>(width, height);
+
+                if (video.UseTransform && video?.Transforms?.ContainsKey(0) == true)
+                {
+                    var oldImage = frame;
+                    frame = ImageAnalysis.Transform(frame, video.Transforms[0]);
+                    oldImage?.Dispose();
+                }
 
                 var floatFrame = frame.Convert<Bgr, float>();
                 CvInvoke.Accumulate(floatFrame * 2, real);
@@ -930,6 +939,13 @@ namespace StandardLib
                 {
                     if (!video.ReadBgrFrame(out frame) || frame == null) break;
                     if (token.IsCancellationRequested) return false;
+
+                    if (video.UseTransform && video?.Transforms?.ContainsKey(i) == true)
+                    {
+                        var oldImage = frame;
+                        frame = ImageAnalysis.Transform(frame, video.Transforms[i]);
+                        oldImage?.Dispose();
+                    }
 
                     floatFrame = frame.Convert<Bgr, float>();
                     var phase = 2 * Math.PI * i * bin / length;
@@ -945,7 +961,7 @@ namespace StandardLib
                     floatFrame.Dispose();
 
                     ++count;
-                    progress?.Invoke((double)count / length);
+                    progress?.Invoke((double)(count - start) / length);
                     //Debug.WriteLine($"[Debug]: Filtered {count} of {length} frames.");
                 }
 

@@ -30,7 +30,7 @@ namespace StandardLib
         public static SearchDirection[] Directions = (SearchDirection[])Enum.GetValues(typeof(SearchDirection));
         public static int SearchLimit = 50;
         public static int SearchRange = 1;
-        public static int MaxSearchRange = 64;
+        public static int MaxSearchRange = 4;
         public static ErrorType ErrorType = ErrorType.Abs;
 
         public bool IsValid { get; set; } = true;
@@ -123,12 +123,12 @@ namespace StandardLib
                     }
                 }
 
-                //Console.WriteLine($"Search: range={range}, step={step}, threshold={threshold}, minError={MinGlobalError}");
+                //Debug.WriteLine($"[Debug]: Search: range={range}, step={step}, threshold={threshold}, minError={MinGlobalError}");
                 if (threshold == 0 || MinGlobalError <= threshold) break;
                 else
                 {
-                    threshold = ErrorThreshold * 1.1;
-                    range *= 2; step = 2;
+                    threshold = threshold * 1.1; //ErrorThreshold * 1.1;
+                    range *= 2; step = 1;
                 }
             } 
 
@@ -188,6 +188,7 @@ namespace StandardLib
                     }
                 }
             }
+            //Debug.WriteLine($"[Debug]: update error threshold = {newThreshold}");
             return newThreshold;
         }
 

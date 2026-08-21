@@ -42,6 +42,11 @@ namespace StandardLib
         int endFrame = 0;
         public int EndFrame { get => endFrame; set { endFrame = value; NotifyPropertyChanged(); } }
 
+        int completion = 0;
+        public int Completion { get => completion; set { completion = value; NotifyPropertyChanged(); NotifyPropertyChanged(nameof(IsComplete)); } }
+
+        public bool IsComplete => Completion == 100;
+
         TargetType type = TargetType.Static;
         public TargetType Type { get => type; set { type = value; NotifyPropertyChanged(); } }
 
@@ -184,7 +189,7 @@ namespace StandardLib
                 if (Track != null) Track.CurrentFrame = value;
                 currentFrame = value;
 
-                Console.WriteLine($"Frame changed in {Name}: {currentFrame}");
+                //Debug.WriteLine($"[Debug]: Frame changed in {Name}: {currentFrame}");
                 if (Type == TargetType.Dynamic)
                 {
                     Reference = CurrentReference;
@@ -372,7 +377,7 @@ namespace StandardLib
         {
             TrackPoint result = new TrackPoint
             {
-                Frame = 0,
+                Frame = frame,
                 X = 0,
                 Y = 0,
                 Angle = 0
@@ -381,7 +386,8 @@ namespace StandardLib
             var point = GetPoint(frame);
             if (point == null) return result;
             var primary = GetPoint(PrimaryReferenceFrame);
-            result.Frame = frame;
+            if (primary == null) return result;
+
             result.X = point.X - primary.X;
             result.Y = point.Y - primary.Y;
             result.Angle = point.Angle - primary.Angle;

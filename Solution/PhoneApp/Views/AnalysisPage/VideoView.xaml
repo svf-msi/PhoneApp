@@ -42,7 +42,9 @@
                     <AbsoluteLayout IsClippedToBounds="True">
 
                         <!--Video player-->
-                        <toolkit:MediaElement Source="{Binding FoiVideoSource}"
+                        <toolkit:MediaElement Source="{Binding FoiVideoSource}" 
+                            Rotation="{Binding MediaRotation, Mode=OneWay}"
+                            AndroidViewType="TextureView"
                             ShouldAutoPlay="False" 
                             ShouldLoopPlayback="True"
                             ShouldShowPlaybackControls="False" 
@@ -68,6 +70,7 @@
 
                 <Button Grid.Column="0" Margin="5"
                     Text="{x:Static f:FluentUI.play_24_regular}" 
+                    TextColor="White"
                     FontFamily="{x:Static f:FluentUI.FontFamily}"
                     FontSize="24" CornerRadius="22" Padding="0"
                     WidthRequest="44" HeightRequest="44"
