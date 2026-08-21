@@ -10,25 +10,13 @@
              x:DataType="vm:AnalysisViewModel">
     <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *">
 
-        <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Field of View:"/>
+        <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Camera frame rate:" Margin="0, 5"/>
 
-        <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="1" Text="Width: " VerticalOptions="Center"/>
-        <Entry Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="1" FontSize="16" Keyboard="Numeric" Margin="0, -5" 
-               Text="{Binding Scene.FovWidth}" VerticalOptions="Center"/>
-
-        <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="1" Text="Height: " VerticalOptions="Center"/>
-        <Entry Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="1" FontSize="16" Keyboard="Numeric" Margin="0, -5" 
-               Text="{Binding Scene.FovHeight}" VerticalOptions="Center"/>
-
-        <Label Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1" Text="Units: " VerticalOptions="Center"/>
-        <Picker Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="1" FontSize="16" VerticalOptions="Center" Margin="0, -5" 
-                ItemsSource="{Binding Units}" SelectedItem="{Binding Scene.DistanceUnits}"/>
+        <Label Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1" Text="FPS: " VerticalOptions="Center"/>
+        <Entry Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="1" FontSize="16" Keyboard="Numeric" Margin="0, -5" 
+               Text="{Binding FrameRate, StringFormat='{0:G4}'}" VerticalOptions="Center" HorizontalOptions="Start"/>
 
         <Label Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Text="Video Info:" Margin="0, 5"/>
-
-        <Label Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="1" Text="FPS: " VerticalOptions="Center"/>
-        <Entry Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" FontSize="16" Keyboard="Numeric" Margin="0, -5" 
-               Text="{Binding FrameRate, StringFormat='{0:G4}'}" VerticalOptions="Center"/>
 
         <Label Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="1" Text="Size: "/>
         <Label Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="1" Text="{Binding Resolution}"/>

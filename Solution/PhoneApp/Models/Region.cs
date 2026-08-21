@@ -51,12 +51,15 @@ namespace MicroVue.Models
 
         public Target ToTarget(int frame = 0)
         {
-            return new Target
+            var target = new Target
             {
                 Name = Name,
                 ColorText = ColorText,
+                IsBackground = IsBackgound,
                 Reference = ToTrackRegion(frame)
             };
+            target.Track.TargetName = target.Name;
+            return target;
         }
 
         public TrackRegion ToTrackRegion(int frame = 0)

@@ -7,6 +7,8 @@ namespace MicroVue.Models
 {
     public partial class SceneItem : ObservableObject
     {
+        public static string DefaultExtension = ".scene";
+
         [ObservableProperty]
         string name;
 
@@ -20,5 +22,5 @@ namespace MicroVue.Models
         ItemType type;
     }
 
-    public enum ItemType { File, Folder }
+    public enum ItemType { SceneFolder, Folder, File }
 }
