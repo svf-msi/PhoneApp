@@ -168,6 +168,16 @@ namespace MicroVue.ViewModels
 
         [ObservableProperty]
         bool isRegionSelected;
+        partial void OnIsRegionSelectedChanged(bool value)
+        {
+            if (!value) IsEditMode = false;
+        }
+
+        [ObservableProperty]
+        bool isEditMode;
+
+        [RelayCommand]
+        void ToggleEditMode() => IsEditMode = !IsEditMode;
 
         public double RegionX
         {

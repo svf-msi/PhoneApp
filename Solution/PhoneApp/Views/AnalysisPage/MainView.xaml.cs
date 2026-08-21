@@ -1,4 +1,4 @@
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using MicroVue.ViewModels;
@@ -113,6 +113,32 @@ public partial class MainView : ContentView
                 vm.Scene?.RefreshTargets((int)Math.Round(slider.Value / slider.Maximum * vm.MediaLength));
             }
             isDragging = false;
+        }
+    }
+
+    void OnRegionPanUpdated(object? sender, PanUpdatedEventArgs e)
+    {
+        if (sender is not Grid view || view.FirstOrDefault() is not View content || BindingContext is not AnalysisViewModel vm) return;
+        if (!vm.IsEditMode || view.BindingContext != vm.SelectedRegion) return;
+
+        switch (e.StatusType)
+        {
+            case GestureStatus.Running:
+                content.TranslationX = e.TotalX;
+                content.TranslationY = e.TotalY;
+                break;
+
+            case GestureStatus.Completed:
+            case GestureStatus.Canceled:
+                if (e.StatusType == GestureStatus.Completed && vm.PlayerScale > 0)
+                {
+                    vm.RegionX = Math.Clamp(vm.RegionX + content.TranslationX / vm.PlayerScale, 0, vm.MediaWidth);
+                    vm.RegionY = Math.Clamp(vm.RegionY + content.TranslationY / vm.PlayerScale, 0, vm.MediaHeight);
+                    vm.Scene?.Save();
+                }
+                content.TranslationX = 0;
+                content.TranslationY = 0;
+                break;
         }
     }
 

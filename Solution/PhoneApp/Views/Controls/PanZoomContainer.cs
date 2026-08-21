@@ -24,15 +24,33 @@ namespace MicroVue.Views
 
         private double _startScale = 1;
 
+        public static readonly BindableProperty AreGesturesEnabledProperty = BindableProperty.Create(nameof(AreGesturesEnabled), typeof(bool), typeof(PanZoomContainer), true, propertyChanged: (b, _, _) => ((PanZoomContainer)b).ApplyGestureRecognizers());
+
+        public bool AreGesturesEnabled
+        {
+            get => (bool)GetValue(AreGesturesEnabledProperty);
+            set => SetValue(AreGesturesEnabledProperty, value);
+        }
+
+        private void ApplyGestureRecognizers()
+        {
+            GestureRecognizers.Clear();
+
+            if (AreGesturesEnabled)
+            {
+                GestureRecognizers.Add(_panGestureRecognizer);
+                GestureRecognizers.Add(_pinchGestureRecognizer);
+                GestureRecognizers.Add(_doubleTapGestureRecognizer);
+            }
+        }
+
         public PanZoomContainer()
         {
             _panGestureRecognizer = new PanGestureRecognizer();
             _panGestureRecognizer.PanUpdated += OnPanUpdatedAsync;
-            GestureRecognizers.Add(_panGestureRecognizer);
 
             _pinchGestureRecognizer = new PinchGestureRecognizer();
             _pinchGestureRecognizer.PinchUpdated += OnPinchUpdatedAsync;
-            GestureRecognizers.Add(_pinchGestureRecognizer);
 
             _doubleTapGestureRecognizer = new TapGestureRecognizer
             {
@@ -40,7 +58,8 @@ namespace MicroVue.Views
             };
 
             _doubleTapGestureRecognizer.Tapped += DoubleTappedAsync;
-            GestureRecognizers.Add(_doubleTapGestureRecognizer);
+
+            ApplyGestureRecognizers();
         }
 
         protected override void OnChildAdded(Element child)

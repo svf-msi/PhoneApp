@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
@@ -13,6 +13,7 @@
 
     <ContentView.Resources>
 
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter"/>
         <v:LayoutRegionConverter x:Key="LayoutRegionConverter"/>
         <v:LayoutTargetConverter x:Key="LayoutTargetConverter"/>
         <v:ColorTextConverter x:Key="ColorTextConverter"/>
@@ -40,12 +41,12 @@
 
             <Label Grid.Row="0" Padding="3"
                 Text="{Binding SceneName}"
-                VerticalOptions="Center" 
-                HorizontalOptions="Center" 
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
                 LineBreakMode="TailTruncation"/>
 
             <Grid Grid.Row="1" IsClippedToBounds="True">
-                <v:PanZoomContainer>
+                <v:PanZoomContainer AreGesturesEnabled="{Binding IsEditMode, Converter={StaticResource InvertedBoolConverter}}">
 
                     <AbsoluteLayout IsClippedToBounds="True">
                         <!--Video player-->
@@ -68,13 +69,20 @@
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="m:Region">
 
-                                    <Rectangle Fill="Transparent" 
-                                        Stroke="{Binding Color}" 
-                                        StrokeThickness="2" StrokeDashArray="1 1"
+                                    <Grid BackgroundColor="#01000000"
+                                        InputTransparent="{Binding Source={x:Reference mainView}, Path=BindingContext.IsEditMode, Converter={StaticResource InvertedBoolConverter}}"
                                         AbsoluteLayout.LayoutBounds="{Binding Rect, 
                                         Converter={StaticResource LayoutRegionConverter},
                                         ConverterParameter={x:Reference mainView}}"
-                                        AbsoluteLayout.LayoutFlags="None" />
+                                        AbsoluteLayout.LayoutFlags="None">
+
+                                        <Grid.GestureRecognizers>
+                                            <PanGestureRecognizer PanUpdated="OnRegionPanUpdated"/>
+                                        </Grid.GestureRecognizers>
+
+                                        <Rectangle Fill="Transparent" Stroke="{Binding Color}" StrokeThickness="2" StrokeDashArray="1 1"/>
+
+                                    </Grid>
 
                                 </DataTemplate>
                             </BindableLayout.ItemTemplate>
@@ -83,6 +91,7 @@
 
                         <!--Region overlay-->
                         <AbsoluteLayout x:Name="overlay2" 
+                            InputTransparent="True" CascadeInputTransparent="True"
                             BindableLayout.ItemsSource="{Binding Scene.Targets}"
                             AbsoluteLayout.LayoutFlags="None"
                             AbsoluteLayout.LayoutBounds="0, 0, 0, 0">
