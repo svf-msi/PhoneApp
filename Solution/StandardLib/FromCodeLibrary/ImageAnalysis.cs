@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace StandardLib
 {
@@ -890,21 +891,29 @@ namespace StandardLib
             }
         }
 
-        public static bool FilterFrequency(double frequency, double frameRate, int length, Video_MP4 video,
+        public static bool FilterFrequency(double frequency, double frameRate, int start, int end, Video_MP4 video,
             out Image<Bgr, float> real, out Image<Bgr, float> imag, out Image<Bgr, float> average,
             CancellationToken token, Action<double> progress = null, bool doAverage = true)
         {
             real = null;
             imag = null;
             average = null;
-            if (video == null || length == 0 || frameRate == 0) return false;
+            if (video == null || end - start == 0 || frameRate == 0) return false;
 
+            var length = end - start + 1;
+            var count = 0;
             var bin = Math.Round(frequency * length / frameRate);
+            Image<Bgr, byte> frame = null;
+
+            video.Reset();
             try
             {
-                if (!video.ReadBgrFrame(out var frame) || frame == null) return false;
+                while (count <= start)
+                {
+                    if (!video.ReadBgrFrame(out frame)) return false;
+                    ++count;
+                }
 
-                var count = 1;
                 var width = frame.Width;
                 var height = frame.Height; 
                 real = new Image<Bgr, float>(width, height);
@@ -952,7 +961,7 @@ namespace StandardLib
                     floatFrame.Dispose();
 
                     ++count;
-                    progress?.Invoke((double)count / length);
+                    progress?.Invoke((double)(count - start) / length);
                     //Debug.WriteLine($"[Debug]: Filtered {count} of {length} frames.");
                 }
 
