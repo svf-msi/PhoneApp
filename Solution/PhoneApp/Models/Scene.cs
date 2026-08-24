@@ -79,8 +79,8 @@ namespace MicroVue.Models
             File.Copy(videoPath, newPath, true);
 
             var sceneFile = scenePath + DefaultName;
-            scene = new Scene { Name = sceneName, VideoName = videoFile };
-            scene.Save(sceneFile);
+            scene = new Scene { Name = sceneName, VideoName = videoFile, FileName = sceneFile };
+            scene.Save();
             //Debug.WriteLine($"[Debug]: created {sceneName} for {videoFile}, check {sceneFile}");
             return true;
         }
