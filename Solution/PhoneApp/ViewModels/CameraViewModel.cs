@@ -50,7 +50,7 @@ namespace MicroVue.ViewModels
             set { videoName = value; OnPropertyChanged(); OnPropertyChanged(nameof(VideoNameTaken)); }
         }
 
-        public bool VideoNameTaken => File.Exists($"{App.VideoFolder}{videoName.Trim()}.mp4");
+        public bool VideoNameTaken => Directory.Exists($"{App.DataFolder}{videoName.Trim()}{SceneItem.DefaultExtension}");
 
         static string DefaultVideoName() => $"Video {Preferences.Get("cameraVideoCounter", 1)}";
 
@@ -59,14 +59,7 @@ namespace MicroVue.ViewModels
             var name = VideoName.Trim();
             if (name.Length == 0) name = DefaultVideoName();
 
-            var path = $"{App.VideoFolder}{name}.mp4";
-            int n = 1; // prevent duplicates
-            while (File.Exists(path))
-            {
-                n++;
-                path = $"{App.VideoFolder}{name} {n}.mp4";
-        }
-            return path;
+            return Path.Combine(FileSystem.Current.CacheDirectory, $"{name}.mp4");
         }
 
         public double RecordingDurationSlider
@@ -114,7 +107,7 @@ namespace MicroVue.ViewModels
 
             var sceneItem = new SceneItem
             {
-                Name = Path.GetFileName(scenePath),
+                Name = Path.GetFileNameWithoutExtension(scenePath),
                 Date = File.GetCreationTime(scenePath),
                 ItemPath = scenePath,
             };
@@ -137,20 +130,16 @@ namespace MicroVue.ViewModels
         {
             try
             {
-                var baseName = Path.GetFileNameWithoutExtension(recording.Path);
-                var scenePath = App.DataFolder + baseName;
-                var sceneName = Path.GetFileName(scenePath);
+                var sceneName = Path.GetFileNameWithoutExtension(recording.Path);
+                if (!Scene.Create(recording.Path, sceneName, out var scene, out _)) return null;
 
-                var scene = new Scene
-                {
-                    Name = sceneName,
-                    VideoName = recording.Path,
-                    FrameRate = recording.FrameRate,
-                    Exposure = recording.Exposure,
-                    Gain = recording.Gain,
-                };
-                scene.Save(scenePath);
-                return scenePath;
+                scene.FrameRate = recording.FrameRate;
+                scene.Exposure = recording.Exposure;
+                scene.Gain = recording.Gain;
+                scene.Save();
+
+                File.Delete(recording.Path);
+                return Path.GetDirectoryName(scene.FileName);
             }
             catch (Exception e)
             {
