@@ -180,9 +180,12 @@ namespace MicroVue.Models
             {
                 var tempname = GetFullPath(GetFileName($"video_temp_{Name}", "mp4"));
                 int fourcc = VideoWriter.Fourcc('H', '2', '6', '4');
+                var width = AverageImage.Width;
+                var height = AverageImage.Height;
+                height = 16 * (height / 16);
 
                 // beware - only few widths are acceptable at the moment: 640, 960, 1280, 1920.
-                using (var writer = new VideoWriter(tempname, 0, fourcc, 20, AverageImage.Size, true))
+                using (var writer = new VideoWriter(tempname, 0, fourcc, 20, new System.Drawing.Size(width, height), true))
                 {
                     for (int i = 0; i < NumberOfSamples; ++i)
                     {
@@ -191,6 +194,7 @@ namespace MicroVue.Models
 
                         if (frame != null)
                         {
+                            frame.ROI = new System.Drawing.Rectangle(0, 0, width, height);
                             writer.Write(frame);
                         }
                         else break;
