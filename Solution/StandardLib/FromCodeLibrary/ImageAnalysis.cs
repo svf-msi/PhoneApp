@@ -969,11 +969,15 @@ namespace StandardLib
                 imag = imag.ConvertScale<float>(1.0 / length, 0);
                 if (doAverage) average = average.ConvertScale<float>(1.0 / length, 0);
 
+                var size = 3;
+                real = real.SmoothGaussian(size);
+                imag = imag.SmoothGaussian(size);
+
                 return true;
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error in image filtering: {e}");
+                Debug.WriteLine($"[Debug]: Error in image filtering: {e}");
                 return false;
             }
         }
