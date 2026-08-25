@@ -762,6 +762,7 @@ namespace MicroVue.ViewModels
                         Progress = (double)(count - startFrame) / length;
                         if (count > endFrame) break;
                     }
+                    ImageAnalysis.ReleaseFrameBuffer();
 
                     var completed = true;
                     foreach (var target in targets)

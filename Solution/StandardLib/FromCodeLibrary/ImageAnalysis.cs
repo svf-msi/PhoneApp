@@ -521,7 +521,7 @@ namespace StandardLib
                         maximum = (maxValues[0] + maxValues[1] + maxValues[2]) / 3;
                     }
                     if (maximum > 0)
-                        pattern = pattern.Convert((float f) => (float)(f / maximum));
+                        pattern = pattern.ConvertScale<float>(1.0 / maximum, 0);
                 }
                 return pattern;
 
@@ -647,9 +647,17 @@ namespace StandardLib
             }
         }
 
+        static Image<Gray, float> frameBuffer;
+
+        public static void ReleaseFrameBuffer() { frameBuffer?.Dispose(); frameBuffer = null; }
+
         public static bool AnalyzeFrame(int frame, Image<Gray, byte> image, IEnumerable<Target> targets)
         {
-            Image<Gray, float> grayImage = image?.Convert<Gray, float>();
+            if (image == null) return false;
+            if (frameBuffer?.Size != image.Size) frameBuffer = new Image<Gray, float>(image.Size);
+            image.Mat.ConvertTo(frameBuffer, DepthType.Cv32F);
+
+            var grayImage = frameBuffer;
             if (grayImage?.Data == null) return false;
 
             var status = false;
