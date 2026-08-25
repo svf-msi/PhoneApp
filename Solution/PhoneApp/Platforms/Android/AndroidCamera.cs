@@ -94,6 +94,10 @@ namespace MicroVue.Models
         {
             try
             {
+                var c = closing;
+                await c; // wait for previous close to finish
+                if (c != closing) return false;
+
                 if (device != null && Facing == facing)
                 {
                     StartPreview();
@@ -302,15 +306,20 @@ namespace MicroVue.Models
             try { recorderSurface?.Release(); } catch { }
             recorderSurface = null;
 
-            try { device?.Close(); } catch { }
+            var dev = device;
+            var thread = backgroundThread;
             device = null;
             requestBuilder = null;
-
-            // kill bg thread
-            try { backgroundThread?.QuitSafely(); } catch { }
             backgroundThread = null;
             backgroundHandler = null;
+
+            closing = Task.Run(() =>
+            {
+                try { dev?.Close(); } catch { }
+                try { thread?.QuitSafely(); } catch { }
+            });
         }
+        Task closing = Task.CompletedTask;
 
         // stops capture session while keeping camera device open
         void CloseSession()

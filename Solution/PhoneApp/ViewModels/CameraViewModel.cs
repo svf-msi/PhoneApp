@@ -155,6 +155,7 @@ namespace MicroVue.ViewModels
 
         public void Shutdown()
         {
+            SettingsOpen = false;
             captureCts?.Cancel();
             if (Camera?.IsRecording == true) Camera.StopRecording(true); // discard a capture left running
             Camera?.Close();
