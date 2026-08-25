@@ -550,7 +550,7 @@ namespace MicroVue.ViewModels
         void UpdateSections()
         {
             var foiCollection = new SectionsCollection();
-            if (Scene?.Fois?.Count > 0)
+            if (Scene?.Fois?.Count > 0 && IsSpectrum)
             {
                 foreach (var foi in Scene.Fois)
                 {

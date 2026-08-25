@@ -64,7 +64,7 @@
                                     <Button Grid.Row="0" Grid.Column="3" Text="Stop" TextColor="White" BackgroundColor="DarkOrange" Padding="10, 0" Margin="0" CornerRadius="15" MaximumHeightRequest="35"
                                         Command="{Binding Source={x:Reference chartPanel}, Path=BindingContext.StopProcessFoiCommand}"
                                         CommandParameter="{Binding .}" IsVisible="{Binding IsProcessing}"/>
-                                    <Button Grid.Row="0" Grid.Column="3" Text="View" TextColor="White" BackgroundColor="Green" Padding="10, 0" Margin="0" CornerRadius="15" MaximumHeightRequest="35"
+                                    <Button Grid.Row="0" Grid.Column="3" Text="View" TextColor="White" BackgroundColor="Blue" Padding="10, 0" Margin="0" CornerRadius="15" MaximumHeightRequest="35"
                                         Command="{Binding Source={x:Reference chartPanel}, Path=BindingContext.ViewFoiVideoCommand}"
                                         CommandParameter="{Binding .}" IsVisible="{Binding IsReady}"/>
 
