@@ -492,11 +492,17 @@ namespace StandardLib
             region.Intersect(new Rectangle(0, 0, image.Width, image.Height));
             image.ROI = region;
             if (range % 2 == 0) range += 1;
-            using (var smooth = image.SmoothGaussian(range))
+            try
+            {
+                using (var smooth = image.SmoothGaussian(range))
+                {
+                    smooth.ROI = new Rectangle(x, y, width, height);
+                    return smooth.Copy();
+                }
+            }
+            finally
             {
                 image.ROI = Rectangle.Empty;
-                smooth.ROI = new Rectangle(x, y, width, height);
-                return smooth.Copy();
             }
         }
 
@@ -910,14 +916,15 @@ namespace StandardLib
             var length = end - start + 1;
             var count = 0;
             var bin = Math.Round(frequency * length / frameRate);
-            Image<Bgr, byte> frame = null;
+            Mat frame = null;
 
             video.Reset();
             try
             {
                 while (count <= start)
                 {
-                    if (!video.ReadBgrFrame(out frame)) return false;
+                    frame?.Dispose();
+                    if (!video.ReadFrameMatWithTimeout(out frame)) return false;
                     ++count;
                 }
 
@@ -934,17 +941,17 @@ namespace StandardLib
                     oldImage?.Dispose();
                 }
 
-                var floatFrame = frame.Convert<Bgr, float>();
-                CvInvoke.Accumulate(floatFrame * 2, real);
-                if (doAverage) CvInvoke.Accumulate(floatFrame, average);
+                var floatFrame = new Mat();
+                frame.ConvertTo(floatFrame, DepthType.Cv32F);
+                CvInvoke.ScaleAdd(floatFrame, 2, real, real);
+                if (doAverage) CvInvoke.Accumulate(frame, average);
                 frame.Dispose();
-                floatFrame.Dispose();
 
                 //Debug.WriteLine($"[Debug]: Started filtering width={width}, height={height}."); 
                 
                 for (int i = 1; i < length; ++i)
                 {
-                    if (!video.ReadBgrFrame(out frame) || frame == null) break;
+                    if (!video.ReadFrameMatWithTimeout(out frame) || frame == null) break;
                     if (token.IsCancellationRequested) return false;
 
                     if (video.UseTransform && video?.Transforms?.ContainsKey(i) == true)
@@ -954,27 +961,24 @@ namespace StandardLib
                         oldImage?.Dispose();
                     }
 
-                    floatFrame = frame.Convert<Bgr, float>();
+                    frame.ConvertTo(floatFrame, DepthType.Cv32F);
                     var phase = 2 * Math.PI * i * bin / length;
-                    var temp = floatFrame * (float)(Math.Cos(phase) * 2);
-                    var temp2 = floatFrame * (float)(Math.Sin(-phase) * 2);
-                    CvInvoke.Accumulate(temp, real);
-                    CvInvoke.Accumulate(temp2, imag);
-                    if (doAverage) CvInvoke.Accumulate(floatFrame, average);
+                    CvInvoke.ScaleAdd(floatFrame, Math.Cos(phase) * 2, real, real);
+                    CvInvoke.ScaleAdd(floatFrame, Math.Sin(-phase) * 2, imag, imag);
+                    if (doAverage) CvInvoke.Accumulate(frame, average);
 
-                    temp.Dispose();
-                    temp2.Dispose();
                     frame.Dispose();
-                    floatFrame.Dispose();
 
                     ++count;
                     progress?.Invoke((double)(count - start) / length);
                     //Debug.WriteLine($"[Debug]: Filtered {count} of {length} frames.");
                 }
 
-                real = real.ConvertScale<float>(1.0 / length, 0);
-                imag = imag.ConvertScale<float>(1.0 / length, 0);
-                if (doAverage) average = average.ConvertScale<float>(1.0 / length, 0);
+                floatFrame.Dispose();
+
+                real._Mul(1.0 / length);
+                imag._Mul(1.0 / length);
+                if (doAverage) average._Mul(1.0 / length);
 
                 var size = 3;
                 real = real.SmoothGaussian(size);

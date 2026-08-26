@@ -32,7 +32,7 @@ namespace StandardLib
         public static int SearchLimit = 50;
         public static int SearchRange = 1;
         public static int MaxSearchRange = 4;
-        public static ErrorType ErrorType = ErrorType.Abs;
+        public static ErrorType ErrorType = ErrorType.Squares;
 
         public bool IsValid { get; set; } = true;
         public bool IsComplete { get; set; } = false;
@@ -164,7 +164,7 @@ namespace StandardLib
 
             using (var pattern = ImageAnalysis.PreparePattern(offsetRegion, Image)) // blur & normalize by default
             {
-                error = CvInvoke.Norm(pattern, ReferencePattern, NormType.L1);
+                error = CvInvoke.Norm(pattern, ReferencePattern, ErrorType == ErrorType.Squares ? (NormType)5 : NormType.L1); // NormType 5 is L2 without sqrt
             }
             cachedErrors[(col, row)] = error;
             return error;
