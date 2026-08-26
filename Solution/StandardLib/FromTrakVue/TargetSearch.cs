@@ -1,4 +1,5 @@
 ﻿using Emgu.CV;
+using Emgu.CV.CvEnum;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -156,18 +157,14 @@ namespace StandardLib
             if (cachedErrors.ContainsKey((col, row))) return cachedErrors[(col, row)];
             
             double error = 0;
-            Func<float, float> errorFunc = (float f) => Math.Abs(f);
-            if (ErrorType == ErrorType.Squares) errorFunc = (float f) => f * f;
             var offsetRegion = Rectangle.Round(Region.Rectangle);
             offsetRegion.Offset(col, row);
             if (offsetRegion.Top < 0 || offsetRegion.Bottom > Image.Height ||
                 offsetRegion.Left < 0 || offsetRegion.Right > Image.Width) return double.PositiveInfinity;
 
             using (var pattern = ImageAnalysis.PreparePattern(offsetRegion, Image)) // blur & normalize by default
-            using (var diff = pattern?.Sub(ReferencePattern))
             {
-                var errors = diff.Convert(errorFunc).GetSum().MCvScalar;
-                error = errors.V0 + errors.V1 + errors.V2;
+                error = CvInvoke.Norm(pattern, ReferencePattern, NormType.L1);
             }
             cachedErrors[(col, row)] = error;
             return error;
