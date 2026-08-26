@@ -8,8 +8,8 @@
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
              xmlns:v="clr-namespace:MicroVue.Views"
              x:DataType="vm:AnalysisViewModel"
-             x:Name="chartPanel"
-             x:Class="MicroVue.Views.ChartPanel">
+             x:Class="MicroVue.Views.ChartPanel"
+             x:Name="chartPanel">
 
     <ContentView.Resources>
         <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
@@ -19,7 +19,7 @@
     <Grid RowDefinitions="Auto, Auto, Auto, Auto, *" ColumnDefinitions="*">
 
         <HorizontalStackLayout Grid.Row="0" Margin="5, 0, 5, -5">
-            <Label Text="Chart type:" FontSize="18" FontAttributes="Bold" Margin="5, 0" VerticalOptions="Center"/>
+            <Label Text="Type:" FontSize="18" FontAttributes="Bold" Margin="5, 0" VerticalOptions="Center"/>
             <RadioButton Content="Frequency" IsChecked="{Binding IsSpectrum}" FontSize="18" Margin="5, 0"/>
             <RadioButton Content="Time" IsChecked="{Binding IsSpectrum, Converter={StaticResource InvertedBoolConverter}}" FontSize="18" Margin="5, 0"/>
         </HorizontalStackLayout>

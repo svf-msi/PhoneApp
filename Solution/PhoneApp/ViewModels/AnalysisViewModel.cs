@@ -7,6 +7,7 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
+using LiveChartsCore.Kernel.Sketches;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Maui;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -326,17 +327,19 @@ namespace MicroVue.ViewModels
 
         #region Chart-related
 
-        [ObservableProperty]
-        string axisXTitle = "Time(secs)";
+        public Axis[] XAxes { get; set; }
+
+        public Axis XAxis { get; set; }
+
+        public Axis[] YAxes { get; set; }
+
+        public Axis YAxis { get; set; }
 
         [ObservableProperty]
-        string axisYTitle = "Displacement";
+        double? minX;
 
         [ObservableProperty]
-        double minX;
-
-        [ObservableProperty]
-        double maxX;
+        double? maxX;
 
         [ObservableProperty]
         ISeries[] lines = new ISeries[] { };
@@ -357,7 +360,7 @@ namespace MicroVue.ViewModels
         bool isSpectrum = true;
         partial void OnIsSpectrumChanged(bool oldValue, bool newValue)
         {
-            UpdateChart();
+            UpdateChart(true);
         }
 
         [ObservableProperty]
@@ -406,6 +409,51 @@ namespace MicroVue.ViewModels
         #endregion
 
         #region Setup
+
+        public AnalysisViewModel()
+        {
+            XAxis = new Axis
+            {
+                TextSize = 18,
+                NamePadding = new LiveChartsCore.Drawing.Padding(0, -10, 0, 5),
+                NamePaint = new SolidColorPaint(new SKColor(60, 60, 60)),
+                LabelsPaint = new SolidColorPaint(new SKColor(60, 60, 60)),
+                SeparatorsPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
+                SubseparatorsPaint = new SolidColorPaint(new SKColor(160, 160, 160)) { StrokeThickness = 0.5f },
+                TicksPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
+            };
+            XAxis.PropertyChanged += XAxis_PropertyChanged;
+            XAxes = new Axis[] { XAxis };
+
+            YAxis = new Axis
+            {
+                TextSize = 18,
+                NamePadding = new LiveChartsCore.Drawing.Padding(0, 5, 0, -10),
+                NamePaint = new SolidColorPaint(new SKColor(60, 60, 60)),
+                LabelsPaint = new SolidColorPaint(new SKColor(60, 60, 60)),
+                SeparatorsPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
+                SubseparatorsPaint = new SolidColorPaint(new SKColor(160, 160, 160)) { StrokeThickness = 0.5f },
+                TicksPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
+            };
+            YAxes = new Axis[] { YAxis };
+        }
+
+        void XAxis_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+        {
+            if (sender is ICartesianAxis axis)
+            {
+                if (args.PropertyName == nameof(axis.MinLimit))
+                {
+                    MinX = axis.MinLimit;
+                    //Debug.WriteLine($"[Debug]: Change {args.PropertyName} to {axis.MinLimit}");
+                }
+                else if (args.PropertyName == nameof(axis.MaxLimit))
+                {
+                    //Debug.WriteLine($"[Debug]: Change {args.PropertyName} to {axis.MaxLimit}");
+                    MaxX = axis.MaxLimit;
+                }
+            }
+        }
 
         void Initialize(SceneItem sceneItem)
         {
@@ -477,7 +525,7 @@ namespace MicroVue.ViewModels
 
         #region Charts
 
-        public void UpdateChart()
+        public void UpdateChart(bool reset = false)
         {
             //Debug.WriteLine($"[Debug]: Update chart");
             if (Scene?.Targets?.Count > 0)
@@ -489,6 +537,11 @@ namespace MicroVue.ViewModels
                 }
                 var series = new List<ISeries>();
                 MinX = MaxX = 0;
+                if (reset)
+                {
+                    XAxis.MinLimit = null;
+                    XAxis.MaxLimit = null;
+                }
                 var scale = Scene.CalibrationScale;
                 var units = Scene.DistanceUnits;
                 var label = units == Models.DistanceUnits.meters || units == Models.DistanceUnits.cm ? "mm" : "mil";
@@ -539,9 +592,9 @@ namespace MicroVue.ViewModels
                         });
                     }
                 }
-                AxisXTitle = IsSpectrum ? "Frequency(Hz)" : "Time(secs)";
-                AxisYTitle = (DataDirection == DataDirection.X ? "X displacement" : DataDirection == DataDirection.Y ? "Y displacement" : "Total displacement");
-                if (Scene.ScaleCalibrated) AxisYTitle += $"({label})";
+                XAxis.Name = IsSpectrum ? "Frequency(Hz)" : "Time(secs)";
+                YAxis.Name = (DataDirection == DataDirection.X ? "X displacement" : DataDirection == DataDirection.Y ? "Y displacement" : "Total displacement");
+                if (Scene.ScaleCalibrated) YAxis.Name += $"({label})";
                 Lines = series.ToArray();
                 UpdateSections();
             }
@@ -772,6 +825,15 @@ namespace MicroVue.ViewModels
             await Shell.Current.GoToAsync("..");
         }
 
+        [RelayCommand]
+        void ZoomOut()
+        {
+            XAxis.MinLimit = null;
+            XAxis.MaxLimit = null;
+            YAxis.MinLimit = null;
+            YAxis.MaxLimit = null;
+        }
+
         #endregion
 
         #region Target-related
@@ -873,6 +935,10 @@ namespace MicroVue.ViewModels
                         }
                     }
                 }
+                var found = Scene?.Fois.FirstOrDefault(foi =>  foi.Frequency == peakFrequency);
+                if (found != null) return;
+
+                //Debug.WriteLine($"[Debug]: peak {peakFrequency} from {MinX} to {MaxX}");
                 AddFoi(peakFrequency);
                 UpdateSections();
                 Scene?.Save();
