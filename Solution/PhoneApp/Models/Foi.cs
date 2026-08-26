@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using MicroVue.ViewModels;
 using Newtonsoft.Json;
@@ -71,6 +72,7 @@ namespace MicroVue.Models
             }
             set
             {
+                if (realImage != value) realImage?.Dispose();
                 realImage = value;
                 if (realImage != null)
                 {
@@ -102,6 +104,7 @@ namespace MicroVue.Models
             }
             set
             {
+                if (imagImage != value) imagImage?.Dispose();
                 imagImage = value;
                 if (imagImage != null)
                 {
@@ -133,7 +136,10 @@ namespace MicroVue.Models
             }
             set
             {
+                if (averageImage != value) averageImage?.Dispose();
                 averageImage = value;
+                minImage?.Dispose(); minImage = null;
+                maxImage?.Dispose(); maxImage = null;
                 if (averageImage != null)
                 {
                     AverageImageFile = GetFileName("average");
@@ -166,11 +172,14 @@ namespace MicroVue.Models
             if (RealImage == null || ImagImage == null || AverageImage == null) return null;
             if (minImage == null || maxImage == null) MakeMinMaxImages();
 
-            var magnifiedFrame = AverageImage + RealImage * (float)(Magnification * Math.Cos(phase)) - ImagImage * (float)(Magnification * Math.Sin(phase));
+            var magnifiedFrame = new Image<Bgr, float>(AverageImage.Size);
+            CvInvoke.ScaleAdd(RealImage, Magnification * Math.Cos(phase), AverageImage, magnifiedFrame);
+            CvInvoke.ScaleAdd(ImagImage, -Magnification * Math.Sin(phase), magnifiedFrame, magnifiedFrame);
             if (minImage != null) CvInvoke.Max(minImage, magnifiedFrame, magnifiedFrame);
             if (maxImage != null) CvInvoke.Min(maxImage, magnifiedFrame, magnifiedFrame);
-            var frame = magnifiedFrame?.Convert(f => (byte)Math.Max(0, Math.Min(f, 255)));
-            magnifiedFrame?.Dispose();
+            var frame = new Image<Bgr, byte>(AverageImage.Size);
+            magnifiedFrame.Mat.ConvertTo(frame, DepthType.Cv8U);
+            magnifiedFrame.Dispose();
             return frame;
         }
 
@@ -249,11 +258,13 @@ namespace MicroVue.Models
 
         public void Dispose()
         {
-            RealImage?.Dispose();
-            ImagImage?.Dispose();
-            AverageImage?.Dispose();
+            realImage?.Dispose();
+            imagImage?.Dispose();
+            averageImage?.Dispose();
             minImage?.Dispose();
             maxImage?.Dispose();
+            realImage = imagImage = averageImage = null;
+            minImage = maxImage = null;
         }
 
         void MakeMinMaxImages()
