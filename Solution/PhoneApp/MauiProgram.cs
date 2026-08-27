@@ -51,6 +51,8 @@ namespace MicroVue
             builder.Services.AddSingleton<ImportViewModel>();
             builder.Services.AddTransient<AnalysisPage>();
             builder.Services.AddTransient<AnalysisViewModel>();
+            builder.Services.AddTransient<AboutPage>();
+            builder.Services.AddTransient<AboutViewModel>();
 
             return builder.Build();
         }

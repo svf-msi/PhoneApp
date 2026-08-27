@@ -4,6 +4,8 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:v="clr-namespace:MicroVue.Views"
+    xmlns:vm="clr-namespace:MicroVue.ViewModels"
+    x:DataType="vm:AppShellViewModel"
     Title="MicroVue">
 
     <Shell.Resources>
@@ -15,18 +17,21 @@
     </Shell.Resources>
 
     <ShellContent
+        IsVisible="{Binding IsValidated}"
         Title="Scenes"
         Icon="{StaticResource IconScenes}"
         ContentTemplate="{DataTemplate v:ScenesPage}"
         Route="ScenesPage" />
 
     <ShellContent
+        IsVisible="{Binding IsValidated}"
         Title="Camera"
         Icon="{StaticResource IconCamera}"
         ContentTemplate="{DataTemplate v:CameraPage}"
         Route="CameraPage" />
 
     <ShellContent
+        IsVisible="{Binding IsValidated}"
         Title="Import"
         Icon="{StaticResource IconVideoAdd}"
         ContentTemplate="{DataTemplate v:ImportPage}"

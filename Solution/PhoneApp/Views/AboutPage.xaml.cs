@@ -1,10 +1,12 @@
+using MicroVue.ViewModels;
+
 namespace MicroVue.Views;
 
 public partial class AboutPage : ContentPage
 {
-	public AboutPage()
+	public AboutPage(AboutViewModel vm)
 	{
 		InitializeComponent();
-        version_label.Text = $"MicroVue™ version {AppInfo.Current.VersionString}";
+        BindingContext = vm;
     }
 }

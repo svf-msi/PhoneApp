@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="MicroVue.Views.AboutPage"
+             xmlns:v="clr-namespace:MicroVue.Views"
+             xmlns:vm="clr-namespace:MicroVue.ViewModels"
+             x:DataType="vm:AboutViewModel"
              Title="About">
+
+    <ContentPage.Resources>
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </ContentPage.Resources>
+
     <VerticalStackLayout VerticalOptions="Center" Spacing="10">
-        <Label x:Name="version_label"
-            Text="MicroVue™ version 1.0."
+        <Label
+            Text="{Binding Label}"
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
         <Label 
@@ -16,5 +25,19 @@
             Text="All rights reserved."
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
+        <Button 
+            IsVisible="{Binding IsValidated, Converter={StaticResource InvertedBoolConverter}}"
+            Text="Register"
+            TextColor="White"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center"
+            Command="{Binding RegisterCommand}"/>
+        <Button 
+            IsVisible="{Binding IsValidated}"
+            Text="Unregister"
+            TextColor="White"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center"
+            Command="{Binding RegisterCommand}"/>
     </VerticalStackLayout>
 </ContentPage>
