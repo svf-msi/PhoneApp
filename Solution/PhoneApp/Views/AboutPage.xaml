@@ -4,7 +4,7 @@
              x:Class="MicroVue.Views.AboutPage"
              Title="About">
     <VerticalStackLayout VerticalOptions="Center" Spacing="10">
-        <Label 
+        <Label x:Name="version_label"
             Text="MicroVue™ version 1.0."
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
