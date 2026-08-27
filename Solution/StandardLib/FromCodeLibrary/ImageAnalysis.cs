@@ -981,11 +981,15 @@ namespace StandardLib
                 imag._Mul(1.0 / length);
                 if (doAverage) average._Mul(1.0 / length);
 
+                var size = 3;
+                real = real.SmoothGaussian(size);
+                imag = imag.SmoothGaussian(size);
+
                 return true;
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error in image filtering: {e}");
+                Debug.WriteLine($"[Debug]: Error in image filtering: {e}");
                 return false;
             }
         }

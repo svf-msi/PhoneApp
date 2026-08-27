@@ -134,7 +134,7 @@
                     </Button.Triggers>
                 </Button>
 
-                <Picker Grid.Column="1" Margin="5, 0, -35, 0" VerticalOptions="Center"
+                <Picker Grid.Column="1" Margin="5, 0, -35, 0" VerticalOptions="Center" TextColor="White"
                     ItemsSource="{Binding Speeds}" SelectedIndex="{Binding SelectedSpeedIndex}"
                     HandlerChanged="Picker_HandlerChanged" FontSize="20" FontAttributes="Bold"
                     SelectedIndexChanged="Picker_SelectedIndexChanged" Title="Speed" 
