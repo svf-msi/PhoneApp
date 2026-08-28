@@ -25,19 +25,57 @@
             Text="All rights reserved."
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
-        <Button 
-            IsVisible="{Binding IsValidated, Converter={StaticResource InvertedBoolConverter}}"
-            Text="Register"
-            TextColor="White"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center"
-            Command="{Binding RegisterCommand}"/>
-        <Button 
-            IsVisible="{Binding IsValidated}"
-            Text="Unregister"
-            TextColor="White"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center"
-            Command="{Binding RegisterCommand}"/>
+
+        <VerticalStackLayout 
+            IsVisible="{Binding IsRegistered}"
+            Margin="10">
+
+            <Label 
+                Text="Registered version"
+                FontAttributes="Bold"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" />
+            <Label 
+                IsVisible="{Binding IsExpired}"
+                Text="Expired"
+                FontAttributes="Bold"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" />
+            <Button
+                IsVisible="{Binding IsExpired}"
+                Text="Register"
+                TextColor="White"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center"
+                Command="{Binding RegisterCommand}"
+                Margin="10"/>
+
+
+        </VerticalStackLayout>
+
+        <VerticalStackLayout 
+            IsVisible="{Binding IsRegistered, Converter={StaticResource InvertedBoolConverter}}"
+            Margin="10">
+
+            <Label 
+                Text="Trial version"
+                FontAttributes="Bold"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" />
+            <Label 
+                IsVisible="{Binding IsExpired}"
+                Text="Expired"
+                FontAttributes="Bold"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" />
+            <Button
+                Text="Register"
+                TextColor="White"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center"
+                Command="{Binding RegisterCommand}"
+                Margin="10"/>
+
+        </VerticalStackLayout>
     </VerticalStackLayout>
 </ContentPage>

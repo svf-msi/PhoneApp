@@ -15,12 +15,18 @@ namespace MicroVue.ViewModels
         string label = $"MicroVue™ version {AppInfo.Current.VersionString}";
 
         [ObservableProperty]
+        bool isRegistered = AppShellViewModel.Instance.IsRegistered;
+
+        [ObservableProperty]
         bool isValidated = AppShellViewModel.Instance.IsValidated;
+
+        [ObservableProperty]
+        bool isExpired = AppShellViewModel.Instance.IsExpired;
 
         [RelayCommand]
         void Register()
         {
-            IsValidated = AppShellViewModel.Instance.IsValidated = !AppShellViewModel.Instance.IsValidated;
+            //IsValidated = true;
         }
     }
 }

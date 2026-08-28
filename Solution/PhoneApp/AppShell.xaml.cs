@@ -6,7 +6,7 @@ namespace MicroVue
     {
         public AppShell()
         {
-            InitializeComponent();
+            InitializeComponent(); 
             BindingContext = AppShellViewModel.Instance;
         }
     }
