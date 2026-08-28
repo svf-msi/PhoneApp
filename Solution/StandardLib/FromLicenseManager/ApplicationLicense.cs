@@ -45,41 +45,6 @@ namespace LicenseManager.Library
             return false;
         }
 
-        public static string GetHardwareId()
-        {
-            try
-            {
-                var deviceId = GetDeviceId();
-                if (string.IsNullOrWhiteSpace(deviceId)) return "Failed to identify device ID";
-                else return Hash(deviceId);
-            }
-            catch (Exception e)
-            {
-                return "Failed to identify hardware ID";
-            }
-        }
-
-        public static string GetDeviceId()
-        {
-#if ANDROID
-    // Returns the 64-bit Android ID (Settings.Secure.ANDROID_ID)
-    var context = Android.App.Application.Context;
-    return Android.Provider.Settings.Secure.GetString(context.ContentResolver, Android.Provider.Settings.Secure.AndroidId);
-    
-#elif IOS
-    // Returns the alphanumeric string unique to the device and vendor
-    return UIKit.UIDevice.CurrentDevice.IdentifierForVendor?.ToString() ?? string.Empty;
-    
-#elif WINDOWS
-    // Returns a unique hardware-based system ID for the publisher
-    var systemId = Microsoft.System.GetSystemIdForPublisher();
-    return Windows.Security.Cryptography.CryptographicBuffer.EncodeToHexString(systemId.Id);
-    
-#else
-            return string.Empty;
-#endif
-        }
-
         static string Hash(string input)
         {
             using (var sha1 = new SHA1Managed())

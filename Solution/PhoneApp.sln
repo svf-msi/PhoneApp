@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.12.37328.8
+# Visual Studio Version 18
+VisualStudioVersion = 18.8.12023.21 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhoneApp", "PhoneApp\PhoneApp.csproj", "{B8AC66BC-9BEA-4AC8-9109-DA08A11D418D}"
 EndProject
@@ -17,6 +17,7 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B8AC66BC-9BEA-4AC8-9109-DA08A11D418D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B8AC66BC-9BEA-4AC8-9109-DA08A11D418D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8AC66BC-9BEA-4AC8-9109-DA08A11D418D}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{B8AC66BC-9BEA-4AC8-9109-DA08A11D418D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8AC66BC-9BEA-4AC8-9109-DA08A11D418D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EBBD4865-7634-43F9-B414-97E1EA24EE61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -31,5 +32,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0DDF5158-ACA0-4D14-ACB1-454760EDC6FF}
 	EndGlobalSection
 EndGlobal

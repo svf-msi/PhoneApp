@@ -41,6 +41,32 @@
                 FontAttributes="Bold"
                 VerticalOptions="Center" 
                 HorizontalOptions="Center" />
+            <HorizontalStackLayout
+                IsVisible="{Binding IsExpired}"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" 
+                Margin="10">
+                <Label 
+                    Text="ID: "
+                    VerticalOptions="Center" 
+                    HorizontalOptions="Center" 
+                    Margin="0"/>
+                <Label 
+                    Text="{Binding DeviceId}"
+                    VerticalOptions="Center" 
+                    HorizontalOptions="Center" 
+                    LineBreakMode="TailTruncation"
+                    WidthRequest="150"
+                    Margin="0"/>
+            </HorizontalStackLayout>
+            <Button
+                IsVisible="{Binding IsExpired}"
+                Text="Copy ID"
+                TextColor="White"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center"
+                Command="{Binding CopyIdCommand}"
+                Margin="10"/>
             <Button
                 IsVisible="{Binding IsExpired}"
                 Text="Register"
@@ -49,7 +75,6 @@
                 HorizontalOptions="Center"
                 Command="{Binding RegisterCommand}"
                 Margin="10"/>
-
 
         </VerticalStackLayout>
 
@@ -68,6 +93,30 @@
                 FontAttributes="Bold"
                 VerticalOptions="Center" 
                 HorizontalOptions="Center" />
+            <HorizontalStackLayout
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" 
+                Margin="10">
+                <Label 
+                    Text="ID: "
+                    VerticalOptions="Center" 
+                    HorizontalOptions="Center" 
+                    Margin="0"/>
+                <Label 
+                    Text="{Binding DeviceId}"
+                    VerticalOptions="Center" 
+                    HorizontalOptions="Center" 
+                    LineBreakMode="TailTruncation"
+                    WidthRequest="150"
+                    Margin="0"/>
+            </HorizontalStackLayout>
+            <Button
+                Text="Copy ID"
+                TextColor="White"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center"
+                Command="{Binding CopyIdCommand}"
+                Margin="10"/>
             <Button
                 Text="Register"
                 TextColor="White"

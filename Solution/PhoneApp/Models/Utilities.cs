@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
 
 #if ANDROID
 using Android.Media;
@@ -221,6 +222,55 @@ namespace MicroVue.Models
             {
                 Debug.WriteLine("The specified folder path does not exist.");
                 return "";
+            }
+        }
+
+        public static string GetHardwareId()
+        {
+            try
+            {
+                var deviceId = GetDeviceId();
+                if (string.IsNullOrWhiteSpace(deviceId)) return "Failed to identify device ID";
+                else return Hash(deviceId);
+            }
+            catch (Exception e)
+            {
+                return "Failed to identify hardware ID";
+            }
+        }
+
+        public static string GetDeviceId()
+        {
+#if ANDROID
+            // Returns the 64-bit Android ID (Settings.Secure.ANDROID_ID)
+            var context = Android.App.Application.Context;
+            return Android.Provider.Settings.Secure.GetString(context.ContentResolver, Android.Provider.Settings.Secure.AndroidId);
+
+#elif IOS
+    // Returns the alphanumeric string unique to the device and vendor
+    return UIKit.UIDevice.CurrentDevice.IdentifierForVendor?.ToString() ?? string.Empty;
+    
+#elif WINDOWS
+    // Returns a unique hardware-based system ID for the publisher
+    var systemId = Microsoft.System.GetSystemIdForPublisher();
+    return Windows.Security.Cryptography.CryptographicBuffer.EncodeToHexString(systemId.Id);
+    
+#else
+            return string.Empty;
+#endif
+        }
+
+        static string Hash(string input)
+        {
+            using (var sha1 = new SHA1Managed())
+            {
+                var hash = sha1.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
+                var sb = new StringBuilder(hash.Length * 2);
+
+                foreach (var b in hash) // can be "x2" if you want lowercase
+                    sb.Append(b.ToString("X2"));
+
+                return sb.ToString();
             }
         }
     }
