@@ -1,10 +1,13 @@
-﻿namespace MicroVue
+﻿using MicroVue.ViewModels;
+
+namespace MicroVue
 {
     public partial class AppShell : Shell
     {
         public AppShell()
         {
-            InitializeComponent();
+            InitializeComponent(); 
+            BindingContext = AppShellViewModel.Instance;
         }
     }
 }

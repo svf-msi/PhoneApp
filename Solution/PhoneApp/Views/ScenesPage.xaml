@@ -4,9 +4,9 @@
              x:Class="MicroVue.Views.ScenesPage"
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
              xmlns:m="clr-namespace:MicroVue.Models"
+             x:DataType="vm:ScenesViewModel"
              Title="Scenes"
-             x:Name="scenesPage"
-             x:DataType="vm:ScenesViewModel">
+             x:Name="scenesPage">
 
     <Grid RowDefinitions="Auto, *">
         <ScrollView Grid.Row="1">

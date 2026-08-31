@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="MicroVue.Views.AboutPage"
+             xmlns:v="clr-namespace:MicroVue.Views"
+             xmlns:vm="clr-namespace:MicroVue.ViewModels"
+             x:DataType="vm:AboutViewModel"
              Title="About">
+
+    <ContentPage.Resources>
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </ContentPage.Resources>
+
     <VerticalStackLayout VerticalOptions="Center" Spacing="10">
-        <Label 
-            Text="MicroVue™ version 1.0."
+        <Label
+            Text="{Binding Label}"
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
         <Label 
@@ -16,5 +25,106 @@
             Text="All rights reserved."
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
+
+        <VerticalStackLayout 
+            IsVisible="{Binding IsRegistered}"
+            Margin="10">
+
+            <Label 
+                Text="Registered version"
+                FontAttributes="Bold"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" />
+            <Label 
+                IsVisible="{Binding IsExpired}"
+                Text="Expired"
+                FontAttributes="Bold"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" />
+            <HorizontalStackLayout
+                IsVisible="{Binding IsExpired}"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" 
+                Margin="10">
+                <Label 
+                    Text="ID: "
+                    VerticalOptions="Center" 
+                    HorizontalOptions="Center" 
+                    Margin="0"/>
+                <Label 
+                    Text="{Binding DeviceId}"
+                    VerticalOptions="Center" 
+                    HorizontalOptions="Center" 
+                    LineBreakMode="TailTruncation"
+                    WidthRequest="150"
+                    Margin="0"/>
+            </HorizontalStackLayout>
+            <Button
+                IsVisible="{Binding IsExpired}"
+                Text="Copy ID"
+                TextColor="White"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center"
+                Command="{Binding CopyIdCommand}"
+                Margin="10"/>
+            <Button
+                IsVisible="{Binding IsExpired}"
+                Text="Register"
+                TextColor="White"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center"
+                Command="{Binding RegisterCommand}"
+                Margin="10"/>
+
+        </VerticalStackLayout>
+
+        <VerticalStackLayout 
+            IsVisible="{Binding IsRegistered, Converter={StaticResource InvertedBoolConverter}}"
+            Margin="10">
+
+            <Label 
+                Text="Trial version"
+                FontAttributes="Bold"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" />
+            <Label 
+                IsVisible="{Binding IsExpired}"
+                Text="Expired"
+                FontAttributes="Bold"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" />
+            <HorizontalStackLayout
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" 
+                Margin="10">
+                <Label 
+                    Text="ID: "
+                    VerticalOptions="Center" 
+                    HorizontalOptions="Center" 
+                    Margin="0"/>
+                <Label 
+                    Text="{Binding DeviceId}"
+                    VerticalOptions="Center" 
+                    HorizontalOptions="Center" 
+                    LineBreakMode="TailTruncation"
+                    WidthRequest="150"
+                    Margin="0"/>
+            </HorizontalStackLayout>
+            <Button
+                Text="Copy ID"
+                TextColor="White"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center"
+                Command="{Binding CopyIdCommand}"
+                Margin="10"/>
+            <Button
+                Text="Register"
+                TextColor="White"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center"
+                Command="{Binding RegisterCommand}"
+                Margin="10"/>
+
+        </VerticalStackLayout>
     </VerticalStackLayout>
 </ContentPage>
