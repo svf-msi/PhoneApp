@@ -57,11 +57,17 @@ namespace MicroVue.ViewModels
         {
             if (sceneItem != null)
             {
-                var scenePath = sceneItem.ItemPath;
-                if (!Directory.Exists(scenePath) || sceneItem.Type != ItemType.SceneFolder) return;
-                Directory.Delete(scenePath, true );
-                var text = File.ReadAllText(scenePath);
-                Scenes.Remove(sceneItem);
+                try
+                {
+                    var scenePath = sceneItem.ItemPath;
+                    if (!Directory.Exists(scenePath) || sceneItem.Type != ItemType.SceneFolder) return;
+                    Directory.Delete(scenePath, true);
+                    Scenes.Remove(sceneItem);
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine($"Error in deleting scene: {e}");
+                }
             }
         }
 
