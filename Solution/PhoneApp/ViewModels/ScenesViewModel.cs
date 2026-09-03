@@ -36,6 +36,24 @@ namespace MicroVue.ViewModels
                 sceneItems.Add(scene);
             }
             Scenes = sceneItems;
+            UpdateVideoCount();
+        }
+
+        void UpdateVideoCount()
+        {
+            var count = 0;
+            foreach (var sceneItem in Scenes)
+            {
+                if (sceneItem.Name.Contains("Scene"))
+                {
+                    var split = sceneItem.Name.Split(' ');
+                    if (split.Length > 1 && int.TryParse(split[1], out var number))
+                    {
+                        if (number > count) { count = number; }
+                    }
+                }
+            }
+            Preferences.Set("cameraVideoCounter", count + 1);
         }
 
         //public void Refresh()
@@ -59,9 +77,9 @@ namespace MicroVue.ViewModels
             {
                 var scenePath = sceneItem.ItemPath;
                 if (!Directory.Exists(scenePath) || sceneItem.Type != ItemType.SceneFolder) return;
-                Directory.Delete(scenePath, true );
-                var text = File.ReadAllText(scenePath);
+                Directory.Delete(scenePath, true);
                 Scenes.Remove(sceneItem);
+                UpdateVideoCount();
             }
         }
 

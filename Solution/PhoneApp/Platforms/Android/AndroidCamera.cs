@@ -399,6 +399,7 @@ namespace MicroVue.Models
 
         int recordFps;
         double recordedFps; // fps actually configured on the encoder, may be lower than FrameRate
+        int playbackFps = 30;
 
         public void StartRecording(string outputPath)
         {
@@ -413,7 +414,8 @@ namespace MicroVue.Models
                 mediaRecorder = CreateRecorder(outputPath);
                 if (RecordingDuration > 0) // 0 = unlimited
                 {
-                    mediaRecorder.SetMaxDuration((int)(RecordingDuration * 1000)); // set in ms
+                    int duration = (int)(RecordingDuration * recordedFps / playbackFps * 1000);
+                    mediaRecorder.SetMaxDuration(duration); // (int)(RecordingDuration * 1000)); // set in ms
                     mediaRecorder.Info += (_, e) =>
                     {
                         if (e.What == Android.Media.MediaRecorderInfo.MaxDurationReached)
@@ -470,7 +472,7 @@ namespace MicroVue.Models
             const double bitsPerPixel = 0.15;
             long bitRate = (long)(videoSize.Width * (double)videoSize.Height * intFps * bitsPerPixel); // make sure bitrate is fine for hi and lo fps
             mediaRecorder.SetVideoEncodingBitRate((int)Math.Min(bitRate, 42_000_000));
-            mediaRecorder.SetVideoFrameRate(intFps);
+            mediaRecorder.SetVideoFrameRate(30); // intFps);
             if (recordFps > 0) mediaRecorder.SetCaptureRate(recordFps);
 
             mediaRecorder.SetVideoSize(videoSize.Width, videoSize.Height);

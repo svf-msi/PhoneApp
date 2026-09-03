@@ -52,7 +52,7 @@ namespace MicroVue.ViewModels
 
         public bool VideoNameTaken => Directory.Exists($"{App.DataFolder}{videoName.Trim()}{SceneItem.DefaultExtension}");
 
-        static string DefaultVideoName() => $"Video {Preferences.Get("cameraVideoCounter", 1)}";
+        static string DefaultVideoName() => $"Scene {Preferences.Get("cameraVideoCounter", 1)}";
 
         private string NextVideoPath()
         {
@@ -150,7 +150,8 @@ namespace MicroVue.ViewModels
 
         public void Initialize()
         {
-            Camera?.Open(CameraFacing.Back);
+            Camera?.Open(CameraFacing.Back); 
+            VideoName = DefaultVideoName();
         }
 
         public void Shutdown()
