@@ -529,6 +529,7 @@ namespace MicroVue.ViewModels
         public void UpdateChart(bool reset = false)
         {
             //Debug.WriteLine($"[Debug]: Update chart");
+            var series = new List<ISeries>();
             if (Scene?.Targets?.Count > 0)
             {
                 var direction = DataDirection;
@@ -536,7 +537,6 @@ namespace MicroVue.ViewModels
                 {
                     direction = direction == DataDirection.X ? DataDirection.Y : DataDirection.X;
                 }
-                var series = new List<ISeries>();
                 MinX = MaxX = 0;
                 if (reset)
                 {
@@ -596,9 +596,9 @@ namespace MicroVue.ViewModels
                 XAxis.Name = IsSpectrum ? "Frequency(Hz)" : "Time(secs)";
                 YAxis.Name = (DataDirection == DataDirection.X ? "X displacement" : DataDirection == DataDirection.Y ? "Y displacement" : "Total displacement");
                 if (Scene.ScaleCalibrated) YAxis.Name += $"({label})";
-                Lines = series.ToArray();
                 UpdateSections();
             }
+            Lines = series.ToArray();
         }
 
         void UpdateSections()
