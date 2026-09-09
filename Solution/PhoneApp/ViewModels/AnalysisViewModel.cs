@@ -1077,7 +1077,7 @@ namespace MicroVue.ViewModels
                     }
                     catch (Exception e)
                     {
-                        Debug.WriteLine($"Error in remaking foi: {e}");
+                        Debug.WriteLine($"[Debug]: Error in remaking foi: {e}");
                     }
                     finally
                     {
@@ -1091,6 +1091,49 @@ namespace MicroVue.ViewModels
         void StopRemakingFoi()
         {
             SelectedFoi?.Cts?.Cancel();
+        }
+
+        [RelayCommand]
+        async Task ExportFoiVideo()
+        {
+            var file = SelectedFoi?.GetFullPath(SelectedFoi?.VideoFile);
+            if (string.IsNullOrWhiteSpace(file)) return;
+
+            using CancellationTokenSource source = new();
+            var stream = await File.ReadAllBytesAsync(file);
+            using var memoryStream = new MemoryStream(stream);
+
+            var fileSaverResult = await CommunityToolkit.Maui.Storage.FileSaver.Default.SaveAsync(SelectedFoi.VideoFile, memoryStream, source.Token);
+
+            if (fileSaverResult.IsSuccessful)
+            {
+                Debug.WriteLine($"[Debug]: Foi video saved to {fileSaverResult.FilePath}");
+            }
+            else
+            {
+                Debug.WriteLine($"[Debug]: Foi video not saved");
+            }
+        }
+
+        [RelayCommand]
+        async Task ExportMainVideo()
+        {
+            if (string.IsNullOrWhiteSpace(videoPath)) return;
+
+            using CancellationTokenSource source = new();
+            var stream = await File.ReadAllBytesAsync(videoPath);
+            using var memoryStream = new MemoryStream(stream);
+
+            var fileSaverResult = await CommunityToolkit.Maui.Storage.FileSaver.Default.SaveAsync(Scene.VideoName, memoryStream, source.Token);
+
+            if (fileSaverResult.IsSuccessful)
+            {
+                Debug.WriteLine($"[Debug]: Video saved to {fileSaverResult.FilePath}");
+            }
+            else
+            {
+                Debug.WriteLine($"[Debug]: Video not saved");
+            }
         }
 
         #endregion

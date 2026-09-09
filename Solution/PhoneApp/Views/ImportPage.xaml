@@ -8,8 +8,8 @@
     <VerticalStackLayout>
 
         <Button Text="Pick video file" Margin="15"
-            VerticalOptions="Center" HorizontalOptions="Center"
-            Command="{Binding PickFileCommand}"/>
+            TextColor="White" Command="{Binding PickFileCommand}"
+            VerticalOptions="Center" HorizontalOptions="Center"/>
 
         <VerticalStackLayout IsVisible="{Binding FileSelected}">
             
@@ -25,7 +25,7 @@
 
             <Button Text="Import scene" Margin="15"
                 VerticalOptions="Center" HorizontalOptions="Center"
-                Command="{Binding ImportSceneCommand}"/>
+                TextColor="White" Command="{Binding ImportSceneCommand}"/>
 
             <Label Text="Scene with the same name already exists!" Margin="0, 15, 0, 0"
                 VerticalOptions="Center" HorizontalOptions="Center" 
