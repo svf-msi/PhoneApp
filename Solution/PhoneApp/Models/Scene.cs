@@ -133,14 +133,14 @@ namespace MicroVue.Models
         bool validParams = false;
 
         [ObservableProperty]
-        double exposure = -1;
+        double exposure = 0;
         partial void OnExposureChanged(double value) => OnPropertyChanged(nameof(ExposureMs));
 
         [JsonIgnore]
         public double ExposureMs => Exposure / 1000.0;
 
         [ObservableProperty]
-        double gain = -1;
+        double gain = 0;
 
         public double StartTime { get; set; }
 
