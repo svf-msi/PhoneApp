@@ -273,6 +273,22 @@ namespace MicroVue.Models
                 return sb.ToString();
             }
         }
+
+        public static string GetDownloadsPath()
+        {
+            string path = string.Empty;
+
+#if WINDOWS
+    path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+#elif ANDROID
+            path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDownloads)?.AbsolutePath;
+#elif MACCATALYST
+    var urls = Foundation.NSFileManager.DefaultManager.GetUrls(Foundation.NSSearchPathDirectory.DownloadsDirectory, Foundation.NSSearchPathDomain.User);
+    path = urls[0].Path;
+#endif
+
+            return path;
+        }
     }
 
     public enum MetaType { FrameRate, FrameCount, VideoWidth, VideoHeight, VideoRotation, Duration }
