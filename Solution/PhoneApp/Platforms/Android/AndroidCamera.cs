@@ -42,6 +42,8 @@ namespace MicroVue.Models
         public ASize PreviewSize { get; private set; } = new ASize(1920, 1080);
         StreamConfigurationMap? configMap;
         ARange[]? aeFpsRanges;
+        private ARange? highSpeedPreviewFpsRange;
+        private ARange? highSpeedRecordingFpsRange;
 
         private bool useHighSpeed;
 
@@ -271,8 +273,9 @@ namespace MicroVue.Models
                 if (useHighSpeed)
                 {
                     var ranges = configMap!.GetHighSpeedVideoFpsRangesFor(videoSize).Where(r => (int)Num(r.Upper) == targetFps).ToList();
-                    var range = ranges.FirstOrDefault(r => (int)Num(r.Lower) == targetFps) ?? ranges.First();
-                    requestBuilder.Set(CaptureRequest.ControlAeTargetFpsRange, range);
+                    highSpeedRecordingFpsRange = ranges.FirstOrDefault(r => (int)Num(r.Lower) == targetFps);
+                    highSpeedPreviewFpsRange = ranges.Where(r => Num(r.Lower) < Num(r.Upper)).OrderBy(r => Num(r.Lower)).FirstOrDefault();
+                    requestBuilder.Set(CaptureRequest.ControlAeTargetFpsRange, highSpeedPreviewFpsRange);
                     device.CreateConstrainedHighSpeedCaptureSession(surfaces, new SessionStateCallback(this, _ => SubmitRequest()), backgroundHandler);
                 }
                 else
@@ -429,6 +432,7 @@ namespace MicroVue.Models
                 requestBuilder.Set(CaptureRequest.ControlAfMode, (int)ControlAFMode.Auto);
                 requestBuilder.Set(CaptureRequest.ControlAeLock, (Java.Lang.Boolean)true);
                 requestBuilder.AddTarget(recorderSurface);
+                if (useHighSpeed) requestBuilder.Set(CaptureRequest.ControlAeTargetFpsRange, highSpeedRecordingFpsRange);
                 SubmitRequest();
                 mediaRecorder.Start();
                 IsRecording = true;
@@ -437,6 +441,7 @@ namespace MicroVue.Models
             {
                 Debug.WriteLine($"Error starting recording: {e}");
                 requestBuilder.RemoveTarget(recorderSurface);
+                if (useHighSpeed) requestBuilder.Set(CaptureRequest.ControlAeTargetFpsRange, highSpeedPreviewFpsRange);
                 requestBuilder.Set(CaptureRequest.ControlAfMode, (int)ControlAFMode.ContinuousVideo);
                 requestBuilder.Set(CaptureRequest.ControlAeLock, (Java.Lang.Boolean)false);
                 SubmitRequest();
@@ -511,6 +516,7 @@ namespace MicroVue.Models
             try
             {
                 requestBuilder?.RemoveTarget(recorderSurface);
+                if (useHighSpeed) requestBuilder.Set(CaptureRequest.ControlAeTargetFpsRange, highSpeedPreviewFpsRange);
                 requestBuilder?.Set(CaptureRequest.ControlAfMode, (int)ControlAFMode.ContinuousVideo);
                 requestBuilder?.Set(CaptureRequest.ControlAeLock, (Java.Lang.Boolean)false);
                 SubmitRequest();
