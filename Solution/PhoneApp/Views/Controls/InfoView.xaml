@@ -10,8 +10,6 @@
              x:DataType="vm:AnalysisViewModel"
              BackgroundColor="{AppThemeBinding Light={StaticResource LightOnDarkBackground}, Dark={StaticResource DarkOnLightBackground}}">
     
-    <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *">
-             x:DataType="vm:AnalysisViewModel">
     <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *" Margin="-10">
 
         <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="Camera frame rate:" Margin="0, 5"/>
