@@ -7,7 +7,9 @@
              xmlns:vm="clr-namespace:MicroVue.ViewModels"
              xmlns:v="clr-namespace:MicroVue.Views"
              x:Class="MicroVue.Views.InfoView"
-             x:DataType="vm:AnalysisViewModel">
+             x:DataType="vm:AnalysisViewModel"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightOnDarkBackground}, Dark={StaticResource DarkOnLightBackground}}">
+    
     <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *">
 
         <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Camera frame rate:" Margin="0, 5"/>
