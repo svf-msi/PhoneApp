@@ -9,7 +9,8 @@
              xmlns:v="clr-namespace:MicroVue.Views"
              x:DataType="vm:AnalysisViewModel"
              x:Class="MicroVue.Views.ChartPanel"
-             x:Name="chartPanel">
+             x:Name="chartPanel"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightOnDarkBackground}, Dark={StaticResource DarkOnLightBackground}}">
 
     <ContentView.Resources>
         <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
