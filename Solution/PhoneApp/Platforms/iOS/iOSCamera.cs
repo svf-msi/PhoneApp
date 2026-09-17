@@ -61,6 +61,8 @@ namespace MicroVue.Models
         private bool autoExposure;
         partial void OnAutoExposureChanged(bool value) => ApplyToDevice();
 
+        public bool FlashlightEnabled { get; set; }
+
         [ObservableProperty]
         private double recordingDuration;
 

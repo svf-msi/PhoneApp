@@ -78,6 +78,13 @@
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Camera settings" FontSize="20" FontAttributes="Bold" />
 
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Flashlight" VerticalTextAlignment="Center" />
+                        <Switch Grid.Column="1" IsToggled="{Binding Camera.FlashlightEnabled}"
+                                IsEnabled="{Binding Camera.Capabilities.SupportsFlashlight, FallbackValue=False}"
+                                SemanticProperties.Description="Flashlight" />
+                    </Grid>
+
                     <!-- Camera settings -->
                     <!--<HorizontalStackLayout>
                      <Label Text="Auto-exposure" VerticalOptions="Center" FontAttributes="Bold" />

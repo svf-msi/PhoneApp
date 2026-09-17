@@ -26,6 +26,7 @@ namespace MicroVue.Models
         double Exposure { get; set; }
         double Gain { get; set; }
         bool AutoExposure { get; set; }
+        bool FlashlightEnabled { get; set; }
         double RecordingDuration { get; set; }
 
         #endregion

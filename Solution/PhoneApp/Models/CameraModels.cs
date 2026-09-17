@@ -77,6 +77,7 @@ namespace MicroVue.Models
 
         public bool SupportsManualExposure => ExposureRange.Supported;
         public bool SupportsManualGain => GainRange.Supported;
+        public bool SupportsFlashlight { get; set; }
 
         public List<double> FrameRates { get; set; } = new List<double>();
         public List<Resolution> HighSpeedModes { get; set; } = new List<Resolution>();

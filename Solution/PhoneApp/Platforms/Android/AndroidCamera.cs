@@ -78,6 +78,11 @@ namespace MicroVue.Models
         [ObservableProperty]
         private bool autoExposure;
         partial void OnAutoExposureChanged(bool value) => ApplyToBuilder();
+
+        [ObservableProperty]
+        private bool flashlightEnabled;
+        partial void OnFlashlightEnabledChanged(bool value) => SubmitRequest();
+
         public CameraFacing Facing { get; set; }
 
         [ObservableProperty]
@@ -166,6 +171,7 @@ namespace MicroVue.Models
         void ReadCapabilities(CameraCharacteristics chars)
         {
             var caps = new CameraCapabilities();
+            caps.SupportsFlashlight = chars.Get(CameraCharacteristics.FlashInfoAvailable) is Java.Lang.Boolean flashAvailable && flashAvailable.BooleanValue();
 
             // camera orientation
             if (chars.Get(CameraCharacteristics.SensorOrientation) is Java.Lang.Integer so)
@@ -313,6 +319,7 @@ namespace MicroVue.Models
             var thread = backgroundThread;
             device = null;
             requestBuilder = null;
+            FlashlightEnabled = false;
             backgroundThread = null;
             backgroundHandler = null;
 
@@ -388,6 +395,7 @@ namespace MicroVue.Models
             try
             {
                 resultCallback ??= new ResultCallback(this);
+                if (Capabilities?.SupportsFlashlight == true) requestBuilder.Set(CaptureRequest.FlashMode, (int)(FlashlightEnabled ? FlashMode.Torch : FlashMode.Off));
                 if (session is CameraConstrainedHighSpeedCaptureSession hs)
                     hs.SetRepeatingBurst(hs.CreateHighSpeedRequestList(requestBuilder.Build()), resultCallback, backgroundHandler);
                 else
