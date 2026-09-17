@@ -68,7 +68,8 @@
                 </BoxView.GestureRecognizers>
             </BoxView>
 
-            <Border VerticalOptions="Start" BackgroundColor="White" StrokeThickness="0" Padding="22,2,22,22">
+            <Border VerticalOptions="Start" StrokeThickness="0" Padding="22,2,22,22"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource DarkOnLightBackground}}">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="0,0,28,28" />
                 </Border.StrokeShape>

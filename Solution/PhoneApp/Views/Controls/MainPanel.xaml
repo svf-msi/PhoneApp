@@ -8,7 +8,8 @@
              xmlns:v="clr-namespace:MicroVue.Views"
              x:Class="MicroVue.Views.MainPanel"
              x:DataType="vm:AnalysisViewModel"
-             x:Name="mainPanel">
+             x:Name="mainPanel"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightOnDarkBackground}, Dark={StaticResource DarkOnLightBackground}}">
 
     <ContentView.Resources>
         <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
