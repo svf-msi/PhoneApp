@@ -18,6 +18,8 @@ namespace MicroVue.ViewModels
     {
         #region Fields and Properties
 
+        bool isOpen = false;
+
         [ObservableProperty]
         private ICameraService camera;
 
@@ -95,6 +97,8 @@ namespace MicroVue.ViewModels
                 Camera.RecordingSaved += OnRecordingSaved;
                 SetRecordingDuration(5, syncText: true);
             }
+
+            App.CameraViewModel = this;
         }
 
         void OnRecordingSaved(RecordingInfo recording)
@@ -152,6 +156,7 @@ namespace MicroVue.ViewModels
         {
             Camera?.Open(CameraFacing.Back); 
             VideoName = DefaultVideoName();
+            isOpen = true;
         }
 
         public void Shutdown()
@@ -160,6 +165,16 @@ namespace MicroVue.ViewModels
             captureCts?.Cancel();
             if (Camera?.IsRecording == true) Camera.StopRecording(true); // discard a capture left running
             Camera?.Close();
+            isOpen = false;
+        }
+
+        public void Wake()
+        {
+            if (isOpen)
+            {
+                Shutdown();
+                Initialize();
+            }
         }
 
         #region Status

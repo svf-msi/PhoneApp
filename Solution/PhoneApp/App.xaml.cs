@@ -1,4 +1,6 @@
-﻿using MicroVue.Views;
+﻿using MicroVue.Models;
+using MicroVue.ViewModels;
+using MicroVue.Views;
 using System.Diagnostics;
 using System.Globalization;
 
@@ -9,6 +11,8 @@ namespace MicroVue
         #region Static section
 
         public static bool DevMode { get; private set; } = false;
+
+        public static CameraViewModel CameraViewModel { get; set; }
 
         public static string SettingUsedBefore { get; protected set; } = "used_before";
 
@@ -133,7 +137,15 @@ namespace MicroVue
                 DeviceDisplay.KeepScreenOn = true;
             };
 
+            window.Resumed += OnAppResumed;
+
             return window;
+        }
+
+        async void OnAppResumed(object? sender, EventArgs e)
+        {
+            //Debug.WriteLine($"[Debug]: app resumed");
+            CameraViewModel?.Wake();
         }
     }
 }

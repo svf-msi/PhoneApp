@@ -140,7 +140,7 @@ namespace MicroVue.Models
         public double ExposureMs => Exposure / 1000.0;
 
         [ObservableProperty]
-        double gain = 0;
+        double gain = 0; // ISO sensitivity
 
         public double StartTime { get; set; }
 

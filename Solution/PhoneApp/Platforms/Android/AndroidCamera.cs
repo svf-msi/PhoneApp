@@ -8,7 +8,6 @@ using Android.Hardware.Camera2;
 using Android.Hardware.Camera2.Params;
 using ASize = Android.Util.Size;
 using ARange = Android.Util.Range;
-using MicroVue.ViewModels;
 using Android.Runtime;
 using Android.Graphics;
 using Android.Views;
@@ -123,7 +122,7 @@ namespace MicroVue.Models
 
                 ReadCapabilities(manager.GetCameraCharacteristics(cameraId));
 
-                Debug.WriteLine($"Camera capabilities:\n{Capabilities}");
+                //Debug.WriteLine($"Camera capabilities:\n{Capabilities}");
 
                 double defaultFPS = Capabilities.AllFrameRates.Contains(120) ? 120 : Capabilities.FrameRateRange.Default;
 
@@ -435,8 +434,8 @@ namespace MicroVue.Models
                 }
                 mediaRecorder.Prepare();
 
-                measuredExposure = -1;
-                measuredGain = -1;
+                measuredExposure = 0;
+                measuredGain = 0;
                 requestBuilder.Set(CaptureRequest.ControlAfMode, (int)ControlAFMode.Auto);
                 requestBuilder.Set(CaptureRequest.ControlAeLock, (Java.Lang.Boolean)true);
                 requestBuilder.AddTarget(recorderSurface);

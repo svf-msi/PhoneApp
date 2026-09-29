@@ -35,7 +35,7 @@
         <Label Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="1" Text="Exposure: "/>
         <Label Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="1" Text="{Binding Scene.ExposureMs, StringFormat='{0:0.###} ms'}"/>
 
-        <Label Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="1" Text="Gain: "/>
+        <Label Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="1" Text="ISO: "/>
         <Label Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="1" Text="{Binding Scene.Gain}"/>
         
         <Button Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" Text="Export" TextColor="White" BackgroundColor="OrangeRed" VerticalOptions="Center" Margin="10"
