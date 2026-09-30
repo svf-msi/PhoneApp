@@ -232,10 +232,18 @@ namespace MicroVue.ViewModels
 
                 var duration = Math.Max(1, Camera.RecordingDuration);
                 var recordStart = DateTime.UtcNow;
-                while (Camera.IsRecording)
+                double progress = 0;
+                while (Camera.IsRecording && progress <= 1)
                 {
-                    RecordingProgress = Math.Clamp((DateTime.UtcNow - recordStart).TotalSeconds / duration, 0, 1);
+                    progress = (DateTime.UtcNow - recordStart).TotalSeconds / duration;
+                    RecordingProgress = Math.Clamp(progress, 0, 1);
                     await Task.Delay(50, token);
+                }
+
+                if (Camera.IsRecording && !token.IsCancellationRequested)
+                {
+                    await Task.Delay(1000, token);
+                    Camera.StopRecording(false);
                 }
             }
             catch (Exception e)
