@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="VibSense.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:v="clr-namespace:VibSense.Views"
+    xmlns:vm="clr-namespace:VibSense.ViewModels"
+    x:DataType="vm:AppShellViewModel"
+    Title="VibSense">
+
+    <ShellContent
+        IsVisible="{Binding IsValidated}"
+        Title="Main"
+        Icon="{StaticResource IconHome}"
+        ContentTemplate="{DataTemplate v:MainPage}"
+        Route="MainPage" />
+
+    <ShellContent
+        Title="About"
+        Icon="{StaticResource IconInfo}"
+        ContentTemplate="{DataTemplate v:AboutPage}"
+        Route="AboutPage" />
+
+</Shell>

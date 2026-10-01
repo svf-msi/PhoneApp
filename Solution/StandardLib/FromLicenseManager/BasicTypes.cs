@@ -20,7 +20,7 @@ namespace LicenseManager.Library
         }
     }
 
-    public enum ModuleType { None, VibVue, TrakVue, AlphaVue, NavVue, MicroVue }
+    public enum ModuleType { None, VibVue, TrakVue, AlphaVue, NavVue, MicroVue, VibSense }
 
     public enum PackageType { Lite, Pro, AnalysisLite, AnalysisPro, None }
 
