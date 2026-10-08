@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              xmlns:v="clr-namespace:VibSense.Views"
              xmlns:vm="clr-namespace:VibSense.ViewModels"
              x:Class="VibSense.Views.MainPage"
@@ -23,16 +24,19 @@
         <Label 
             Grid.Row="0" Grid.Column="0"
             Text="{Binding Label}"
+            TextColor="{AppThemeBinding Light=Black, Dark=White}"
             VerticalOptions="Center" 
             HorizontalOptions="Center" 
             Margin="10"/>
 
-        <Label 
-            Grid.Row="1" Grid.Column="0"
-            Text="{Binding Count}"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" 
-            Margin="10"/>
+        <!--Chart-->
+        <lvc:CartesianChart 
+            Grid.Row="2" Grid.Column="0"
+            Series="{Binding Lines}" 
+            ZoomMode="{Binding ZoomMode}"
+            DrawMarginFrame="{Binding DrawMarginFrame}"
+            XAxes="{Binding XAxes}" 
+            YAxes="{Binding YAxes}"/>
 
         <Button 
             Grid.Row="3" Grid.Column="0"
