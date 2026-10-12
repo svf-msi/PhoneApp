@@ -125,10 +125,10 @@ namespace VibSense
         {
             var window = new Window(new AppShell());
 
-            window.Created += (s, e) =>
-            {
-                DeviceDisplay.KeepScreenOn = true;
-            };
+            //window.Created += (s, e) =>
+            //{
+            //    DeviceDisplay.KeepScreenOn = true;
+            //};
 
             return window;
         }
