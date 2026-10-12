@@ -43,14 +43,14 @@ namespace MicroVue
             builder.Logging.AddDebug();
 #endif
 
-            builder.Services.AddSingleton<ScenesPage>();
-            builder.Services.AddSingleton<ScenesViewModel>();
-            builder.Services.AddSingleton<CameraPage>();
-            builder.Services.AddSingleton<CameraViewModel>();
-            builder.Services.AddSingleton<ImportPage>();
-            builder.Services.AddSingleton<ImportViewModel>();
-            builder.Services.AddTransient<AnalysisPage>();
-            builder.Services.AddTransient<AnalysisViewModel>();
+            builder.Services.AddSingleton<MainPage>();
+            builder.Services.AddSingleton<MainViewModel>();
+            //builder.Services.AddSingleton<CameraPage>();
+            //builder.Services.AddSingleton<CameraViewModel>();
+            //builder.Services.AddSingleton<ImportPage>();
+            //builder.Services.AddSingleton<ImportViewModel>();
+            //builder.Services.AddTransient<AnalysisPage>();
+            //builder.Services.AddTransient<AnalysisViewModel>();
             builder.Services.AddTransient<AboutPage>();
             builder.Services.AddTransient<AboutViewModel>();
 
