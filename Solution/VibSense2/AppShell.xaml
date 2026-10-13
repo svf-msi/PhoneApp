@@ -17,15 +17,15 @@
     </Shell.Resources>
 
     <ShellContent
-        Title="Main"
-        Icon="{StaticResource IconHome}"
-        ContentTemplate="{DataTemplate v:MainPage}"
-        Route="MainPage" />
-
-    <ShellContent
         Title="About"
         Icon="{StaticResource IconInfo}"
         ContentTemplate="{DataTemplate v:AboutPage}"
         Route="AboutPage" />
+
+    <ShellContent
+        Title="Main"
+        Icon="{StaticResource IconHome}"
+        ContentTemplate="{DataTemplate v:MainPage}"
+        Route="MainPage" />
 
 </Shell>

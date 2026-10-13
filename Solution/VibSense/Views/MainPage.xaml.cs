@@ -9,9 +9,9 @@ namespace VibSense.Views;
 public partial class MainPage : ContentPage
 {
 
-#if ANDROID
-    ScreenOrientation defaultOrientation = Platform.CurrentActivity.RequestedOrientation;
-#endif
+//#if ANDROID
+//    ScreenOrientation defaultOrientation = Platform.CurrentActivity.RequestedOrientation;
+//#endif
 
     public MainPage(MainViewModel vm)
 	{
@@ -19,26 +19,26 @@ public partial class MainPage : ContentPage
         BindingContext = vm;
     }
 
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
+//    protected override void OnAppearing()
+//    {
+//        base.OnAppearing();
 
-#if ANDROID
-        defaultOrientation = Platform.CurrentActivity.RequestedOrientation;
-        Platform.CurrentActivity.RequestedOrientation = ScreenOrientation.Portrait;
-#endif
+//#if ANDROID
+//        defaultOrientation = Platform.CurrentActivity.RequestedOrientation;
+//        Platform.CurrentActivity.RequestedOrientation = ScreenOrientation.Portrait;
+//#endif
 
-    }
+//    }
 
-    protected override void OnDisappearing()
-    {
-        base.OnDisappearing();
+//    protected override void OnDisappearing()
+//    {
+//        base.OnDisappearing();
 
-#if ANDROID
-        Platform.CurrentActivity.RequestedOrientation = defaultOrientation;
-#endif
+//#if ANDROID
+//        Platform.CurrentActivity.RequestedOrientation = defaultOrientation;
+//#endif
 
-    }
+//    }
 
     void Button_Pressed(object sender, EventArgs e)
     {

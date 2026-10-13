@@ -43,42 +43,42 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
 	  <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
-	  <ApplicationVersion>3</ApplicationVersion>
+	  <ApplicationVersion>1</ApplicationVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-ios|AnyCPU'">
 	  <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
-	  <ApplicationVersion>3</ApplicationVersion>
+	  <ApplicationVersion>1</ApplicationVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-maccatalyst|AnyCPU'">
 	  <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
-	  <ApplicationVersion>3</ApplicationVersion>
+	  <ApplicationVersion>1</ApplicationVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-windows10.0.19041.0|AnyCPU'">
 	  <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
-	  <ApplicationVersion>3</ApplicationVersion>
+	  <ApplicationVersion>1</ApplicationVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
-	  <ApplicationDisplayVersion>0.1.2</ApplicationDisplayVersion>
-	  <ApplicationVersion>3</ApplicationVersion>
+	  <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
+	  <ApplicationVersion>1</ApplicationVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-ios|AnyCPU'">
 	  <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
-	  <ApplicationVersion>3</ApplicationVersion>
+	  <ApplicationVersion>1</ApplicationVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-maccatalyst|AnyCPU'">
 	  <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
-	  <ApplicationVersion>3</ApplicationVersion>
+	  <ApplicationVersion>1</ApplicationVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-windows10.0.19041.0|AnyCPU'">
 	  <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
-	  <ApplicationVersion>3</ApplicationVersion>
+	  <ApplicationVersion>1</ApplicationVersion>
 	</PropertyGroup>
 	
 	<ItemGroup>
@@ -176,6 +176,12 @@
 	  <PackageReference Include="Emgu.CV.runtime.maui.mini">
 	    <Version>4.13.0.5924</Version>
 	  </PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Views\MainPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </None>
 	</ItemGroup>
 
 </Project>
