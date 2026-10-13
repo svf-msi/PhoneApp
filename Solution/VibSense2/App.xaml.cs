@@ -120,7 +120,6 @@ namespace MicroVue
         public App()
         {
             InitializeComponent();
-            Routing.RegisterRoute(nameof(AnalysisPage), typeof(AnalysisPage));
             if (!Directory.Exists(DataFolder)) Directory.CreateDirectory(DataFolder);
         }
 
