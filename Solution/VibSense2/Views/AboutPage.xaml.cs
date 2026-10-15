@@ -1,6 +1,6 @@
-using MicroVue.ViewModels;
+using VibSense.ViewModels;
 
-namespace MicroVue.Views;
+namespace VibSense.Views;
 
 public partial class AboutPage : ContentPage
 {

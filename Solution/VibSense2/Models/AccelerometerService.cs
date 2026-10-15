@@ -1,5 +1,5 @@
 ﻿
-namespace MicroVue.Models
+namespace VibSense.Models
 {
     public class AccelerometerService
     {

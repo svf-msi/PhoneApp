@@ -15,9 +15,9 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using MicroVue.Models;
+using VibSense.Models;
 
-namespace MicroVue.ViewModels
+namespace VibSense.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {

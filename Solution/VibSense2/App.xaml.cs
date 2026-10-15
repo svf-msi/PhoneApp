@@ -1,8 +1,8 @@
-﻿using MicroVue.Views;
+﻿using VibSense.Views;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace MicroVue
+namespace VibSense
 {
     public partial class App : Application
     {

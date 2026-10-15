@@ -1,6 +1,6 @@
-﻿using MicroVue.ViewModels;
+﻿using VibSense.ViewModels;
 
-namespace MicroVue
+namespace VibSense
 {
     public partial class AppShell : Shell
     {

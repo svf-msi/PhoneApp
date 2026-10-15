@@ -2,12 +2,12 @@
 using Emgu.CV;
 using LiveChartsCore.SkiaSharpView.Maui;
 using Microsoft.Extensions.Logging;
-using MicroVue.ViewModels;
-using MicroVue.Views;
+using VibSense.ViewModels;
+using VibSense.Views;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using Syncfusion.Maui.Toolkit.Hosting;
 
-namespace MicroVue
+namespace VibSense
 {
     public static class MauiProgram
     {

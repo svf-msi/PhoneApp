@@ -1,7 +1,7 @@
 ﻿using ObjCRuntime;
 using UIKit;
 
-namespace MicroVue
+namespace VibSense
 {
     public class Program
     {

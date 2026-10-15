@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace MicroVue
+namespace VibSense
 {
     [Register("AppDelegate")]
     public class AppDelegate : MauiUIApplicationDelegate

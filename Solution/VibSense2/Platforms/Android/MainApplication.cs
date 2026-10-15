@@ -2,7 +2,7 @@
 using Android.Runtime;
 
 [assembly: UsesPermission(Android.Manifest.Permission.HighSamplingRateSensors)]
-namespace MicroVue
+namespace VibSense
 {
     [Application]
     public class MainApplication : MauiApplication

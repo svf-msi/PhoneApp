@@ -1,10 +1,10 @@
-using MicroVue.ViewModels;
+using VibSense.ViewModels;
 
 #if ANDROID
 using Android.Content.PM;
 #endif
 
-namespace MicroVue.Views;
+namespace VibSense.Views;
 
 public partial class MainPage : ContentPage
 {
