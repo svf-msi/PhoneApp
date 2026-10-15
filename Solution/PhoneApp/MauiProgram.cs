@@ -6,6 +6,9 @@ using MicroVue.ViewModels;
 using MicroVue.Views;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using Syncfusion.Maui.Toolkit.Hosting;
+using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace MicroVue
 {
@@ -13,14 +16,6 @@ namespace MicroVue
     {
         public static MauiApp CreateMauiApp()
         {
-            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
-    System.Diagnostics.Debug.WriteLine($"UNHANDLED: {e.ExceptionObject}");
-
-            TaskScheduler.UnobservedTaskException += (s, e) =>
-            {
-                System.Diagnostics.Debug.WriteLine($"UNOBSERVED: {e.Exception}");
-                e.SetObserved();
-            };
 
 #if ANDROID
             // Initializes the native camera and backend for Android
@@ -67,7 +62,27 @@ namespace MicroVue
             builder.Services.AddTransient<AboutPage>();
             builder.Services.AddTransient<AboutViewModel>();
 
+            AppDomain.CurrentDomain.UnhandledException += (_, args) => LogError("AppDomainError", args?.ExceptionObject as Exception);
+            TaskScheduler.UnobservedTaskException += (_, args) => LogError("TaskSchedulerError", args?.Exception);
+
             return builder.Build();
+        }
+
+        static void LogError(string source, Exception e)
+        {
+            Debug.WriteLine($"[Debug]: {source} - {e}");
+            if (e == null) return;
+
+#if ANDROID
+            string downloadsPath = global::Android.OS.Environment.GetExternalStoragePublicDirectory(global::Android.OS.Environment.DirectoryDownloads)?.AbsolutePath;
+            string filePath = Path.Combine(downloadsPath, source + ".txt");
+            var error = e.ToString();
+            if (e is TargetInvocationException ex && ex.InnerException != null) 
+            {
+                error += "/n" + ex.InnerException.ToString();
+            }
+            File.WriteAllText(filePath, error);
+#endif
         }
     }
 }
