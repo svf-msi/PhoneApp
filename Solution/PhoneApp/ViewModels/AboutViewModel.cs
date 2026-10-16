@@ -29,7 +29,18 @@ namespace MicroVue.ViewModels
         bool isExpired = AppShellViewModel.Instance.IsExpired;
 
         [ObservableProperty]
+        bool showHelp = false;
+
+        [ObservableProperty]
+        string helpText = "Help text";
+
+        [ObservableProperty]
         string deviceId = Utilities.GetHardwareId();
+
+        public AboutViewModel()
+        {
+            ReadHelp();
+        }
 
         [RelayCommand]
         async Task CopyId()
@@ -130,6 +141,31 @@ namespace MicroVue.ViewModels
                 if (today > endDate) return true;
             }
             return false;
+        }
+
+        [RelayCommand]
+        void Help()
+        {
+            ShowHelp = !ShowHelp;
+        }
+
+        void ReadHelp()
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    using Stream stream = await FileSystem.Current.OpenAppPackageFileAsync("help.txt");
+                    using StreamReader reader = new StreamReader(stream);
+
+                    HelpText = await reader.ReadToEndAsync();
+                }
+                catch (FileNotFoundException)
+                {
+                    HelpText = "Help file not found.";
+                }
+            });
+            
         }
     }
 }

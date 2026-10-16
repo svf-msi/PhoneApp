@@ -1,0 +1,25 @@
+1. The main menu has four entries: (1) Scenes, (2) Camera, (3) Import and (4) About. “Scenes” page is used to view and analyze existing scenes. “Camera” page is used to record new scenes using the phone camera. “Import” page is used to create new scenes using previously recorded mp4 videos. “About” page provides application general information.
+
+2. Use “Camera” page to record new videos. The settings button on the top allows to change the default scene name, camera frame rate, recording duration and also turn on/off the flash.
+
+3. Use “Import” page to analyze other videos, e.g. external videos. It also can be used to analyze videos recorded with the built-in camera app using the slow-motion mode.
+
+4. Use “Scenes” page to view the list of existing scenes. Each scene represents an analysis of a single video. Click on a scene to go to “Scene” page and view or modify its analysis.
+
+5. The “Scene” page contains a top toolbar with main tabs: (1) Home, (2) Chart and (3) Videos, which can be accessed by clicking on them. It also contains a return button on the left side to go back to "Scenes" page. 
+
+6. “Home” tab provides all tools to produce a tracking analysis - start by selecting target or anchor regions using the red or gray buttons respectively. Anchors are used for image stabilization. Other parameters may be changed if needed but not necessary (e.g. tracking range or pixel scale) using other buttons. 
+
+7. To produce a tracking analysis or redo one, press “Track Targets” button. The analysis progress will be shown and a popup will appear after its completion. If it completes prematurely, try it again.
+
+8. After the analysis is complete, click on the Chart button to see the Chart tab and the tracking results. The default chart view is the FFT spectrum, but if needed it can be switched to the waveform view (e.g. to see a linear target translation).
+
+9. The chart can be zoomed in and out using pinching gestures. To select the desired frequency peak, zoom on a peak and press “Select Peak Frequency” button. Multiple frequencies (FOIs) can be selected.
+
+10. To produce a magnified video for a selected frequency, press “Process” button after its selection. After the processing is complete, the corresponding video can be viewed in the Videos tab. 
+
+11. The Videos tab contains a list of magnified videos filtered for each FOI. They can be played back and exported to mp4 files for sharing. The magnification can be changed using “Edit” button.
+
+12. To export a scene's original video, use the info button in the Home tab of the "Scene" page. To export a magnified video for a particular frequency, use the edit button in the Videos tab of the "Scene" page.
+
+13. This is beta version software. Different types of issues have been noted. If the app crashes, restart the app and try again. Please note under what conditions and how it happens and provide feedback to MSI. Additional diagnostic output maybe found in Download folder.
