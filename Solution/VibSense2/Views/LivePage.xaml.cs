@@ -6,14 +6,14 @@ using Android.Content.PM;
 
 namespace VibSense.Views;
 
-public partial class MainPage : ContentPage
+public partial class LivePage : ContentPage
 {
 
 //#if ANDROID
 //    ScreenOrientation defaultOrientation = Platform.CurrentActivity.RequestedOrientation;
 //#endif
 
-    public MainPage(MainViewModel vm)
+    public LivePage(LiveViewModel vm)
 	{
 		InitializeComponent();
         BindingContext = vm;
@@ -42,7 +42,7 @@ public partial class MainPage : ContentPage
 
     void Button_Pressed(object sender, EventArgs e)
     {
-        if (BindingContext is MainViewModel vm)
+        if (BindingContext is LiveViewModel vm)
         {
             vm.Start();
         }
@@ -50,7 +50,7 @@ public partial class MainPage : ContentPage
 
     void Button_Released(object sender, EventArgs e)
     {
-        if (BindingContext is MainViewModel vm)
+        if (BindingContext is LiveViewModel vm)
         {
 
             vm.Stop();

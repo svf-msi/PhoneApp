@@ -4,8 +4,8 @@
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              xmlns:v="clr-namespace:VibSense.Views"
              xmlns:vm="clr-namespace:VibSense.ViewModels"
-             x:Class="VibSense.Views.MainPage"
-             x:DataType="vm:MainViewModel"
+             x:Class="VibSense.Views.LivePage"
+             x:DataType="vm:LiveViewModel"
              Title="Main">
     
     <Grid>

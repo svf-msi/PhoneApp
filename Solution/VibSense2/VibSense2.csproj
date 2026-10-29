@@ -123,13 +123,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Views\LivePage.xaml.cs">
+	    <DependentUpon>LivePage.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <MauiXaml Update="Resources\Styles\AppStyles.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\AboutPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Views\MainPage.xaml">
+	  <MauiXaml Update="Views\LivePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\ProjectsPage.xaml">
@@ -150,7 +156,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="Views\MainPage.xaml">
+	  <None Update="Views\LivePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </None>
 	</ItemGroup>

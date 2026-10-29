@@ -19,7 +19,7 @@ using VibSense.Models;
 
 namespace VibSense.ViewModels
 {
-    public partial class MainViewModel : ObservableObject
+    public partial class LiveViewModel : ObservableObject
     {
         [ObservableProperty]
         string label = "Press and hold to analyze";
@@ -69,7 +69,7 @@ namespace VibSense.ViewModels
 
         #endregion
 
-        public MainViewModel()
+        public LiveViewModel()
         {
             accelerometerService = new AccelerometerService();
             accelerometerService.AccelerometerChanged += AccelerometerChanged;

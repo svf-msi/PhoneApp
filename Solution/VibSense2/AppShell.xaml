@@ -6,7 +6,7 @@
     xmlns:v="clr-namespace:VibSense.Views"
     xmlns:vm="clr-namespace:VibSense.ViewModels"
     x:DataType="vm:AppShellViewModel"
-    Title="VibSense">
+    Title="VibSense™">
 
     <Shell.Resources>
         <Style Class="FlyoutItemLabelStyle" TargetType="Label">
@@ -25,8 +25,8 @@
     <ShellContent
         Title="Live"
         Icon="{StaticResource IconVibrate}"
-        ContentTemplate="{DataTemplate v:MainPage}"
-        Route="MainPage" />
+        ContentTemplate="{DataTemplate v:LivePage}"
+        Route="MLivePage" />
 
     <ShellContent
         Title="About"
