@@ -42,7 +42,8 @@ namespace VibSense
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
-
+            builder.Services.AddSingleton<ProjectsPage>();
+            builder.Services.AddSingleton<ProjectsViewModel>();
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddSingleton<MainViewModel>();
             builder.Services.AddTransient<AboutPage>();

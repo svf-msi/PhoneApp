@@ -9,10 +9,4 @@ public partial class AboutPage : ContentPage
 		InitializeComponent();
         BindingContext = vm;
     }
-
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        await Shell.Current.GoToAsync("//MainPage");
-    }
 }
