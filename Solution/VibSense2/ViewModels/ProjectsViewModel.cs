@@ -1,13 +1,14 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using VibSense.Models;
-using VibSense.Views;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
+using VibSense.Models;
+using VibSense.Views;
 
 namespace VibSense.ViewModels
 {
@@ -23,32 +24,48 @@ namespace VibSense.ViewModels
 
         public void Refresh()
         {
-            var sceneItems = new ObservableCollection<ProjectItem>();
-            string[] folders = Directory.GetDirectories(App.DataFolder);
-            foreach (string folder in folders)
+            var projectsItems = new ObservableCollection<ProjectItem>();
+            string[] files = Directory.GetFiles(App.DataFolder);
+            foreach (string file in files)
             {
                 //Debug.WriteLine($"[Debug]: {folder}");
-                var fullName = Path.GetFileName(folder);
-                var sceneName = Path.GetFileNameWithoutExtension(folder);
-                var creationTime = File.GetCreationTime(folder);
-                var isProject = fullName.Contains(ProjectItem.DefaultExtension);
-                var scene = new ProjectItem { Name = sceneName, Date = creationTime, ItemPath = folder, Type = isProject ? ItemType.File : ItemType.Folder };
-                sceneItems.Add(scene);
+                var fullName = Path.GetFileName(file);
+                var projectName = Path.GetFileNameWithoutExtension(file);
+                var creationTime = File.GetCreationTime(file);
+                var isProject = fullName.Contains(Project.DefaultExtension);
+                var project = new ProjectItem { Name = projectName, Date = creationTime, ItemPath = file, Type = isProject ? ItemType.File : ItemType.Folder };
+                projectsItems.Add(project);
             }
-            Projects = sceneItems;
+            Projects = projectsItems;
+        }
+
+        public void AddProject(string name = null)
+        {
+            if (Projects == null) Projects = new ObservableCollection<ProjectItem>();
+
+            if (Project.Create(name, out var project, out var duplicate))
+            {
+                var creationTime = File.GetCreationTime(project.FileName);
+                var projectItem = new ProjectItem { Name = name, Date = creationTime, ItemPath = project.FileName, Type = ItemType.File };
+                Projects.Add(projectItem);
+            }
+            else if (duplicate)
+            {
+
+            }
         }
 
         [RelayCommand]
-        void Delete(ProjectItem sceneItem)
+        void Delete(ProjectItem item)
         {
-            if (sceneItem != null)
+            if (item != null)
             {
                 try
                 {
-                    var scenePath = sceneItem.ItemPath;
-                    if (!Directory.Exists(scenePath) || sceneItem.Type != ItemType.File) return;
-                    Directory.Delete(scenePath, true);
-                    Projects.Remove(sceneItem);
+                    var path = item.ItemPath;
+                    if (!File.Exists(path) || item.Type != ItemType.File) return;
+                    File.Delete(path);
+                    Projects.Remove(item);
                 }
                 catch (Exception e)
                 {
@@ -58,7 +75,7 @@ namespace VibSense.ViewModels
         }
 
         [RelayCommand]
-        async Task Tap(ProjectItem projectItem)
+        async Task Tap(ProjectItem item)
         {
             //if (projectItem != null)
             //{

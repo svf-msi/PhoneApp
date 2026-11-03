@@ -9,8 +9,6 @@ namespace VibSense.Models
 {
     public partial class ProjectItem : ObservableObject
     {
-        public static string DefaultExtension = ".project";
-
         [ObservableProperty]
         string name;
 

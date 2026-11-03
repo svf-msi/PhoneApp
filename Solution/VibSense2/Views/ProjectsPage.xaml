@@ -5,11 +5,16 @@
              xmlns:m="clr-namespace:VibSense.Models"
              xmlns:vm="clr-namespace:VibSense.ViewModels"
              x:Class="VibSense.Views.ProjectsPage"
-             Title="ProjectsPage"
+             Title="Projects"
              x:DataType="vm:ProjectsViewModel"
              x:Name="projectsPage">
 
     <Grid RowDefinitions="Auto, *">
+        <Button Grid.Row="0" Margin="10"
+                Text="+ Add New"
+                TextColor="White"
+                Clicked="Button_Clicked"/>
+        
         <ScrollView Grid.Row="1">
             <CollectionView ItemsSource="{Binding Projects}" SelectionMode="None">
                 <CollectionView.ItemTemplate>
