@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.Measure;
@@ -22,10 +23,59 @@ namespace VibSense.ViewModels
     public partial class LiveViewModel : ObservableObject
     {
         [ObservableProperty]
-        string label = "Press and hold to analyze";
+        int count = 0;
 
         [ObservableProperty]
-        int count = 0;
+        bool directionAll = false;
+        partial void OnDirectionAllChanged(bool value)
+        {
+            if (value) Direction = Direction.Magnitude;
+        }
+
+        [ObservableProperty]
+        bool directionX = false;
+        partial void OnDirectionXChanged(bool value)
+        {
+            if (value) Direction = Direction.X;
+        }
+
+        [ObservableProperty]
+        bool directionY = false;
+        partial void OnDirectionYChanged(bool value)
+        {
+            if (value) Direction = Direction.Y;
+        }
+
+        [ObservableProperty]
+        bool directionZ = false;
+        partial void OnDirectionZChanged(bool value)
+        {
+            if (value) Direction = Direction.Z;
+        }
+
+        [ObservableProperty]
+        bool typeDisplacement = false;
+        partial void OnTypeDisplacementChanged(bool value)
+        {
+            if (value) DataType = DataType.Displacement;
+        }
+
+        [ObservableProperty]
+        bool typeVelocity = false;
+        partial void OnTypeVelocityChanged(bool value)
+        {
+            if (value) DataType = DataType.Velocity;
+        }
+
+        [ObservableProperty]
+        bool typeAcceleration = false;
+        partial void OnTypeAccelerationChanged(bool value)
+        {
+            if (value) DataType = DataType.Acceleration;
+        }
+
+        [ObservableProperty]
+        bool hasData = false;
 
         int refreshCount;
         DateTime start;
@@ -63,9 +113,17 @@ namespace VibSense.ViewModels
 
         [ObservableProperty]
         Direction direction = Direction.Magnitude;
+        partial void OnDirectionChanged(Direction value)
+        {
+            Preferences.Set(App.SettingDirection, (int)Direction);
+        }
 
         [ObservableProperty]
         DataType dataType = DataType.Acceleration;
+        partial void OnDataTypeChanged(DataType value)
+        {
+            Preferences.Set(App.SettingType, (int)DataType);
+        }
 
         #endregion
 
@@ -74,6 +132,12 @@ namespace VibSense.ViewModels
             accelerometerService = new AccelerometerService();
             accelerometerService.AccelerometerChanged += AccelerometerChanged;
 
+            InitializeChart();
+            InitializeSettings();
+        }
+
+        void InitializeChart()
+        {
             XAxis = new Axis
             {
                 Name = "Frequency(Hz)",
@@ -99,7 +163,30 @@ namespace VibSense.ViewModels
                 TicksPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
             };
             YAxes = new Axis[] { YAxis };
-            Lines = new ISeries[] {};
+            Lines = new ISeries[] { };
+        }
+
+        void InitializeSettings()
+        {
+            ChangeDirection((Direction)Preferences.Get(App.SettingDirection, 0));
+            ChangeType((DataType)Preferences.Get(App.SettingType, 0));
+        }
+
+        void ChangeDirection(Direction dir)
+        {
+            Direction = dir;
+            DirectionAll = Direction == Direction.Magnitude;
+            DirectionX = Direction == Direction.X;
+            DirectionY = Direction == Direction.Y;
+            DirectionZ = Direction == Direction.Z;
+        }
+
+        void ChangeType(DataType type)
+        {
+            DataType = type;
+            TypeDisplacement = DataType == DataType.Displacement;
+            TypeVelocity = DataType == DataType.Velocity;
+            TypeAcceleration = DataType == DataType.Acceleration;
         }
 
         double GetValue(Vector3 vector)
@@ -140,7 +227,7 @@ namespace VibSense.ViewModels
                     LineSmoothness = 0
                 };
                 series.Add(s);
-
+                HasData = true;
                 YAxis.Name = DataType == DataType.Displacement ? "Displacement" : DataType == DataType.Velocity ? "Velocity" : "Acceleration";
             }
             Lines = series.ToArray();
@@ -198,6 +285,24 @@ namespace VibSense.ViewModels
                 ++refreshCount;
                 UpdateChart();
             }
+        }
+
+        [RelayCommand]
+        void Help()
+        {
+
+        }
+
+        [RelayCommand]
+        void Clear()
+        {
+
+        }
+
+        [RelayCommand]
+        void Save()
+        {
+
         }
     }
 

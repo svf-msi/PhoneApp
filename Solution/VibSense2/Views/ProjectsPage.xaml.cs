@@ -5,16 +5,24 @@ namespace VibSense.Views;
 
 public partial class ProjectsPage : ContentPage
 {
+    bool firstOpen = true;
+
 	public ProjectsPage(ProjectsViewModel vm)
 	{
 		InitializeComponent();
         BindingContext = vm;
     }
-
-    protected override void OnAppearing()
+    
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
         (BindingContext as ProjectsViewModel)?.Refresh();
+
+        if (!App.Open)
+        {
+            App.Open = true;
+            await Shell.Current.GoToAsync("//LivePage");
+        }
     }
 
     private async void Button_Clicked(object sender, EventArgs args)

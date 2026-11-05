@@ -16,11 +16,17 @@ namespace VibSense
 
         public static string SettingEndDate { get; protected set; } = "end_date";
 
+        public static string SettingDirection { get; protected set; } = "default_direction";
+
+        public static string SettingType { get; protected set; } = "default_type";
+
         public static string SettingIsValidated { get; protected set; } = "is_validated";
 
         public static int TrialPeriod { get; protected set; } = 365; // days
 
         public static string DataFolder { get; protected set; } = FileSystem.Current.AppDataDirectory + "/Data/";
+
+        public static bool Open { get; set; } = false;
 
         public static bool GetSecureSetting<T>(string setting, out T value) where T : IParsable<T>
         {

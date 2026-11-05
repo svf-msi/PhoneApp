@@ -38,6 +38,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <Button 
@@ -49,6 +50,14 @@
 
             <Button 
                 Grid.Column="2"
+                Margin="10, 0, 0, 0"
+                IsEnabled="{Binding HasData}"
+                Text="Clear"
+                TextColor="White"
+                Command="{Binding ClearCommand}"/>
+
+            <Button 
+                Grid.Column="3"
                 Margin="10, 0, 0, 0"
                 IsEnabled="{Binding HasData}"
                 Text="Save"
@@ -106,7 +115,7 @@
                 Grid.Row="0"
                 Grid.Column="4"
                 Content="Z"
-                IsChecked="{Binding DirectionY}"
+                IsChecked="{Binding DirectionZ}"
                 GroupName="direction"
                 VerticalOptions="Center"/>
 

@@ -17,19 +17,19 @@
     </Shell.Resources>
 
     <ShellContent
-        Title="Projects"
+        Title="Saved Charts"
         Icon="{StaticResource IconHome}"
         ContentTemplate="{DataTemplate v:ProjectsPage}"
         Route="ProjectsPage" />
 
     <ShellContent
-        Title="Live"
+        Title="Live Chart"
         Icon="{StaticResource IconVibrate}"
         ContentTemplate="{DataTemplate v:LivePage}"
-        Route="MLivePage" />
+        Route="LivePage" />
 
     <ShellContent
-        Title="About"
+        Title="About VibSense™"
         Icon="{StaticResource IconInfo}"
         ContentTemplate="{DataTemplate v:AboutPage}"
         Route="AboutPage" />
