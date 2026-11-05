@@ -116,6 +116,7 @@ namespace VibSense.ViewModels
         partial void OnDirectionChanged(Direction value)
         {
             Preferences.Set(App.SettingDirection, (int)Direction);
+            UpdateChart();
         }
 
         [ObservableProperty]
@@ -123,6 +124,7 @@ namespace VibSense.ViewModels
         partial void OnDataTypeChanged(DataType value)
         {
             Preferences.Set(App.SettingType, (int)DataType);
+            UpdateChart();
         }
 
         #endregion
@@ -132,8 +134,8 @@ namespace VibSense.ViewModels
             accelerometerService = new AccelerometerService();
             accelerometerService.AccelerometerChanged += AccelerometerChanged;
 
-            InitializeChart();
             InitializeSettings();
+            InitializeChart();
         }
 
         void InitializeChart()
@@ -153,7 +155,8 @@ namespace VibSense.ViewModels
 
             YAxis = new Axis
             {
-                Name = DataType == DataType.Displacement ? "Displacement" : DataType == DataType.Velocity ? "Velocity" : "Acceleration",
+                Name = DataType == DataType.Displacement ? "Displacement(mil pk-pk)" :
+                    DataType == DataType.Velocity ? "Velocity(in/s rms)" : "Acceleration(G pk)",
                 TextSize = 18,
                 NamePadding = new LiveChartsCore.Drawing.Padding(0, 5, 0, -10),
                 NamePaint = new SolidColorPaint(new SKColor(60, 60, 60)),
@@ -161,6 +164,7 @@ namespace VibSense.ViewModels
                 SeparatorsPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
                 SubseparatorsPaint = new SolidColorPaint(new SKColor(160, 160, 160)) { StrokeThickness = 0.5f },
                 TicksPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
+                Labeler = (value) => value.ToString("G2")
             };
             YAxes = new Axis[] { YAxis };
             Lines = new ISeries[] { };
@@ -187,11 +191,12 @@ namespace VibSense.ViewModels
             TypeDisplacement = DataType == DataType.Displacement;
             TypeVelocity = DataType == DataType.Velocity;
             TypeAcceleration = DataType == DataType.Acceleration;
+            UpdateChart();
         }
-
-        double GetValue(Vector3 vector)
+        
+        double GetValue(Vector3 vector, Direction direction = Direction.Magnitude)
         {
-            switch (Direction)
+            switch (direction)
             {
                 case Direction.X: return vector.X;
                 case Direction.Y: return vector.Y;
@@ -202,21 +207,12 @@ namespace VibSense.ViewModels
 
         public void UpdateChart()
         {
-            Debug.WriteLine($"[Debug]: Update chart: count={Data.Count}");
+            //Debug.WriteLine($"[Debug]: Update chart: count={Data.Count}");
             var series = new List<ISeries>();
-            var rate = SampleRate;
             if (Data?.Count > 0)
             {
-                var waveform = Data.Select(p => GetValue(p)).ToArray();
-                var spectrum = FftAnalysis.Emgu(waveform, WindowType.Hann);
-                var span = spectrum.GetLength(1);
-                var values = new List<ObservablePoint>();
-                for (int i = 5; i < span / 2; ++i)
-                {
-                    var disp = FftAnalysis.Complex(spectrum, 0, 2 * i - 1);
-                    values.Add(new ObservablePoint(i * rate / span, disp.Magnitude));
-                }
-                var s = new LineSeries<ObservablePoint>
+                var values = UpdateFFT(); 
+                series.Add(new LineSeries<ObservablePoint>
                 {
                     Values = values,
                     Stroke = new SolidColorPaint(Utilities.ConvertToSKColor("Red")) { StrokeThickness = 2 },
@@ -225,12 +221,72 @@ namespace VibSense.ViewModels
                     GeometryStroke = null,
                     GeometrySize = 0,
                     LineSmoothness = 0
-                };
-                series.Add(s);
+                });
                 HasData = true;
-                YAxis.Name = DataType == DataType.Displacement ? "Displacement" : DataType == DataType.Velocity ? "Velocity" : "Acceleration";
+                YAxis.Name = DataType == DataType.Displacement ? "Displacement(mil pk-pk)" : 
+                    DataType == DataType.Velocity ? "Velocity(in/s rms)" : "Acceleration(G pk)";
             }
             Lines = series.ToArray();
+        }
+
+        List<ObservablePoint> UpdateFFT()
+        {
+            HasData = false;
+            var values = new List<ObservablePoint>();
+            if (Data == null || Data.Count == 0) return values;
+
+            var scale = DataType == DataType.Displacement ? 9.8 * 2e6 / 25.4 :
+                        DataType == DataType.Velocity ? 9.8 * 1e3 / (Math.Sqrt(2) * 25.4) : 1;
+
+            if (Direction == Direction.Magnitude)
+            {
+                var waveformX = Data.Select(p => GetValue(p, Direction.X)).ToArray(); 
+                var spectrumX = FftAnalysis.Emgu(waveformX, WindowType.Hann);
+                var waveformY = Data.Select(p => GetValue(p, Direction.Y)).ToArray();
+                var spectrumY = FftAnalysis.Emgu(waveformY, WindowType.Hann);
+                var waveformZ = Data.Select(p => GetValue(p, Direction.Z)).ToArray();
+                var spectrumZ = FftAnalysis.Emgu(waveformZ, WindowType.Hann);
+
+                var span = spectrumX.GetLength(1);
+                for (int i = 5; i < span / 2; ++i)
+                {
+                    var dispX = FftAnalysis.Complex(spectrumX, 0, 2 * i - 1);
+                    var dispY = FftAnalysis.Complex(spectrumY, 0, 2 * i - 1);
+                    var dispZ = FftAnalysis.Complex(spectrumZ, 0, 2 * i - 1);
+                    var disp = Math.Sqrt(Math.Pow(dispX.Magnitude, 2) + Math.Pow(dispY.Magnitude, 2) + Math.Pow(dispZ.Magnitude, 2));
+                    if (DataType == DataType.Velocity)
+                    {
+                        disp /= 2 * Math.PI * i * SampleRate / span;
+                    }
+                    else if (DataType == DataType.Displacement)
+                    {
+                        disp /= Math.Pow(2 * Math.PI * i * SampleRate / span, 2);
+                    }
+                    values.Add(new ObservablePoint(i * SampleRate / span, disp * scale));
+                }
+            }
+            else
+            {
+                var waveform = Data.Select(p => GetValue(p, Direction)).ToArray();
+                var spectrum = FftAnalysis.Emgu(waveform, WindowType.Hann);
+
+                var span = spectrum.GetLength(1);
+                for (int i = 5; i < span / 2; ++i)
+                {
+                    var disp = FftAnalysis.Complex(spectrum, 0, 2 * i - 1).Magnitude;
+                    if (DataType == DataType.Velocity)
+                    {
+                        disp /= 2 * Math.PI * i * SampleRate / span;
+                    }
+                    else if (DataType == DataType.Displacement)
+                    {
+                        disp /= Math.Pow(2 * Math.PI * i * SampleRate / span, 2);
+                    }
+                    values.Add(new ObservablePoint(i * SampleRate / span, disp * scale));
+                }
+            }
+
+            return values;
         }
 
         public void Start()

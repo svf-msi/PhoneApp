@@ -84,7 +84,7 @@
             <Label 
                 Grid.Row="0"
                 Grid.Column="0"
-                Text="Direction:"
+                Text="Dir:"
                 VerticalOptions="Center"/>
 
             <RadioButton 
@@ -129,21 +129,21 @@
             <RadioButton 
                 Grid.Row="1"
                 Grid.Column="1"
-                Content="Disp"
+                Content="D"
                 IsChecked="{Binding TypeDisplacement}"
                 GroupName="type"/>
 
             <RadioButton 
                 Grid.Row="1"
                 Grid.Column="2"
-                Content="Vel"
+                Content="V"
                 IsChecked="{Binding TypeVelocity}"
                 GroupName="type"/>
 
             <RadioButton 
                 Grid.Row="1"
                 Grid.Column="3"
-                Content="Accel"
+                Content="A"
                 IsChecked="{Binding TypeAcceleration}"
                 GroupName="type"/>
 

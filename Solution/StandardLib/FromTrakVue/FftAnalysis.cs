@@ -17,7 +17,7 @@ namespace StandardLib
             var span = (padFour && data.Length % 4 > 0) ? data.Length + (4 - data.Length % 4) : data.Length;
             var windowFunction = GetWindowFunction(window, span, out var correction);
             var spectrum = new double[1, span];
-            var scale = 1.0 / correction * 4; // extra x4 is for 2x p2p adjustement and another 2x for fft amplitude reduction
+            var scale = 1.0 / correction * 2; // extra 2x for fft amplitude reduction
 
             for (int t = 0; t < span; ++t)
             {
