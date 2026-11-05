@@ -5,7 +5,7 @@
              xmlns:m="clr-namespace:VibSense.Models"
              xmlns:vm="clr-namespace:VibSense.ViewModels"
              x:Class="VibSense.Views.ProjectsPage"
-             Title="Projects"
+             Title="Saved Charts"
              x:DataType="vm:ProjectsViewModel"
              x:Name="projectsPage">
 

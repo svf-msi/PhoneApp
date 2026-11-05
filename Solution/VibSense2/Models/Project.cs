@@ -59,7 +59,7 @@ namespace VibSense.Models
 
             project = new Project { Name = projectName, FileName = projectPath };
             project.Save();
-            //Debug.WriteLine($"[Debug]: created {project.Name}, check {project.FileName}");
+            Debug.WriteLine($"[Debug]: created {project.Name}, check {project.FileName}");
             return true;
         }
 
@@ -77,7 +77,7 @@ namespace VibSense.Models
 
         public void Save(string file = null)
         {
-            if (file != null) file = FileName;
+            if (file == null) file = FileName;
             if (file == null || IsSaving) return;
 
             try

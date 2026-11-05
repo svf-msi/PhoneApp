@@ -25,13 +25,13 @@ public partial class ProjectsPage : ContentPage
             {
                 var count = vm.Projects?.Count ?? 0;
                 string result = await DisplayPromptAsync(
-                    title: "Add New Project",
-                    message: "(select project name)",
+                    title: "Add New Set of Charts",
+                    message: "(select set name)",
                     accept: "OK",
                     cancel: "Cancel",
                     maxLength: 50,
                     keyboard: Keyboard.Default,
-                    initialValue: $"Project {count + 1}"
+                    initialValue: $"Set {count + 1}"
                 );
 
                 if (result != null)

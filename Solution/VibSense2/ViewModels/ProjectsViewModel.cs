@@ -28,7 +28,7 @@ namespace VibSense.ViewModels
             string[] files = Directory.GetFiles(App.DataFolder);
             foreach (string file in files)
             {
-                //Debug.WriteLine($"[Debug]: {folder}");
+                Debug.WriteLine($"[Debug]: {file}");
                 var fullName = Path.GetFileName(file);
                 var projectName = Path.GetFileNameWithoutExtension(file);
                 var creationTime = File.GetCreationTime(file);
@@ -62,6 +62,7 @@ namespace VibSense.ViewModels
             {
                 try
                 {
+                    Debug.WriteLine($"[Debug]: {item.ItemPath}");
                     var path = item.ItemPath;
                     if (!File.Exists(path) || item.Type != ItemType.File) return;
                     File.Delete(path);

@@ -6,7 +6,7 @@
              xmlns:vm="clr-namespace:VibSense.ViewModels"
              x:Class="VibSense.Views.LivePage"
              x:DataType="vm:LiveViewModel"
-             Title="Live">
+             Title="Live Chart">
     
     <Grid>
 
@@ -15,19 +15,12 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-
-        <Label 
-            Grid.Row="0" Grid.Column="0"
-            Text="{Binding Label}"
-            TextColor="{AppThemeBinding Light=Black, Dark=White}"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" 
-            Margin="10"/>
 
         <!--Chart-->
         <lvc:CartesianChart 
@@ -38,13 +31,122 @@
             XAxes="{Binding XAxes}" 
             YAxes="{Binding YAxes}"/>
 
+        <!--Top buttons-->
+        <Grid Grid.Row="0" Margin="20, 0, 20,  -15">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button 
+                Grid.Column="1"
+                Margin="10, 0, 0, 0"
+                Text="Help"
+                TextColor="White"
+                Command="{Binding HelpCommand}"/>
+
+            <Button 
+                Grid.Column="2"
+                Margin="10, 0, 0, 0"
+                IsEnabled="{Binding HasData}"
+                Text="Save"
+                TextColor="White"
+                Command="{Binding SaveCommand}"/>
+        </Grid>
+
+        <Grid Grid.Row="3" Margin="20, 10">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!--Direction radio buttons-->
+            <Label 
+                Grid.Row="0"
+                Grid.Column="0"
+                Text="Direction:"
+                VerticalOptions="Center"/>
+
+            <RadioButton 
+                Grid.Row="0"
+                Grid.Column="1"
+                Content="All"
+                IsChecked="{Binding DirectionAll}"
+                GroupName="direction"
+                VerticalOptions="Center"/>
+
+            <RadioButton 
+                Grid.Row="0"
+                Grid.Column="2"
+                Content="X"
+                IsChecked="{Binding DirectionX}"
+                GroupName="direction"
+                VerticalOptions="Center"/>
+
+            <RadioButton 
+                Grid.Row="0"
+                Grid.Column="3"
+                Content="Y"
+                IsChecked="{Binding DirectionY}"
+                GroupName="direction"
+                VerticalOptions="Center"/>
+
+            <RadioButton 
+                Grid.Row="0"
+                Grid.Column="4"
+                Content="Z"
+                IsChecked="{Binding DirectionY}"
+                GroupName="direction"
+                VerticalOptions="Center"/>
+
+            <!--Type radio buttons-->
+            <Label 
+                Grid.Row="1"
+                Grid.Column="0"
+                Text="Type:"
+                VerticalOptions="Center"/>
+
+            <RadioButton 
+                Grid.Row="1"
+                Grid.Column="1"
+                Content="Disp"
+                IsChecked="{Binding TypeDisplacement}"
+                GroupName="type"/>
+
+            <RadioButton 
+                Grid.Row="1"
+                Grid.Column="2"
+                Content="Vel"
+                IsChecked="{Binding TypeVelocity}"
+                GroupName="type"/>
+
+            <RadioButton 
+                Grid.Row="1"
+                Grid.Column="3"
+                Content="Accel"
+                IsChecked="{Binding TypeAcceleration}"
+                GroupName="type"/>
+
+        </Grid>
+
         <Button 
-            Grid.Row="3" Grid.Column="0"
-            Text="Hold to Start"
+            Grid.Row="4" Grid.Column="0"
+            Text="Press and Hold to Measure"
             TextColor="White"
             Pressed="Button_Pressed"
             Released="Button_Released"
             Margin="10"/>
-        
+
     </Grid>
 </ContentPage>
