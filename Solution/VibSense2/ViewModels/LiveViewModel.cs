@@ -350,9 +350,20 @@ namespace VibSense.ViewModels
         }
 
         [RelayCommand]
+        void Zoom()
+        {
+            XAxis.MinLimit = null;
+            XAxis.MaxLimit = null;
+            YAxis.MinLimit = null;
+            YAxis.MaxLimit= null;
+            UpdateChart();
+        }
+
+        [RelayCommand]
         void Clear()
         {
-
+            Data.Clear();
+            UpdateChart();
         }
 
         [RelayCommand]

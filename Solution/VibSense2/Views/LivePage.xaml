@@ -29,28 +29,36 @@
             ZoomMode="{Binding ZoomMode}"
             DrawMarginFrame="{Binding DrawMarginFrame}"
             XAxes="{Binding XAxes}" 
-            YAxes="{Binding YAxes}"/>
+            YAxes="{Binding YAxes}"
+            EasingFunction="{x:Null}"/>
 
         <!--Top buttons-->
-        <Grid Grid.Row="0" Margin="20, 0, 20,  -15">
+        <Grid Grid.Row="0" Margin="10, 0, 10,  -10">
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <Button 
-                Grid.Column="1"
-                Margin="10, 0, 0, 0"
+                Grid.Column="0"
+                Margin="1, 0"
                 Text="Help"
                 TextColor="White"
                 Command="{Binding HelpCommand}"/>
 
             <Button 
+                Grid.Column="1"
+                Margin="1, 0"
+                Text="Zoom"
+                TextColor="White"
+                Command="{Binding ZoomCommand}"/>
+
+            <Button 
                 Grid.Column="2"
-                Margin="10, 0, 0, 0"
+                Margin="1, 0"
                 IsEnabled="{Binding HasData}"
                 Text="Clear"
                 TextColor="White"
@@ -58,7 +66,7 @@
 
             <Button 
                 Grid.Column="3"
-                Margin="10, 0, 0, 0"
+                Margin="1, 0"
                 IsEnabled="{Binding HasData}"
                 Text="Save"
                 TextColor="White"
@@ -84,13 +92,14 @@
             <Label 
                 Grid.Row="0"
                 Grid.Column="0"
-                Text="Dir:"
+                Text="Dir.:"
                 VerticalOptions="Center"/>
 
             <RadioButton 
                 Grid.Row="0"
                 Grid.Column="1"
-                Content="All"
+                Margin="-5, 0"
+                Content="Mag"
                 IsChecked="{Binding DirectionAll}"
                 GroupName="direction"
                 VerticalOptions="Center"/>
@@ -129,6 +138,7 @@
             <RadioButton 
                 Grid.Row="1"
                 Grid.Column="1"
+                Margin="-5, 0"
                 Content="D"
                 IsChecked="{Binding TypeDisplacement}"
                 GroupName="type"/>
