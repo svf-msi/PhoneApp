@@ -188,6 +188,7 @@
                 IsVisible="{Binding ButtonLock, Converter={StaticResource InvertedBoolConverter}}"
                 Text="Press and Hold to Measure"
                 TextColor="White"
+                BackgroundColor="Green"
                 Pressed="Button_Pressed"
                 Released="Button_Released"
                 Margin="10">
@@ -205,19 +206,20 @@
                 IsVisible="{Binding ButtonLock}"
                 Text="Press to Start/Stop"
                 TextColor="White"
+                BackgroundColor="Green"
                 Command="{Binding StartStopCommand}"
                 Margin="10">
                 <Button.Triggers>
                     <DataTrigger TargetType="Button"
                         Binding="{Binding IsRecording}"
                         Value="False">
-                        <Setter Property="Text" Value="Press to Start" />
+                        <Setter Property="Text" Value="Press to Start Measurement" />
                     </DataTrigger>
 
                     <DataTrigger TargetType="Button"
                         Binding="{Binding IsRecording}"
                         Value="True">
-                        <Setter Property="Text" Value="Press to Stop" />
+                        <Setter Property="Text" Value="Press to Stop Measurement" />
                     </DataTrigger>
 
                     <DataTrigger TargetType="Button"

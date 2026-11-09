@@ -1,0 +1,7 @@
+- To measure vibration spectra bring the phone in direct contact with a vibration source
+
+- Press the green acquisition button to start data acquisition
+
+- Vibration spectra are recorded, analyzed and shown in real time in the chart
+
+- Use the settings button on the top to modify measurement units, min and max data sampling durations, and lock/unlock the acquisition button

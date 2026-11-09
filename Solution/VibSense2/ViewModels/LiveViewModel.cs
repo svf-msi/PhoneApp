@@ -173,6 +173,7 @@ namespace VibSense.ViewModels
             accelerometerService = new AccelerometerService();
             accelerometerService.AccelerometerChanged += AccelerometerChanged;
 
+            ReadHelp();
             InitializeSettings();
             InitializeChart();
         }
@@ -239,9 +240,27 @@ namespace VibSense.ViewModels
             UpdateChart();
         }
 
+        void ReadHelp()
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    using Stream stream = await FileSystem.Current.OpenAppPackageFileAsync("help.txt");
+                    using StreamReader reader = new StreamReader(stream);
+
+                    HelpText = await reader.ReadToEndAsync();
+                }
+                catch (FileNotFoundException)
+                {
+                    HelpText = "Help file not found.";
+                }
+            });
+        }
+
         #endregion
 
-        #region Chart
+            #region Chart
 
         public void UpdateChart()
         {
