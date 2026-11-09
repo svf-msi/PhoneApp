@@ -22,9 +22,97 @@ namespace VibSense.ViewModels
 {
     public partial class LiveViewModel : ObservableObject
     {
+        #region Fields and Properties
+
+        #region Common
+
+        [ObservableProperty]
+        bool showChart = true;
+
+        [ObservableProperty]
+        bool showSettings = false;
+
+        [ObservableProperty]
+        bool showHelp = false;
+
+        [ObservableProperty]
+        string helpText = "Help text";
+
+        #endregion
+
+        #region Accelerometer/Data
+
+        int refreshCount = 0;
+        DateTime start;
+        AccelerometerService accelerometerService;
+
+        [ObservableProperty]
+        bool isRecording = false;
+
+        [ObservableProperty]
+        double minDuration = 1;
+
+        [ObservableProperty]
+        double maxDuration = 10;
+
+        [ObservableProperty]
+        bool isMetric = false;
+
+        [ObservableProperty]
+        bool isImperial = true;
+
+        [ObservableProperty]
+        bool buttonLock = false;
+
+        public double SampleRate { get; set; } = 400;
+
+        public List<Vector3> Data { get; set; } = new List<Vector3>();
+
         [ObservableProperty]
         int count = 0;
 
+        [ObservableProperty]
+        bool hasData = false;
+
+        #endregion
+
+        #region Chart-related
+
+        public Axis[] XAxes { get; set; }
+
+        public Axis XAxis { get; set; }
+
+        public Axis[] YAxes { get; set; }
+
+        public Axis YAxis { get; set; }
+
+        [ObservableProperty]
+        ISeries[] lines;
+
+        [ObservableProperty]
+        LiveChartsCore.Measure.ZoomAndPanMode zoomMode = LiveChartsCore.Measure.ZoomAndPanMode.X;
+
+        public DrawMarginFrame DrawMarginFrame => new()
+        {
+            Fill = null,
+            Stroke = new SolidColorPaint(SKColor.Parse("3c3c3c"), 1)
+        };
+
+        [ObservableProperty]
+        Direction direction = Direction.Magnitude;
+        partial void OnDirectionChanged(Direction value)
+        {
+            Preferences.Set(App.SettingDirection, (int)Direction);
+            UpdateChart();
+        }
+
+        [ObservableProperty]
+        DataType dataType = DataType.Acceleration;
+        partial void OnDataTypeChanged(DataType value)
+        {
+            Preferences.Set(App.SettingType, (int)DataType);
+            UpdateChart();
+        }
         [ObservableProperty]
         bool directionAll = false;
         partial void OnDirectionAllChanged(bool value)
@@ -74,60 +162,11 @@ namespace VibSense.ViewModels
             if (value) DataType = DataType.Acceleration;
         }
 
-        [ObservableProperty]
-        bool hasData = false;
-
-        int refreshCount;
-        DateTime start;
-        double minDuration = 1;
-        double maxDuration = 10;
-
-        public double SampleRate { get; set; } = 400;
-
-        public List<Vector3> Data { get; set; } = new List<Vector3>();
-
-        AccelerometerService accelerometerService;
-
-
-        #region Chart-related
-
-        public Axis[] XAxes { get; set; }
-
-        public Axis XAxis { get; set; }
-
-        public Axis[] YAxes { get; set; }
-
-        public Axis YAxis { get; set; }
-
-        [ObservableProperty]
-        ISeries[] lines;
-
-        [ObservableProperty]
-        LiveChartsCore.Measure.ZoomAndPanMode zoomMode = LiveChartsCore.Measure.ZoomAndPanMode.X;
-
-        public DrawMarginFrame DrawMarginFrame => new()
-        {
-            Fill = null,
-            Stroke = new SolidColorPaint(SKColor.Parse("3c3c3c"), 1)
-        };
-
-        [ObservableProperty]
-        Direction direction = Direction.Magnitude;
-        partial void OnDirectionChanged(Direction value)
-        {
-            Preferences.Set(App.SettingDirection, (int)Direction);
-            UpdateChart();
-        }
-
-        [ObservableProperty]
-        DataType dataType = DataType.Acceleration;
-        partial void OnDataTypeChanged(DataType value)
-        {
-            Preferences.Set(App.SettingType, (int)DataType);
-            UpdateChart();
-        }
+        #endregion
 
         #endregion
+
+        #region Setup
 
         public LiveViewModel()
         {
@@ -174,6 +213,12 @@ namespace VibSense.ViewModels
         {
             ChangeDirection((Direction)Preferences.Get(App.SettingDirection, 0));
             ChangeType((DataType)Preferences.Get(App.SettingType, 0));
+
+            MinDuration = Preferences.Get(App.SettingMinDuration, 1.0);
+            MaxDuration = Preferences.Get(App.SettingMaxDuration, 10.0);
+            var units = Preferences.Get(App.SettingUnits, 0);
+            IsMetric = units != 0;
+            IsImperial = units == 0;
         }
 
         void ChangeDirection(Direction dir)
@@ -193,17 +238,10 @@ namespace VibSense.ViewModels
             TypeAcceleration = DataType == DataType.Acceleration;
             UpdateChart();
         }
-        
-        double GetValue(Vector3 vector, Direction direction = Direction.Magnitude)
-        {
-            switch (direction)
-            {
-                case Direction.X: return vector.X;
-                case Direction.Y: return vector.Y;
-                case Direction.Z: return vector.Z;
-                default: return vector.Length();
-            }
-        }
+
+        #endregion
+
+        #region Chart
 
         public void UpdateChart()
         {
@@ -289,8 +327,24 @@ namespace VibSense.ViewModels
             return values;
         }
 
+        double GetValue(Vector3 vector, Direction direction = Direction.Magnitude)
+        {
+            switch (direction)
+            {
+                case Direction.X: return vector.X;
+                case Direction.Y: return vector.Y;
+                case Direction.Z: return vector.Z;
+                default: return vector.Length();
+            }
+        }
+
+        #endregion
+
+        #region Data
+
         public void Start()
         {
+            IsRecording = true;
             YAxis.MaxLimit = null;
             Data.Clear();
             accelerometerService.Start();
@@ -302,6 +356,7 @@ namespace VibSense.ViewModels
 
         public void Stop()
         {
+            IsRecording = false;
             accelerometerService.Stop();
             Debug.WriteLine($"[Debug]: Stop recording, count={Count}");
         }
@@ -318,7 +373,7 @@ namespace VibSense.ViewModels
         {
             Data.Add(value);
             ++Count;
-            var maxCount = maxDuration * SampleRate;
+            var maxCount = MaxDuration * SampleRate;
             while (Data.Count > maxCount) Data.RemoveAt(0);
         }
 
@@ -328,7 +383,7 @@ namespace VibSense.ViewModels
             if (start == default) start = stop;
             var secs = (stop - start).TotalSeconds;
             if (secs > 0 && Count > 1) SampleRate = (Count - 1) / secs;
-            if (secs > (refreshCount + 1) * minDuration)
+            if (secs > (refreshCount + 1) * MinDuration)
             {
                 //if (refreshCount == 1)
                 //{
@@ -343,10 +398,16 @@ namespace VibSense.ViewModels
             }
         }
 
+        #endregion
+
+        #region Auto-wired
+
         [RelayCommand]
         void Help()
         {
-
+            ShowChart = false;
+            ShowHelp = true;
+            ShowSettings = false;
         }
 
         [RelayCommand]
@@ -371,6 +432,31 @@ namespace VibSense.ViewModels
         {
 
         }
+
+        [RelayCommand]
+        void StartStop()
+        {
+            if (IsRecording) Stop();
+            else Start();
+        }
+
+        [RelayCommand]
+        void Settings()
+        {
+            ShowChart = false;
+            ShowHelp = false;
+            ShowSettings = true;
+        }
+
+        [RelayCommand]
+        void GoBack()
+        {
+            ShowChart = true;
+            ShowHelp = false;
+            ShowSettings = false;
+        }
+
+        #endregion
     }
 
     public enum Direction { Magnitude, X, Y, Z }

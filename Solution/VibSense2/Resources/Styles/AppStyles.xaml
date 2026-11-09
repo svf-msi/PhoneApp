@@ -50,6 +50,36 @@
         <OnIdiom.Desktop>15</OnIdiom.Desktop>
     </OnIdiom>
 
+    <FontImageSource x:Key="IconHelp"
+         Glyph="{x:Static f:FluentUI.question_circle_24_regular}"
+         FontFamily="{x:Static f:FluentUI.FontFamily}"
+         Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+         Size="{StaticResource IconSize}" />
+
+    <FontImageSource x:Key="IconSettings"
+         Glyph="{x:Static f:FluentUI.settings_24_regular}"
+         FontFamily="{x:Static f:FluentUI.FontFamily}"
+         Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+         Size="{StaticResource IconSize}" />
+
+    <FontImageSource x:Key="IconFit"
+         Glyph="{x:Static f:FluentUI.zoom_fit_24_regular}"
+         FontFamily="{x:Static f:FluentUI.FontFamily}"
+         Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+         Size="{StaticResource IconSize}" />
+
+    <FontImageSource x:Key="IconDelete"
+         Glyph="{x:Static f:FluentUI.delete_24_regular}"
+         FontFamily="{x:Static f:FluentUI.FontFamily}"
+         Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+         Size="{StaticResource IconSize}" />
+
+    <FontImageSource x:Key="IconSave"
+         Glyph="{x:Static f:FluentUI.save_24_regular}"
+         FontFamily="{x:Static f:FluentUI.FontFamily}"
+         Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+         Size="{StaticResource IconSize}" />
+
     <FontImageSource x:Key="IconHome"
          Glyph="{x:Static f:FluentUI.home_24_regular}"
          FontFamily="{x:Static f:FluentUI.FontFamily}"
@@ -96,12 +126,6 @@
                 Glyph="{x:Static f:FluentUI.add_32_regular}"
                 FontFamily="{x:Static f:FluentUI.FontFamily}"
                 Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource LightOnDarkBackground}}"
-                Size="{StaticResource IconSize}" />
-
-    <FontImageSource x:Key="IconDelete"
-                Glyph="{x:Static f:FluentUI.delete_32_regular}"
-                FontFamily="{x:Static f:FluentUI.FontFamily}"
-                Color="{StaticResource LightOnDarkBackground}"
                 Size="{StaticResource IconSize}" />
 
     <FontImageSource x:Key="IconTargetEdit"

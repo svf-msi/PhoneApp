@@ -20,6 +20,12 @@ namespace VibSense
 
         public static string SettingType { get; protected set; } = "default_type";
 
+        public static string SettingMinDuration { get; protected set; } = "min_duration";
+
+        public static string SettingMaxDuration { get; protected set; } = "max_duration";
+
+        public static string SettingUnits { get; protected set; } = "dist_units";
+
         public static string SettingIsValidated { get; protected set; } = "is_validated";
 
         public static int TrialPeriod { get; protected set; } = 365; // days
