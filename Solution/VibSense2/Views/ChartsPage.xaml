@@ -9,7 +9,7 @@
              xmlns:m="clr-namespace:VibSense.Models"
              x:Class="VibSense.Views.ChartsPage"
              x:DataType="vm:ChartsViewModel"
-             Title="ChartsPage"
+             Title="{Binding Title}"
              x:Name="chartsPage">
 
     <Grid>

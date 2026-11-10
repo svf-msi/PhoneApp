@@ -1,0 +1,9 @@
+- Select chart data in the list below to turn on/off visibility of corresponding charts
+
+- Use Dir(direction) and Val(value type) to select corresponding data categories
+
+- Use pinch gestures to zoom in and out in the chart
+
+- Use ZoomFit button to reset the zoom level
+
+- Use Export button to export the charts data as a single CSV file

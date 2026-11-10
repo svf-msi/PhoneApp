@@ -28,6 +28,9 @@ namespace VibSense.ViewModels
         List<string> colors = new List<string>() { "Red", "Green", "Blue", "Magenta", "Olive", "Purple" };
 
         [ObservableProperty]
+        string title = "Charts";
+
+        [ObservableProperty]
         bool showChart = true;
 
         [ObservableProperty]
@@ -163,7 +166,7 @@ namespace VibSense.ViewModels
 
         public ChartsViewModel()
         {
-            //ReadHelp();
+            ReadHelp();
             InitializeChart();
             InitializeSettings();
         }
@@ -191,6 +194,8 @@ namespace VibSense.ViewModels
                 }
                 UpdateChart();
             }
+
+            Title = project?.Name ?? "Charts";
         }
 
         void Chart_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
