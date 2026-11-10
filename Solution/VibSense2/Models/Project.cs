@@ -16,8 +16,6 @@ namespace VibSense.Models
 
         public static string DefaultExtension { get; private set; } = ".vibs";
 
-        public static string DefaultName { get; private set; } = "project" + DefaultExtension;
-
         public static Project Read(string filePath)
         {
             if (!File.Exists(filePath)) return null;
@@ -33,7 +31,7 @@ namespace VibSense.Models
                 };
                 var project = JsonConvert.DeserializeObject<Project>(text, settings);
                 project.FileName = filePath;
-                Debug.WriteLine($"[Debug]: {StandardLib.Utils.ToString(project)}");
+                //Debug.WriteLine($"[Debug]: {StandardLib.Utils.ToString(project)}");
                 return project;
             }
             catch (Exception e)
@@ -73,7 +71,7 @@ namespace VibSense.Models
 
         public string Name { get; set; } = "";
 
-        public List<DataChart> DataCharts { get; set; } = new List<DataChart>();
+        public List<ChartData> DataCharts { get; set; } = new List<ChartData>();
 
         public void Save(string file = null)
         {

@@ -1,19 +1,24 @@
 ﻿using Android.Bluetooth;
-using Android.Icu.Number;
+using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using StandardLib;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace VibSense.Models
 {
-    public class DataChart
+    public class ChartData : INotifyPropertyChanged
     {
-        public static DataChart Create(string name, List<Vector3> waveforms, double rate)
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public static ChartData Create(string name, List<Vector3> waveforms, double rate)
         {
             if (waveforms == null || waveforms.Count == 0) return null;
 
@@ -35,7 +40,7 @@ namespace VibSense.Models
                 values.Add(new Vector3(dispX, dispY, dispZ));
             }
 
-            return new DataChart()
+            return new ChartData()
             {
                 Name = name,
                 SampleRate = rate,
@@ -49,6 +54,14 @@ namespace VibSense.Models
 
         public double SampleRate { get; set; }
 
+        bool selected = true;
+        public bool Selected { get => selected; set { selected = value; NotifyPropertyChanged(); } }
+
         public List<Vector3> Data { get; set; }
+
+        protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

@@ -113,73 +113,73 @@
 
                 <!--Direction radio buttons-->
                 <Label 
-                Grid.Row="0"
-                Grid.Column="0"
-                Text="Dir:  "
-                VerticalOptions="Center"/>
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Text="Dir:  "
+                    VerticalOptions="Center"/>
 
                 <RadioButton 
-                Grid.Row="0"
-                Grid.Column="1"
-                Margin="-5, 0"
-                Content="Mag"
-                IsChecked="{Binding DirectionAll}"
-                GroupName="direction"
-                VerticalOptions="Center"/>
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="-5, 0"
+                    Content="Mag"
+                    IsChecked="{Binding DirectionAll}"
+                    GroupName="direction"
+                    VerticalOptions="Center"/>
 
                 <RadioButton 
-                Grid.Row="0"
-                Grid.Column="2"
-                Content="X"
-                IsChecked="{Binding DirectionX}"
-                GroupName="direction"
-                VerticalOptions="Center"/>
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Content="X"
+                    IsChecked="{Binding DirectionX}"
+                    GroupName="direction"
+                    VerticalOptions="Center"/>
 
                 <RadioButton 
-                Grid.Row="0"
-                Grid.Column="3"
-                Content="Y"
-                IsChecked="{Binding DirectionY}"
-                GroupName="direction"
-                VerticalOptions="Center"/>
+                    Grid.Row="0"
+                    Grid.Column="3"
+                    Content="Y"
+                    IsChecked="{Binding DirectionY}"
+                    GroupName="direction"
+                    VerticalOptions="Center"/>
 
                 <RadioButton 
-                Grid.Row="0"
-                Grid.Column="4"
-                Content="Z"
-                IsChecked="{Binding DirectionZ}"
-                GroupName="direction"
-                VerticalOptions="Center"/>
+                    Grid.Row="0"
+                    Grid.Column="4"
+                    Content="Z"
+                    IsChecked="{Binding DirectionZ}"
+                    GroupName="direction"
+                    VerticalOptions="Center"/>
 
                 <!--Type radio buttons-->
                 <Label 
-                Grid.Row="1"
-                Grid.Column="0"
-                Text="Val:  "
-                VerticalOptions="Center"/>
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Text="Val:  "
+                    VerticalOptions="Center"/>
 
                 <RadioButton 
-                Grid.Row="1"
-                Grid.Column="1"
-                Margin="-5, 0"
-                Content="Dist"
-                IsChecked="{Binding TypeDisplacement}"
-                GroupName="type"/>
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Margin="-5, 0"
+                    Content="Dist"
+                    IsChecked="{Binding TypeDisplacement}"
+                    GroupName="type"/>
 
                 <RadioButton 
-                Grid.Row="1"
-                Grid.Column="2"
-                Content="Vel"
-                IsChecked="{Binding TypeVelocity}"
-                GroupName="type"/>
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Content="Vel"
+                    IsChecked="{Binding TypeVelocity}"
+                    GroupName="type"/>
 
                 <RadioButton 
-                Grid.Row="1"
-                Grid.Column="3"
-                Content="Accel" 
-                Margin="0, 0, -10, 0"
-                IsChecked="{Binding TypeAcceleration}"
-                GroupName="type"/>
+                    Grid.Row="1"
+                    Grid.Column="3"
+                    Content="Accel" 
+                    Margin="0, 0, -10, 0"
+                    IsChecked="{Binding TypeAcceleration}"
+                    GroupName="type"/>
 
             </Grid>
 

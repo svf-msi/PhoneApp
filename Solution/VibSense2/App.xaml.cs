@@ -132,6 +132,7 @@ namespace VibSense
         public App()
         {
             InitializeComponent();
+            Routing.RegisterRoute(nameof(ChartsPage), typeof(ChartsPage));
             if (!Directory.Exists(DataFolder)) Directory.CreateDirectory(DataFolder);
         }
 

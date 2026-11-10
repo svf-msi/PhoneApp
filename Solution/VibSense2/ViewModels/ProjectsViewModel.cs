@@ -78,14 +78,15 @@ namespace VibSense.ViewModels
         [RelayCommand]
         async Task Tap(ProjectItem item)
         {
-            //if (projectItem != null)
-            //{
-            //    await Shell.Current.GoToAsync(nameof(ProjectPage), 
-            //        new Dictionary<string, object>
-            //        {
-            //            {"SceneItem", projectItem}
-            //        });
-            //}
+            //Debug.WriteLine($"[Debug]: tap projectitem {item?.Name}");
+            if (item != null)
+            {
+                await Shell.Current.GoToAsync(nameof(ChartsPage),
+                    new Dictionary<string, object>
+                    {
+                        {"ProjectItem", item}
+                    });
+            }
         }
     }
 }

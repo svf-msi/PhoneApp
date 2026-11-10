@@ -564,7 +564,7 @@ namespace VibSense.ViewModels
                 {
                     if (Project.Create(NewSetName, out var project, out var duplicate))
                     {
-                        var chart = DataChart.Create(NewChartName, Data, SampleRate);
+                        var chart = ChartData.Create(NewChartName, Data, SampleRate);
                         if (chart != null)
                         {
                             project.DataCharts.Add(chart);
@@ -580,7 +580,7 @@ namespace VibSense.ViewModels
                         var project = Project.Read(projectItem.ItemPath);
                         if (project != null)
                         {
-                            var chart = DataChart.Create(NewChartName, Data, SampleRate);
+                            var chart = ChartData.Create(NewChartName, Data, SampleRate);
                             if (chart != null)
                             {
                                 project.DataCharts.Add(chart);

@@ -48,6 +48,8 @@ namespace VibSense
             builder.Services.AddSingleton<LiveViewModel>();
             builder.Services.AddTransient<AboutPage>();
             builder.Services.AddTransient<AboutViewModel>();
+            builder.Services.AddTransient<ChartsPage>();
+            builder.Services.AddTransient<ChartsViewModel>();
 
             return builder.Build();
         }
