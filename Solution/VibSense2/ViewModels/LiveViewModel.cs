@@ -30,6 +30,9 @@ namespace VibSense.ViewModels
         bool showChart = true;
 
         [ObservableProperty]
+        bool showSaving = false;
+
+        [ObservableProperty]
         bool showSettings = false;
 
         [ObservableProperty]
@@ -37,6 +40,42 @@ namespace VibSense.ViewModels
 
         [ObservableProperty]
         string helpText = "Help text";
+
+        [ObservableProperty]
+        bool useNew = true;
+
+        [ObservableProperty]
+        bool useExisting = false;
+
+        [ObservableProperty]
+        int existingSetIndex = 0;
+        partial void OnExistingSetIndexChanged(int value)
+        {
+            if (existingSetIndex >= 0 && existingSetIndex < Projects.Count)
+            {
+                selectedSet = Projects[existingSetIndex];
+                NewChartName = $"Chart {existingSetIndex}"; // ???
+            }
+            else
+            {
+                selectedSet = null;
+                NewChartName = $"Chart 1";
+            }
+        }
+
+        [ObservableProperty]
+        string newSetName = "";
+
+        [ObservableProperty]
+        string newChartName = "";
+
+        [ObservableProperty]
+        ObservableCollection<ProjectItem> projects = new ObservableCollection<ProjectItem>();
+
+        [ObservableProperty]
+        ObservableCollection<string> existingSets = new ObservableCollection<string>();
+
+        ProjectItem selectedSet;
 
         #endregion
 
@@ -51,15 +90,29 @@ namespace VibSense.ViewModels
 
         [ObservableProperty]
         double minDuration = 1;
+        partial void OnMinDurationChanged(double value)
+        {
+            Preferences.Set(App.SettingMinDuration, MinDuration);
+        }
 
         [ObservableProperty]
         double maxDuration = 10;
+        partial void OnMaxDurationChanged(double value)
+        {
+            Preferences.Set(App.SettingMaxDuration, MaxDuration);
+        }
 
         [ObservableProperty]
         bool isMetric = false;
 
         [ObservableProperty]
         bool isImperial = true;
+        partial void OnIsImperialChanged(bool value)
+        {
+            var units = value ? 0 : 1;
+            Preferences.Set(App.SettingUnits, units);
+            UpdateChart();
+        }
 
         [ObservableProperty]
         bool buttonLock = false;
@@ -176,6 +229,7 @@ namespace VibSense.ViewModels
             ReadHelp();
             InitializeSettings();
             InitializeChart();
+            RefreshProjects();
         }
 
         void InitializeChart()
@@ -195,8 +249,8 @@ namespace VibSense.ViewModels
 
             YAxis = new Axis
             {
-                Name = DataType == DataType.Displacement ? "Displacement(mil pk-pk)" :
-                    DataType == DataType.Velocity ? "Velocity(in/s rms)" : "Acceleration(G pk)",
+                Name = DataType == DataType.Displacement ? "Displacement(pk-pk)" :
+                    DataType == DataType.Velocity ? "Velocity(rms)" : "Acceleration(G pk)",
                 TextSize = 18,
                 NamePadding = new LiveChartsCore.Drawing.Padding(0, 5, 0, -10),
                 NamePaint = new SolidColorPaint(new SKColor(60, 60, 60)),
@@ -258,9 +312,33 @@ namespace VibSense.ViewModels
             });
         }
 
+        public void RefreshProjects()
+        {
+            var projectsItems = new ObservableCollection<ProjectItem>();
+            var names = new ObservableCollection<string>();
+            string[] files = Directory.GetFiles(App.DataFolder);
+            foreach (string file in files)
+            {
+                //Debug.WriteLine($"[Debug]: {file}");
+                var fullName = Path.GetFileName(file);
+                var projectName = Path.GetFileNameWithoutExtension(file);
+                var creationTime = File.GetCreationTime(file);
+                var isProject = fullName.Contains(Project.DefaultExtension);
+                var project = new ProjectItem { Name = projectName, Date = creationTime, ItemPath = file, Type = isProject ? ItemType.File : ItemType.Folder };
+                projectsItems.Add(project);
+                names.Add(projectName);
+            }
+            Projects = projectsItems;
+            ExistingSets = names;
+            ExistingSetIndex = UseExisting ? 0 : -1;
+
+            NewSetName = $"Set {Projects.Count + 1}";
+            if (UseNew) NewChartName = "Chart 1";
+        }
+
         #endregion
 
-            #region Chart
+        #region Chart
 
         public void UpdateChart()
         {
@@ -280,8 +358,12 @@ namespace VibSense.ViewModels
                     LineSmoothness = 0
                 });
                 HasData = true;
-                YAxis.Name = DataType == DataType.Displacement ? "Displacement(mil pk-pk)" : 
-                    DataType == DataType.Velocity ? "Velocity(in/s rms)" : "Acceleration(G pk)";
+                if (IsImperial)
+                    YAxis.Name = DataType == DataType.Displacement ? "Displacement(mil pk-pk)" : 
+                                DataType == DataType.Velocity ? "Velocity(in/s rms)" : "Acceleration(G pk)";
+                else
+                    YAxis.Name = DataType == DataType.Displacement ? "Displacement(μm pk-pk)" :
+                                DataType == DataType.Velocity ? "Velocity(mm/s rms)" : "Acceleration(G pk)";
             }
             Lines = series.ToArray();
         }
@@ -292,8 +374,8 @@ namespace VibSense.ViewModels
             var values = new List<ObservablePoint>();
             if (Data == null || Data.Count == 0) return values;
 
-            var scale = DataType == DataType.Displacement ? 9.8 * 2e6 / 25.4 :
-                        DataType == DataType.Velocity ? 9.8 * 1e3 / (Math.Sqrt(2) * 25.4) : 1;
+            var scale = DataType == DataType.Displacement ? 9.8 * 2e6 / (IsImperial ? 25.4 : 1) :
+                        DataType == DataType.Velocity ? 9.8 * 1e3 / (Math.Sqrt(2) * (IsImperial ? 25.4 : 1)) : 1;
 
             if (Direction == Direction.Magnitude)
             {
@@ -370,14 +452,14 @@ namespace VibSense.ViewModels
             start = default;
             Count = 0;
             refreshCount = 0;
-            Debug.WriteLine($"[Debug]: Start recording");
+            //Debug.WriteLine($"[Debug]: Start recording");
         }
 
         public void Stop()
         {
             IsRecording = false;
             accelerometerService.Stop();
-            Debug.WriteLine($"[Debug]: Stop recording, count={Count}");
+            //Debug.WriteLine($"[Debug]: Stop recording, count={Count}");
         }
 
         void AccelerometerChanged(object? sender, AccelerometerChangedEventArgs e)
@@ -425,6 +507,7 @@ namespace VibSense.ViewModels
         void Help()
         {
             ShowChart = false;
+            ShowSaving = false;
             ShowHelp = true;
             ShowSettings = false;
         }
@@ -449,7 +532,11 @@ namespace VibSense.ViewModels
         [RelayCommand]
         void Save()
         {
-
+            RefreshProjects();
+            ShowChart = false;
+            ShowSaving = true;
+            ShowHelp = false;
+            ShowSettings = false;
         }
 
         [RelayCommand]
@@ -463,14 +550,60 @@ namespace VibSense.ViewModels
         void Settings()
         {
             ShowChart = false;
+            ShowSaving = false;
             ShowHelp = false;
             ShowSettings = true;
+        }
+
+        [RelayCommand]
+        void SaveChart()
+        {
+            try
+            {
+                if (UseNew)
+                {
+                    if (Project.Create(NewSetName, out var project, out var duplicate))
+                    {
+                        var chart = DataChart.Create(NewChartName, Data, SampleRate);
+                        if (chart != null)
+                        {
+                            project.DataCharts.Add(chart);
+                            project.Save();
+                        }
+                    }
+                }
+                else if (Projects.Count > ExistingSetIndex && ExistingSetIndex >= 0)
+                {
+                    var projectItem = Projects[ExistingSetIndex];
+                    if (projectItem != null)
+                    {
+                        var project = Project.Read(projectItem.ItemPath);
+                        if (project != null)
+                        {
+                            var chart = DataChart.Create(NewChartName, Data, SampleRate);
+                            if (chart != null)
+                            {
+                                project.DataCharts.Add(chart);
+                                project.Save();
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                ShowChart = true;
+                ShowSaving = false;
+                ShowHelp = false;
+                ShowSettings = false;
+            }
         }
 
         [RelayCommand]
         void GoBack()
         {
             ShowChart = true;
+            ShowSaving = false;
             ShowHelp = false;
             ShowSettings = false;
         }

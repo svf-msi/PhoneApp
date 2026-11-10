@@ -28,7 +28,7 @@ namespace VibSense.ViewModels
             string[] files = Directory.GetFiles(App.DataFolder);
             foreach (string file in files)
             {
-                Debug.WriteLine($"[Debug]: {file}");
+                //Debug.WriteLine($"[Debug]: {file}");
                 var fullName = Path.GetFileName(file);
                 var projectName = Path.GetFileNameWithoutExtension(file);
                 var creationTime = File.GetCreationTime(file);

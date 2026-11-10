@@ -232,18 +232,100 @@
 
         </Grid>
 
-        <Grid IsVisible="{Binding ShowSettings}">
+        <Grid IsVisible="{Binding ShowSaving}" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
+
+            <Label
+                Grid.Row="0"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Margin="5"
+                Text="Saving Chart"
+                HorizontalOptions="Center"/>
+
+            <HorizontalStackLayout
+                Grid.Row="1"
+                Grid.Column="0"
+                Grid.ColumnSpan="2">
+                <Label 
+                    Text="Select: "
+                    VerticalOptions="Center"/>
+                <RadioButton
+                    Content="New"
+                    IsChecked="{Binding UseNew}"/>
+                <RadioButton
+                    Content="Existing"
+                    IsChecked="{Binding UseExisting}"/>
+            </HorizontalStackLayout>
+
+            <Label 
+                Grid.Row="2"
+                Grid.Column="0"
+                Text="Set Name: "
+                VerticalOptions="Center"/>
+
+            <Picker
+                Grid.Row="2"
+                Grid.Column="1"
+                IsVisible="{Binding UseExisting}"
+                ItemsSource="{Binding ExistingSets}"
+                SelectedIndex="{Binding ExistingSetIndex}"
+                VerticalOptions="Center"/>
+
+            <Entry
+                Grid.Row="2"
+                Grid.Column="1"
+                IsVisible="{Binding UseNew}"
+                Text="{Binding NewSetName}"
+                VerticalOptions="Center"/>
+
+            <Label 
+                Grid.Row="3"
+                Grid.Column="0"
+                Text="Chart Name: "
+                VerticalOptions="Center"/>
+
+            <Entry
+                Grid.Row="3"
+                Grid.Column="1"
+                Text="{Binding NewChartName}"
+                VerticalOptions="Center"/>
+
+            <Button 
+                Grid.Row="4"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Text="Save"
+                Command="{Binding SaveChartCommand}"
+                TextColor="White"
+                Padding="50, 0"
+                Margin="10, 20"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"/>
+
+            <Button 
+                Grid.Row="6"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Text="Back"
+                Command="{Binding GoBackCommand}"
+                TextColor="White"
+                Padding="50, 0"
+                Margin="10"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"/>
         </Grid>
 
         <Grid IsVisible="{Binding ShowSettings}" Margin="10">
@@ -294,6 +376,7 @@
                 Grid.Row="2"
                 Grid.Column="1"
                 Text="{Binding MinDuration}"
+                Keyboard="Numeric" 
                 VerticalOptions="Center"/>
 
             <Label 
@@ -306,6 +389,7 @@
                 Grid.Row="3"
                 Grid.Column="1"
                 Text="{Binding MaxDuration}"
+                Keyboard="Numeric" 
                 VerticalOptions="Center"/>
 
             <HorizontalStackLayout 

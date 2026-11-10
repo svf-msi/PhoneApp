@@ -73,7 +73,7 @@ namespace VibSense.Models
 
         public string Name { get; set; } = "";
 
-        public List<DataSet> DataSets { get; set; } = new List<DataSet>();
+        public List<DataChart> DataCharts { get; set; } = new List<DataChart>();
 
         public void Save(string file = null)
         {
