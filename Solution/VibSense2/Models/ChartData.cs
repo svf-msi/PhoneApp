@@ -31,7 +31,7 @@ namespace VibSense.Models
 
             var span = spectrumX.GetLength(1);
             var values = new List<Vector3>();
-            values.Add(new Vector3(0, 0, 0));
+            values.Add(new Vector3((float)spectrumX[0, 0] / 2, (float)spectrumY[0, 0] / 2, (float)spectrumZ[0, 0] / 2));
             for (int i = 1; i < span / 2; ++i)
             {
                 var dispX = (float)FftAnalysis.Complex(spectrumX, 0, 2 * i - 1).Magnitude;
@@ -53,6 +53,8 @@ namespace VibSense.Models
         public Int64 TimeStamp { get; set; }
 
         public double SampleRate { get; set; }
+
+        public Quaternion Quaternion { get; set; }
 
         bool selected = true;
         public bool Selected { get => selected; set { selected = value; NotifyPropertyChanged(); } }

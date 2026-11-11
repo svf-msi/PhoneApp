@@ -19,26 +19,23 @@ public partial class LivePage : ContentPage
         BindingContext = vm;
     }
 
-//    protected override void OnAppearing()
-//    {
-//        base.OnAppearing();
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        if (BindingContext is LiveViewModel vm)
+        {
+            vm.StartOrientationService();
+        }
+    }
 
-//#if ANDROID
-//        defaultOrientation = Platform.CurrentActivity.RequestedOrientation;
-//        Platform.CurrentActivity.RequestedOrientation = ScreenOrientation.Portrait;
-//#endif
-
-//    }
-
-//    protected override void OnDisappearing()
-//    {
-//        base.OnDisappearing();
-
-//#if ANDROID
-//        Platform.CurrentActivity.RequestedOrientation = defaultOrientation;
-//#endif
-
-//    }
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        if (BindingContext is LiveViewModel vm)
+        {
+            vm.StopOrientationService();
+        }
+    }
 
     void Button_Pressed(object sender, EventArgs e)
     {

@@ -84,6 +84,7 @@ namespace VibSense.ViewModels
         int refreshCount = 0;
         DateTime start;
         AccelerometerService accelerometerService;
+        OrientationService orientationService;
 
         [ObservableProperty]
         bool isRecording = false;
@@ -121,11 +122,22 @@ namespace VibSense.ViewModels
 
         public List<Vector3> Data { get; set; } = new List<Vector3>();
 
+        public Quaternion Quaternion { get; protected set; }
+
         [ObservableProperty]
         int count = 0;
 
         [ObservableProperty]
         bool hasData = false;
+
+        [ObservableProperty]
+        double roll;
+
+        [ObservableProperty]
+        double pitch;
+
+        [ObservableProperty]
+        double yaw;
 
         #endregion
 
@@ -225,6 +237,9 @@ namespace VibSense.ViewModels
         {
             accelerometerService = new AccelerometerService();
             accelerometerService.AccelerometerChanged += AccelerometerChanged;
+
+            orientationService = new OrientationService();
+            orientationService.OnOrientationChanged += OrientationChanged;
 
             ReadHelp();
             InitializeSettings();
@@ -386,6 +401,8 @@ namespace VibSense.ViewModels
                 var waveformZ = Data.Select(p => GetValue(p, Direction.Z)).ToArray();
                 var spectrumZ = FftAnalysis.Emgu(waveformZ, WindowType.Hann);
 
+                Debug.WriteLine($"[Debug]: update data dc={spectrumX[0, 0]}, {spectrumY[0, 0]}, {spectrumZ[0, 0]}");
+
                 var span = spectrumX.GetLength(1);
                 for (int i = 5; i < span / 2; ++i)
                 {
@@ -448,18 +465,31 @@ namespace VibSense.ViewModels
             IsRecording = true;
             YAxis.MaxLimit = null;
             Data.Clear();
-            accelerometerService.Start();
+            orientationService?.Stop();
+            accelerometerService?.Start();
             start = default;
             Count = 0;
             refreshCount = 0;
+            Quaternion = orientationService?.Quaternion ?? new Quaternion();
             //Debug.WriteLine($"[Debug]: Start recording");
         }
 
         public void Stop()
         {
             IsRecording = false;
-            accelerometerService.Stop();
+            accelerometerService?.Stop();
+            orientationService?.Start();
             //Debug.WriteLine($"[Debug]: Stop recording, count={Count}");
+        }
+
+        public void StartOrientationService()
+        {
+            orientationService?.Start();
+        }
+
+        public void StopOrientationService()
+        {
+            orientationService?.Stop();
         }
 
         void AccelerometerChanged(object? sender, AccelerometerChangedEventArgs e)
@@ -468,6 +498,16 @@ namespace VibSense.ViewModels
             //Debug.WriteLine($"X: {acceleration.X}, Y: {acceleration.Y}, Z: {acceleration.Z}");
             UpdateData(acceleration);
             Update();
+        }
+
+        void OrientationChanged(object sender, EventArgs args)
+        {
+            if (sender is OrientationService service)
+            {
+                Pitch = Math.Round(service.Roll);
+                Roll = Math.Round(service.Pitch);
+                Yaw = Math.Round(service.Yaw);
+            }
         }
 
         void UpdateData(Vector3 value)
@@ -486,14 +526,6 @@ namespace VibSense.ViewModels
             if (secs > 0 && Count > 1) SampleRate = (Count - 1) / secs;
             if (secs > (refreshCount + 1) * MinDuration)
             {
-                //if (refreshCount == 1)
-                //{
-                //    if (YAxis.MaxLimit == null)
-                //    {
-                //        var ylimits = YAxis.GetLimits();
-                //        YAxis.MaxLimit = ylimits.Max;
-                //    }
-                //}
                 ++refreshCount;
                 UpdateChart();
             }
@@ -567,6 +599,7 @@ namespace VibSense.ViewModels
                         var chart = ChartData.Create(NewChartName, Data, SampleRate);
                         if (chart != null)
                         {
+                            chart.Quaternion = Quaternion;
                             project.DataCharts.Add(chart);
                             project.Save();
                         }
@@ -583,6 +616,7 @@ namespace VibSense.ViewModels
                             var chart = ChartData.Create(NewChartName, Data, SampleRate);
                             if (chart != null)
                             {
+                                chart.Quaternion = Quaternion;
                                 project.DataCharts.Add(chart);
                                 project.Save();
                             }
