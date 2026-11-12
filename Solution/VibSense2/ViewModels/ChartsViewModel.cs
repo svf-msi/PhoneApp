@@ -69,6 +69,38 @@ namespace VibSense.ViewModels
             UpdateChart();
         }
 
+        [ObservableProperty]
+        Coordinates coordinates;
+        partial void OnCoordinatesChanged(Coordinates value)
+        {
+            Preferences.Set(App.SettingCoordinates, (int)Coordinates);
+            UpdateChart();
+            UpdateLabels();
+        }
+
+        [ObservableProperty]
+        bool internalCoordinates = true;
+        partial void OnInternalCoordinatesChanged(bool value)
+        {
+            if (value) Coordinates = Coordinates.Internal;
+        }
+
+        [ObservableProperty]
+        bool globalCoordinates = false;
+        partial void OnGlobalCoordinatesChanged(bool value)
+        {
+            if (value) Coordinates = Coordinates.Global;
+        }
+
+        [ObservableProperty]
+        string labelX = "X";
+
+        [ObservableProperty]
+        string labelY = "Y";
+
+        [ObservableProperty]
+        string labelZ = "Z";
+
         #endregion
 
         #region Chart-related
@@ -97,7 +129,7 @@ namespace VibSense.ViewModels
         Direction direction = Direction.Magnitude;
         partial void OnDirectionChanged(Direction value)
         {
-            Debug.WriteLine($"[Debug]: direction changed to {Direction}");
+            //Debug.WriteLine($"[Debug]: direction changed to {Direction}");
             Preferences.Set(App.SettingDirection, (int)Direction);
             UpdateChart();
         }
@@ -191,6 +223,7 @@ namespace VibSense.ViewModels
                 foreach (var chart in Charts)
                 {
                     chart.PropertyChanged += Chart_PropertyChanged;
+                    chart.Initialize();
                 }
                 UpdateChart();
             }
@@ -242,9 +275,15 @@ namespace VibSense.ViewModels
         {
             ChangeDirection((Direction)Preferences.Get(App.SettingDirection, 0));
             ChangeType((DataType)Preferences.Get(App.SettingType, 0));
+
             var units = Preferences.Get(App.SettingUnits, 0);
             IsMetric = units != 0;
             IsImperial = units == 0;
+
+            var coords = Preferences.Get(App.SettingCoordinates, 0);
+            InternalCoordinates = coords == 0;
+            GlobalCoordinates = coords != 0;
+            UpdateLabels();
         }
 
         void ChangeDirection(Direction dir)
@@ -263,6 +302,13 @@ namespace VibSense.ViewModels
             TypeVelocity = DataType == DataType.Velocity;
             TypeAcceleration = DataType == DataType.Acceleration;
             //UpdateChart();
+        }
+
+        void UpdateLabels()
+        {
+            LabelX = InternalCoordinates ? "X" : "N";
+            LabelY = InternalCoordinates ? "Y" : "E";
+            LabelZ = InternalCoordinates ? "Z" : "Up";
         }
 
         void ReadHelp()
@@ -289,7 +335,7 @@ namespace VibSense.ViewModels
 
         public void UpdateChart()
         {
-            Debug.WriteLine($"[Debug]: Update chart, direction={Direction}, type={DataType}");
+            //Debug.WriteLine($"[Debug]: Update chart, direction={Direction}, type={DataType}");
             var series = new List<ISeries>();
             if (project?.DataCharts?.Count > 0)
             {
@@ -331,11 +377,14 @@ namespace VibSense.ViewModels
             var scale = DataType == DataType.Displacement ? 9.8 * 2e6 / (IsImperial ? 25.4 : 1) :
                         DataType == DataType.Velocity ? 9.8 * 1e3 / (Math.Sqrt(2) * (IsImperial ? 25.4 : 1)) : 1;
 
-            //Debug.WriteLine($"[Debug]: check={chart.Data[5]}");
-            for (int i = 5; i < chart.Data.Count; ++i)
+            var data = chart.GetFft(Coordinates);
+            if (data == null) return values;
+            //Debug.WriteLine($"[Debug]: check dc={data[0]}");
+
+            for (int i = 5; i < data.Count; ++i)
             {
-                var p = chart.Data[i];
-                var freq = i * chart.SampleRate / 2 / chart.Data.Count;
+                var p = data[i];
+                var freq = i * chart.SampleRate / 2 / data.Count;
                 double value = 0;
                 if (Direction == Direction.X) value = p.X;
                 else if (Direction == Direction.Y) value = p.Y;

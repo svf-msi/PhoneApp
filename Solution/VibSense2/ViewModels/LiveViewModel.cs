@@ -116,6 +116,38 @@ namespace VibSense.ViewModels
         }
 
         [ObservableProperty]
+        Coordinates coordinates;
+        partial void OnCoordinatesChanged(Coordinates value)
+        {
+            Preferences.Set(App.SettingCoordinates, (int)Coordinates);
+            UpdateLabels();
+            UpdateChart();
+        }
+
+        [ObservableProperty]
+        bool internalCoordinates = true;
+        partial void OnInternalCoordinatesChanged(bool value)
+        {
+            if (value) Coordinates = Coordinates.Internal;
+        }
+
+        [ObservableProperty]
+        bool globalCoordinates = false;
+        partial void OnGlobalCoordinatesChanged(bool value)
+        {
+            if (value) Coordinates = Coordinates.Global;
+        }
+
+        [ObservableProperty]
+        string labelX = "X";
+
+        [ObservableProperty]
+        string labelY = "Y";
+
+        [ObservableProperty]
+        string labelZ = "Z";
+
+        [ObservableProperty]
         bool buttonLock = false;
 
         public double SampleRate { get; set; } = 400;
@@ -286,9 +318,15 @@ namespace VibSense.ViewModels
 
             MinDuration = Preferences.Get(App.SettingMinDuration, 1.0);
             MaxDuration = Preferences.Get(App.SettingMaxDuration, 10.0);
+
             var units = Preferences.Get(App.SettingUnits, 0);
             IsMetric = units != 0;
             IsImperial = units == 0;
+
+            var coords = Preferences.Get(App.SettingCoordinates, 0);
+            InternalCoordinates = coords == 0;
+            GlobalCoordinates = coords != 0;
+            UpdateLabels();
         }
 
         void ChangeDirection(Direction dir)
@@ -325,6 +363,13 @@ namespace VibSense.ViewModels
                     HelpText = "Help file not found.";
                 }
             });
+        }
+
+        void UpdateLabels()
+        {
+            LabelX = InternalCoordinates ? "X" : "N";
+            LabelY = InternalCoordinates ? "Y" : "E";
+            LabelZ = InternalCoordinates ? "Z" : "Up";
         }
 
         public void RefreshProjects()
@@ -596,7 +641,7 @@ namespace VibSense.ViewModels
                 {
                     if (Project.Create(NewSetName, out var project, out var duplicate))
                     {
-                        var chart = ChartData.Create(NewChartName, Data, SampleRate);
+                        var chart = ChartData.Create(NewChartName, Data, SampleRate, Quaternion);
                         if (chart != null)
                         {
                             chart.Quaternion = Quaternion;
@@ -613,7 +658,7 @@ namespace VibSense.ViewModels
                         var project = Project.Read(projectItem.ItemPath);
                         if (project != null)
                         {
-                            var chart = ChartData.Create(NewChartName, Data, SampleRate);
+                            var chart = ChartData.Create(NewChartName, Data, SampleRate, Quaternion);
                             if (chart != null)
                             {
                                 chart.Quaternion = Quaternion;
@@ -648,4 +693,6 @@ namespace VibSense.ViewModels
     public enum Direction { Magnitude, X, Y, Z }
 
     public enum DataType { Displacement, Velocity, Acceleration }
+
+    public enum Coordinates { Internal, Global }
 }

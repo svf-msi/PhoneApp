@@ -52,47 +52,47 @@
                 </Grid.ColumnDefinitions>
 
                 <Button 
-                Grid.Column="0"
-                Margin="1, 0"
-                IsEnabled="{Binding HasData}"
-                Text="{x:Static f:FluentUI.save_24_regular}"
-                FontFamily="{x:Static f:FluentUI.FontFamily}"
-                TextColor="White"
-                Command="{Binding SaveCommand}"/>
+                    Grid.Column="0"
+                    Margin="1, 0"
+                    IsEnabled="{Binding HasData}"
+                    Text="{x:Static f:FluentUI.save_24_regular}"
+                    FontFamily="{x:Static f:FluentUI.FontFamily}"
+                    TextColor="White"
+                    Command="{Binding SaveCommand}"/>
 
                 <Button 
-                Grid.Column="1"
-                Margin="1, 0"
-                IsEnabled="{Binding HasData}"
-                Text="{x:Static f:FluentUI.delete_24_regular}"
-                FontFamily="{x:Static f:FluentUI.FontFamily}"
-                TextColor="White"
-                Command="{Binding ClearCommand}"/>
+                    Grid.Column="1"
+                    Margin="1, 0"
+                    IsEnabled="{Binding HasData}"
+                    Text="{x:Static f:FluentUI.delete_24_regular}"
+                    FontFamily="{x:Static f:FluentUI.FontFamily}"
+                    TextColor="White"
+                    Command="{Binding ClearCommand}"/>
 
                 <Button 
-                Grid.Column="2"
-                Margin="1, 0"
-                IsEnabled="{Binding HasData}"
-                Text="{x:Static f:FluentUI.zoom_fit_24_regular}"
-                FontFamily="{x:Static f:FluentUI.FontFamily}"
-                TextColor="White"
-                Command="{Binding ZoomCommand}"/>
+                    Grid.Column="2"
+                    Margin="1, 0"
+                    IsEnabled="{Binding HasData}"
+                    Text="{x:Static f:FluentUI.zoom_fit_24_regular}"
+                    FontFamily="{x:Static f:FluentUI.FontFamily}"
+                    TextColor="White"
+                    Command="{Binding ZoomCommand}"/>
 
                 <Button 
-                Grid.Column="3"
-                Margin="1, 0"
-                Text="{x:Static f:FluentUI.settings_24_regular}"
-                FontFamily="{x:Static f:FluentUI.FontFamily}"
-                TextColor="White"
-                Command="{Binding SettingsCommand}"/>
+                    Grid.Column="3"
+                    Margin="1, 0"
+                    Text="{x:Static f:FluentUI.settings_24_regular}"
+                    FontFamily="{x:Static f:FluentUI.FontFamily}"
+                    TextColor="White"
+                    Command="{Binding SettingsCommand}"/>
 
                 <Button 
-                Grid.Column="4"
-                Margin="1, 0"
-                Text="{x:Static f:FluentUI.question_circle_24_regular}"
-                FontFamily="{x:Static f:FluentUI.FontFamily}"
-                TextColor="White"
-                Command="{Binding HelpCommand}"/>
+                    Grid.Column="4"
+                    Margin="1, 0"
+                    Text="{x:Static f:FluentUI.question_circle_24_regular}"
+                    FontFamily="{x:Static f:FluentUI.FontFamily}"
+                    TextColor="White"
+                    Command="{Binding HelpCommand}"/>
 
             </Grid>
 
@@ -131,7 +131,7 @@
                 <RadioButton 
                     Grid.Row="0"
                     Grid.Column="2"
-                    Content="X"
+                    Content="{Binding LabelX}"
                     IsChecked="{Binding DirectionX}"
                     GroupName="direction"
                     VerticalOptions="Center"/>
@@ -139,7 +139,7 @@
                 <RadioButton 
                     Grid.Row="0"
                     Grid.Column="3"
-                    Content="Y"
+                    Content="{Binding LabelY}"
                     IsChecked="{Binding DirectionY}"
                     GroupName="direction"
                     VerticalOptions="Center"/>
@@ -147,7 +147,7 @@
                 <RadioButton 
                     Grid.Row="0"
                     Grid.Column="4"
-                    Content="Z"
+                    Content="{Binding LabelZ}"
                     IsChecked="{Binding DirectionZ}"
                     GroupName="direction"
                     VerticalOptions="Center"/>
@@ -359,6 +359,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
@@ -416,8 +417,23 @@
                 Keyboard="Numeric" 
                 VerticalOptions="Center"/>
 
-            <HorizontalStackLayout 
+            <HorizontalStackLayout
                 Grid.Row="4"
+                Grid.Column="0"
+                Grid.ColumnSpan="2">
+                <Label 
+                    Text="Coordinates: "
+                    VerticalOptions="Center"/>
+                <RadioButton
+                    Content="Internal"
+                    IsChecked="{Binding InternalCoordinates}"/>
+                <RadioButton
+                    Content="Global"
+                    IsChecked="{Binding GlobalCoordinates}"/>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout 
+                Grid.Row="5"
                 Grid.Column="0"
                 Grid.ColumnSpan="2">
 
@@ -432,7 +448,7 @@
             </HorizontalStackLayout>
 
             <Button 
-                Grid.Row="6"
+                Grid.Row="7"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Text="Back"

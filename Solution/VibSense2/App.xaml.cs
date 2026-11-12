@@ -20,6 +20,8 @@ namespace VibSense
 
         public static string SettingType { get; protected set; } = "default_type";
 
+        public static string SettingCoordinates { get; protected set; } = "coordinates_type";
+
         public static string SettingMinDuration { get; protected set; } = "min_duration";
 
         public static string SettingMaxDuration { get; protected set; } = "max_duration";

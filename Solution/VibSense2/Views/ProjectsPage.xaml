@@ -10,10 +10,11 @@
              x:Name="projectsPage">
 
     <Grid RowDefinitions="Auto, *">
-        <Button Grid.Row="0" Margin="10"
+        
+        <!--<Button Grid.Row="0" Margin="10"
                 Text="+ Add New"
                 TextColor="White"
-                Clicked="Button_Clicked"/>
+                Clicked="Button_Clicked"/>-->
         
         <ScrollView Grid.Row="1">
             <CollectionView ItemsSource="{Binding Projects}" SelectionMode="None">

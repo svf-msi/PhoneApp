@@ -70,128 +70,157 @@
                 EasingFunction="{x:Null}"
                 LegendPosition="Top"/>
 
-            <!--Chart settings-->
-            <Grid Grid.Row="2" Margin="10, 0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+            <ScrollView Grid.Row="2" MaximumHeightRequest="200">
 
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                <VerticalStackLayout>
 
-                <!--Direction radio buttons-->
-                <Label 
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    Text="Dir:  "
-                    VerticalOptions="Center"/>
+                    <!--Chart settings-->
+                    <Grid Margin="10, 0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                <RadioButton 
-                    Grid.Row="0"
-                    Grid.Column="1"
-                    Margin="-5, 0"
-                    Content="Mag"
-                    IsChecked="{Binding DirectionAll}"
-                    GroupName="direction"
-                    VerticalOptions="Center"/>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                <RadioButton 
-                    Grid.Row="0"
-                    Grid.Column="2"
-                    Content="X"
-                    IsChecked="{Binding DirectionX}"
-                    GroupName="direction"
-                    VerticalOptions="Center"/>
+                        <!--Direction radio buttons-->
+                        <Label 
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Text="Dir:  "
+                            VerticalOptions="Center"/>
 
-                <RadioButton 
-                    Grid.Row="0"
-                    Grid.Column="3"
-                    Content="Y"
-                    IsChecked="{Binding DirectionY}"
-                    GroupName="direction"
-                    VerticalOptions="Center"/>
+                        <RadioButton 
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Margin="-5, 0"
+                            Content="Mag"
+                            IsChecked="{Binding DirectionAll}"
+                            GroupName="direction"
+                            VerticalOptions="Center"/>
 
-                <RadioButton 
-                    Grid.Row="0"
-                    Grid.Column="4"
-                    Content="Z"
-                    IsChecked="{Binding DirectionZ}"
-                    GroupName="direction"
-                    VerticalOptions="Center"/>
+                        <RadioButton 
+                            Grid.Row="0"
+                            Grid.Column="2"
+                            Content="{Binding LabelX}"
+                            IsChecked="{Binding DirectionX}"
+                            GroupName="direction"
+                            VerticalOptions="Center"/>
 
-                <!--Type radio buttons-->
-                <Label 
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Text="Val:  "
-                    VerticalOptions="Center"/>
+                        <RadioButton 
+                            Grid.Row="0"
+                            Grid.Column="3"
+                            Content="{Binding LabelY}"
+                            IsChecked="{Binding DirectionY}"
+                            GroupName="direction"
+                            VerticalOptions="Center"/>
 
-                <RadioButton 
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Margin="-5, 0"
-                    Content="Dist"
-                    IsChecked="{Binding TypeDisplacement}"
-                    GroupName="type"/>
+                        <RadioButton 
+                            Grid.Row="0"
+                            Grid.Column="4"
+                            Content="{Binding LabelZ}"
+                            IsChecked="{Binding DirectionZ}"
+                            GroupName="direction"
+                            VerticalOptions="Center"/>
 
-                <RadioButton 
-                    Grid.Row="1"
-                    Grid.Column="2"
-                    Content="Vel"
-                    IsChecked="{Binding TypeVelocity}"
-                    GroupName="type"/>
+                        <!--Type radio buttons-->
+                        <Label 
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Text="Val:  "
+                            VerticalOptions="Center"/>
 
-                <RadioButton 
-                Grid.Row="1"
-                Grid.Column="3"
-                Content="Accel" 
-                Margin="0, 0, -10, 0"
-                IsChecked="{Binding TypeAcceleration}"
-                GroupName="type"/>
-                
-            </Grid>
+                        <RadioButton 
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="-5, 0"
+                            Content="Dist"
+                            IsChecked="{Binding TypeDisplacement}"
+                            GroupName="type"/>
 
-            <!--Chart data-->
-            <ScrollView Grid.Row="3" MaximumHeightRequest="300">
-                <CollectionView ItemsSource="{Binding Charts}" SelectionMode="None">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="{x:Type m:ChartData}">
-                            <SwipeView>
-                                <SwipeView.RightItems>
-                                    <SwipeItems>
-                                        <SwipeItemView 
-                                         Command="{Binding Source={x:Reference chartsPage}, Path=BindingContext.DeleteCommand}"
-                                         CommandParameter="{Binding .}">
-                                            <Border BackgroundColor="Red" Margin="5,0">
-                                                <Image Source="{StaticResource IconDelete}" VerticalOptions="Center" WidthRequest="32" Margin="-3, 0"/>
-                                            </Border>
-                                        </SwipeItemView>
-                                    </SwipeItems>
-                                </SwipeView.RightItems>
-                                <Border StrokeThickness="1" Stroke="Gray" Margin="15, 1">
-                                    <Grid ColumnDefinitions="*, Auto">
-                                        <Label 
+                        <RadioButton 
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Content="Vel"
+                            IsChecked="{Binding TypeVelocity}"
+                            GroupName="type"/>
+
+                        <RadioButton 
+                            Grid.Row="1"
+                            Grid.Column="3"
+                            Content="Accel" 
+                            Margin="0, 0, -10, 0"
+                            IsChecked="{Binding TypeAcceleration}"
+                            GroupName="type"/>
+
+                        <HorizontalStackLayout
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="5">
+
+                            <Label
+                                Text="Coordinates: "
+                                VerticalOptions="Center"/>
+
+                            <RadioButton 
+                                Content="Internal"
+                                IsChecked="{Binding InternalCoordinates}"
+                                GroupName="coordinates"/>
+
+                            <RadioButton 
+                                Content="Global" 
+                                IsChecked="{Binding GlobalCoordinates}"
+                                GroupName="coordinates"/>
+
+                        </HorizontalStackLayout>
+
+                    </Grid>
+
+                    <!--Chart data-->
+                    <CollectionView ItemsSource="{Binding Charts}" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="{x:Type m:ChartData}">
+                                <SwipeView>
+                                    <SwipeView.RightItems>
+                                        <SwipeItems>
+                                            <SwipeItemView 
+                                                 Command="{Binding Source={x:Reference chartsPage}, Path=BindingContext.DeleteCommand}"
+                                                 CommandParameter="{Binding .}">
+                                                <Border BackgroundColor="Red" Margin="5,0">
+                                                    <Image Source="{StaticResource IconDelete}" VerticalOptions="Center" WidthRequest="32" Margin="-3, 0"/>
+                                                </Border>
+                                            </SwipeItemView>
+                                        </SwipeItems>
+                                    </SwipeView.RightItems>
+                                    <Border StrokeThickness="1" Stroke="Gray" Margin="15, 1">
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <Label 
                                             Grid.Column="0" 
+                                            Margin="0, -10"
                                             Text="{Binding Name}" 
                                             LineBreakMode="TailTruncation"
                                             VerticalOptions="Center"/>
-                                        <CheckBox 
+                                            <CheckBox 
                                             Grid.Column="1" 
-                                            Margin="0, -10"
+                                            Margin="0, -15"
                                             IsChecked="{Binding Selected}"
                                             VerticalOptions="Center"/>
-                                    </Grid>
-                                </Border>
-                            </SwipeView>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                                        </Grid>
+                                    </Border>
+                                </SwipeView>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </VerticalStackLayout>
+
             </ScrollView>
 
         </Grid>
