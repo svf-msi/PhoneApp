@@ -221,10 +221,12 @@ namespace VibSense.ViewModels
             if (project?.DataCharts != null)
             {
                 Charts = new ObservableCollection<ChartData>(project.DataCharts);
-                foreach (var chart in Charts)
+                for (int i = 0; i < Charts.Count; ++i)
                 {
+                    var chart = Charts[i];
                     chart.PropertyChanged += Chart_PropertyChanged;
                     chart.Initialize();
+                    chart.Color = colors[i % colors.Count];
                 }
                 UpdateChart();
             }

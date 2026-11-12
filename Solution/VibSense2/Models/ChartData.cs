@@ -103,6 +103,9 @@ namespace VibSense.Models
         public bool Selected { get => selected; set { selected = value; NotifyPropertyChanged(); } }
 
         [JsonIgnore]
+        public string Color { get; set; }
+
+        [JsonIgnore]
         public List<Vector3> FftInternal { get; set; }
 
         [JsonIgnore]

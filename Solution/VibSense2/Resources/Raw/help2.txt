@@ -6,4 +6,4 @@
 
 - Use ZoomFit button to reset the zoom level
 
-- Use Export button to export the charts data as a single CSV file
+- Use Export button to export selected charts data as a single CSV file

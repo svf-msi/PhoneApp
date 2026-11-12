@@ -67,8 +67,7 @@
                 DrawMarginFrame="{Binding DrawMarginFrame}"
                 XAxes="{Binding XAxes}" 
                 YAxes="{Binding YAxes}"
-                EasingFunction="{x:Null}"
-                LegendPosition="Top"/>
+                EasingFunction="{x:Null}"/>
 
             <ScrollView Grid.Row="2" MaximumHeightRequest="200">
 
@@ -200,18 +199,24 @@
                                         </SwipeItems>
                                     </SwipeView.RightItems>
                                     <Border StrokeThickness="1" Stroke="Gray" Margin="15, 1">
-                                        <Grid ColumnDefinitions="*, Auto">
+                                        <Grid ColumnDefinitions="*, Auto, Auto">
                                             <Label 
-                                            Grid.Column="0" 
-                                            Margin="0, -10"
-                                            Text="{Binding Name}" 
-                                            LineBreakMode="TailTruncation"
-                                            VerticalOptions="Center"/>
+                                                Grid.Column="0" 
+                                                Margin="0, -10"
+                                                Text="{Binding Name}" 
+                                                LineBreakMode="TailTruncation"
+                                                VerticalOptions="Center"/>
+                                            <BoxView 
+                                                Grid.Column="1" 
+                                                HeightRequest="3" 
+                                                WidthRequest="30"
+                                                Color="{Binding Color}" 
+                                                VerticalOptions="Center"/>
                                             <CheckBox 
-                                            Grid.Column="1" 
-                                            Margin="0, -15"
-                                            IsChecked="{Binding Selected}"
-                                            VerticalOptions="Center"/>
+                                                Grid.Column="2" 
+                                                Margin="0, -15"
+                                                IsChecked="{Binding Selected}"
+                                                VerticalOptions="Center"/>
                                         </Grid>
                                     </Border>
                                 </SwipeView>

@@ -393,7 +393,16 @@ namespace VibSense.ViewModels
             ExistingSets = names;
 
             NewSetName = $"Set {Projects.Count + 1}";
-            if (UseNew) NewChartName = "Chart 1";
+            if (UseNew)
+            {
+                NewChartName = "Chart 1";
+            }
+            else if (ExistingSetIndex >= 0 && ExistingSetIndex < Projects.Count)
+            {
+                selectedSet = Projects[ExistingSetIndex];
+                var project = Project.Read(selectedSet?.ItemPath);
+                NewChartName = $"Chart {(project?.DataCharts?.Count ?? 0) + 1}";
+            }
         }
 
         #endregion
