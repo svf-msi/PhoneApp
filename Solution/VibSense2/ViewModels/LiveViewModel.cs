@@ -51,10 +51,11 @@ namespace VibSense.ViewModels
         int existingSetIndex = 0;
         partial void OnExistingSetIndexChanged(int value)
         {
-            if (existingSetIndex >= 0 && existingSetIndex < Projects.Count)
+            if (ExistingSetIndex >= 0 && ExistingSetIndex < Projects.Count)
             {
-                selectedSet = Projects[existingSetIndex];
-                NewChartName = $"Chart {existingSetIndex}"; // ???
+                selectedSet = Projects[ExistingSetIndex];
+                var project = Project.Read(selectedSet?.ItemPath);
+                NewChartName = $"Chart {(project?.DataCharts?.Count ?? 0) + 1}";
             }
             else
             {
@@ -390,7 +391,6 @@ namespace VibSense.ViewModels
             }
             Projects = projectsItems;
             ExistingSets = names;
-            ExistingSetIndex = UseExisting ? 0 : -1;
 
             NewSetName = $"Set {Projects.Count + 1}";
             if (UseNew) NewChartName = "Chart 1";
