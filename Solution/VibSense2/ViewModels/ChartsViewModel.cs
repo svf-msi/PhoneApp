@@ -4,6 +4,7 @@ using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
+using Newtonsoft.Json;
 using SkiaSharp;
 using StandardLib;
 using System;
@@ -427,9 +428,77 @@ namespace VibSense.ViewModels
         }
 
         [RelayCommand]
-        void Export()
+        async Task Export()
         {
-            
+            using CancellationTokenSource source = new();
+            using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(ToCSV()));
+
+            var fileSaverResult = await CommunityToolkit.Maui.Storage.FileSaver.Default.SaveAsync($"{project.Name}.csv", memoryStream, source.Token);
+
+            if (fileSaverResult.IsSuccessful)
+            {
+                Debug.WriteLine($"[Debug]: csv data saved to {fileSaverResult.FilePath}");
+            }
+            else
+            {
+                Debug.WriteLine($"[Debug]: csv data not saved");
+            }
+        }
+
+        string ToCSV()
+        {
+            if (project?.DataCharts?.Count > 0)
+            {
+                var builder = new StringBuilder();
+
+                for (int i = 0; i < project.DataCharts.Count; ++i)
+                {
+                    var chart = project.DataCharts[i];
+                    if (!chart.Selected) continue;
+
+                    builder.AppendLine($"{chart.Name} - {Coordinates.ToString()}");
+                    if (DataType == DataType.Displacement)
+                    {
+                        var units = IsMetric ? "μm" : "mil";
+                        builder.AppendLine($"Freq(Hz), Dx({units} pk-pk), Dy({units} pk-pk), Dz({units} pk-pk)");
+                    }
+                    else if (DataType == DataType.Velocity)
+                    {
+                        var units = IsMetric ? "mm/s" : "in/s";
+                        builder.AppendLine($"Freq(Hz), Vx({units} rms), Vy({units} rms), Vz({units} rms)");
+                    }
+                    else if (DataType == DataType.Acceleration)
+                    {
+                        builder.AppendLine($"Freq(Hz), Dx(G pk), Dy(G pk), Dz(G pk)");
+                    }
+                    var data = chart.GetFft(Coordinates);
+
+                    var scale = DataType == DataType.Displacement ? 9.8 * 2e6 / (IsImperial ? 25.4 : 1) :
+                                DataType == DataType.Velocity ? 9.8 * 1e3 / (Math.Sqrt(2) * (IsImperial ? 25.4 : 1)) : 1;
+
+
+                    for (int k = 1; k < data.Count; ++k)
+                    {
+                        var p = data[k];
+                        var freq = k * chart.SampleRate / 2 / data.Count;
+                        if (DataType == DataType.Velocity)
+                        {
+                            scale /= 2 * Math.PI * freq;
+                        }
+                        else if (DataType == DataType.Displacement)
+                        {
+                            scale /= Math.Pow(2 * Math.PI * freq, 2);
+                        }
+                        builder.AppendLine($"{freq}, {p.X * scale}, {p.Y * scale}, {p.Z * scale}");
+                    }
+                }
+
+                return builder.ToString();
+            }
+            else
+            {
+                return "";
+            }
         }
 
         [RelayCommand]
