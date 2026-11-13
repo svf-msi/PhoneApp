@@ -360,6 +360,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
@@ -432,8 +433,23 @@
                     IsChecked="{Binding GlobalCoordinates}"/>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout 
+            <HorizontalStackLayout
                 Grid.Row="5"
+                Grid.Column="0"
+                Grid.ColumnSpan="2">
+                <Label 
+                    Text="Vertical axis: "
+                    VerticalOptions="Center"/>
+                <RadioButton
+                    Content="Linear"
+                    IsChecked="{Binding LinearChart}"/>
+                <RadioButton
+                    Content="Log"
+                    IsChecked="{Binding LogChart}"/>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout 
+                Grid.Row="6"
                 Grid.Column="0"
                 Grid.ColumnSpan="2">
 
@@ -448,7 +464,7 @@
             </HorizontalStackLayout>
 
             <Button 
-                Grid.Row="7"
+                Grid.Row="8"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Text="Back"

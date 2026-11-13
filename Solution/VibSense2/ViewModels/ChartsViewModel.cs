@@ -106,11 +106,13 @@ namespace VibSense.ViewModels
 
         #region Chart-related
 
-        public Axis[] XAxes { get; set; }
+        [ObservableProperty]
+        public Axis[] xAxes;
 
         public Axis XAxis { get; set; }
 
-        public Axis[] YAxes { get; set; }
+        [ObservableProperty]
+        public Axis[] yAxes;
 
         public Axis YAxis { get; set; }
 
@@ -223,8 +225,8 @@ namespace VibSense.ViewModels
         public ChartsViewModel()
         {
             ReadHelp();
-            InitializeChart();
             InitializeSettings();
+            InitializeChart();
         }
 
         void Initialize(ProjectItem item)
@@ -267,6 +269,7 @@ namespace VibSense.ViewModels
 
         void InitializeChart()
         {
+            //Debug.WriteLine($"[Debug]: Initialize chart {ChartType}");
             XAxis = new Axis
             {
                 Name = "Frequency(Hz)",
@@ -283,16 +286,15 @@ namespace VibSense.ViewModels
             if (ChartType == ChartType.Logarithmic)
                 YAxis = new LogarithmicAxis(10)
                 {
-                    SeparatorsPaint = new SolidColorPaint
-                    {
-                        Color = SKColors.Black.WithAlpha(100),
-                        StrokeThickness = 1,
-                    },
-                    SubseparatorsPaint = new SolidColorPaint
-                    {
-                        Color = SKColors.Black.WithAlpha(50),
-                        StrokeThickness = 0.5f
-                    },
+                    Name = DataType == DataType.Displacement ? "Displacement(pk-pk)" :
+                        DataType == DataType.Velocity ? "Velocity(rms)" : "Acceleration(G pk)",
+                    TextSize = 18,
+                    NamePadding = new LiveChartsCore.Drawing.Padding(0, 5, 0, -10),
+                    NamePaint = new SolidColorPaint(new SKColor(60, 60, 60)),
+                    LabelsPaint = new SolidColorPaint(new SKColor(60, 60, 60)),
+                    SeparatorsPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
+                    SubseparatorsPaint = new SolidColorPaint(new SKColor(160, 160, 160)) { StrokeThickness = 0.5f },
+                    TicksPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
                     SubseparatorsCount = 9,
                     Labeler = (value) => Math.Pow(10, value).ToString("G2")
                 };
@@ -393,7 +395,7 @@ namespace VibSense.ViewModels
 
                     var values = UpdateData(chart);
                     var color = colors[i % colors.Count];
-                    series.Add(new LineSeries<ChartPoint>
+                    series.Add(new LineSeries<ObservablePoint>
                     {
                         Name = chart.Name,
                         Values = values,
@@ -416,9 +418,9 @@ namespace VibSense.ViewModels
                             DataType == DataType.Velocity ? "Velocity(mm/s rms)" : "Acceleration(G pk)";
         }
 
-        List<ChartPoint> UpdateData(ChartData chart)
+        List<ObservablePoint> UpdateData(ChartData chart)
         {
-            var values = new List<ChartPoint>();
+            var values = new List<ObservablePoint>();
             if (chart?.Data == null || chart.Data.Count == 0) return values;
 
             var scale = DataType == DataType.Displacement ? 9.8 * 2e6 / (IsImperial ? 25.4 : 1) :
@@ -448,9 +450,9 @@ namespace VibSense.ViewModels
                 if (value > 0)
                 {
                     if (ChartType == ChartType.Linear)
-                        values.Add(new ChartPoint(freq, value * scale));
+                        values.Add(new ObservablePoint(freq, value * scale));
                     else
-                        values.Add(new ChartPoint(freq, Math.Log10(value * scale)));
+                        values.Add(new ObservablePoint(freq, Math.Log10(value * scale)));
                 }
             }
             return values;

@@ -176,11 +176,13 @@ namespace VibSense.ViewModels
 
         #region Chart-related
 
-        public Axis[] XAxes { get; set; }
+        [ObservableProperty]
+        public Axis[] xAxes;
 
         public Axis XAxis { get; set; }
 
-        public Axis[] YAxes { get; set; }
+        [ObservableProperty]
+        public Axis[] yAxes;
 
         public Axis YAxis { get; set; }
 
@@ -318,19 +320,35 @@ namespace VibSense.ViewModels
             };
             XAxes = new Axis[] { XAxis };
 
-            YAxis = new Axis
-            {
-                Name = DataType == DataType.Displacement ? "Displacement(pk-pk)" :
-                    DataType == DataType.Velocity ? "Velocity(rms)" : "Acceleration(G pk)",
-                TextSize = 18,
-                NamePadding = new LiveChartsCore.Drawing.Padding(0, 5, 0, -10),
-                NamePaint = new SolidColorPaint(new SKColor(60, 60, 60)),
-                LabelsPaint = new SolidColorPaint(new SKColor(60, 60, 60)),
-                SeparatorsPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
-                SubseparatorsPaint = new SolidColorPaint(new SKColor(160, 160, 160)) { StrokeThickness = 0.5f },
-                TicksPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
-                Labeler = (value) => value.ToString("G2")
-            };
+            if (ChartType == ChartType.Logarithmic)
+                YAxis = new LogarithmicAxis(10)
+                {
+                    Name = DataType == DataType.Displacement ? "Displacement(pk-pk)" :
+                        DataType == DataType.Velocity ? "Velocity(rms)" : "Acceleration(G pk)",
+                    TextSize = 18,
+                    NamePadding = new LiveChartsCore.Drawing.Padding(0, 5, 0, -10),
+                    NamePaint = new SolidColorPaint(new SKColor(60, 60, 60)),
+                    LabelsPaint = new SolidColorPaint(new SKColor(60, 60, 60)),
+                    SeparatorsPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
+                    SubseparatorsPaint = new SolidColorPaint(new SKColor(160, 160, 160)) { StrokeThickness = 0.5f },
+                    TicksPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
+                    SubseparatorsCount = 9,
+                    Labeler = (value) => Math.Pow(10, value).ToString("G2")
+                };
+            else
+                YAxis = new Axis
+                {
+                    Name = DataType == DataType.Displacement ? "Displacement(pk-pk)" :
+                        DataType == DataType.Velocity ? "Velocity(rms)" : "Acceleration(G pk)",
+                    TextSize = 18,
+                    NamePadding = new LiveChartsCore.Drawing.Padding(0, 5, 0, -10),
+                    NamePaint = new SolidColorPaint(new SKColor(60, 60, 60)),
+                    LabelsPaint = new SolidColorPaint(new SKColor(60, 60, 60)),
+                    SeparatorsPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
+                    SubseparatorsPaint = new SolidColorPaint(new SKColor(160, 160, 160)) { StrokeThickness = 0.5f },
+                    TicksPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
+                    Labeler = (value) => value.ToString("G2")
+                };
             YAxes = new Axis[] { YAxis };
             Lines = new ISeries[] { };
         }
@@ -346,6 +364,10 @@ namespace VibSense.ViewModels
             var units = Preferences.Get(App.SettingUnits, 0);
             IsMetric = units != 0;
             IsImperial = units == 0;
+
+            var chartType = Preferences.Get(App.SettingChartType, 0);
+            LinearChart = chartType == 0;
+            LogChart = chartType != 0;
 
             var coords = Preferences.Get(App.SettingCoordinates, 0);
             InternalCoordinates = coords == 0;
@@ -478,8 +500,6 @@ namespace VibSense.ViewModels
                 var waveformZ = Data.Select(p => GetValue(p, Direction.Z)).ToArray();
                 var spectrumZ = FftAnalysis.Emgu(waveformZ, WindowType.Hann);
 
-                Debug.WriteLine($"[Debug]: update data dc={spectrumX[0, 0]}, {spectrumY[0, 0]}, {spectrumZ[0, 0]}");
-
                 var span = spectrumX.GetLength(1);
                 for (int i = 5; i < span / 2; ++i)
                 {
@@ -487,15 +507,23 @@ namespace VibSense.ViewModels
                     var dispY = FftAnalysis.Complex(spectrumY, 0, 2 * i - 1);
                     var dispZ = FftAnalysis.Complex(spectrumZ, 0, 2 * i - 1);
                     var disp = Math.Sqrt(Math.Pow(dispX.Magnitude, 2) + Math.Pow(dispY.Magnitude, 2) + Math.Pow(dispZ.Magnitude, 2));
+                    var freq = i * SampleRate / span;
                     if (DataType == DataType.Velocity)
                     {
-                        disp /= 2 * Math.PI * i * SampleRate / span;
+                        disp /= 2 * Math.PI * freq;
                     }
                     else if (DataType == DataType.Displacement)
                     {
-                        disp /= Math.Pow(2 * Math.PI * i * SampleRate / span, 2);
+                        disp /= Math.Pow(2 * Math.PI * freq, 2);
                     }
-                    values.Add(new ObservablePoint(i * SampleRate / span, disp * scale));
+
+                    if (disp > 0)
+                    {
+                        if (ChartType == ChartType.Linear)
+                            values.Add(new ObservablePoint(freq, disp * scale));
+                        else
+                            values.Add(new ObservablePoint(freq, Math.Log10(disp * scale)));
+                    }
                 }
             }
             else
@@ -507,15 +535,22 @@ namespace VibSense.ViewModels
                 for (int i = 5; i < span / 2; ++i)
                 {
                     var disp = FftAnalysis.Complex(spectrum, 0, 2 * i - 1).Magnitude;
+                    var freq = i * SampleRate / span;
                     if (DataType == DataType.Velocity)
                     {
-                        disp /= 2 * Math.PI * i * SampleRate / span;
+                        disp /= 2 * Math.PI * freq;
                     }
                     else if (DataType == DataType.Displacement)
                     {
-                        disp /= Math.Pow(2 * Math.PI * i * SampleRate / span, 2);
+                        disp /= Math.Pow(2 * Math.PI * freq, 2);
                     }
-                    values.Add(new ObservablePoint(i * SampleRate / span, disp * scale));
+                    if (disp > 0)
+                    {
+                        if (ChartType == ChartType.Linear)
+                            values.Add(new ObservablePoint(freq, disp * scale));
+                        else
+                            values.Add(new ObservablePoint(freq, Math.Log10(disp * scale)));
+                    }
                 }
             }
 
