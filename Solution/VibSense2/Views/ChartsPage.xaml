@@ -69,35 +69,54 @@
                 YAxes="{Binding YAxes}"
                 EasingFunction="{x:Null}"/>
 
-            <ScrollView Grid.Row="2" MaximumHeightRequest="200">
+            <BoxView
+                Grid.Row="2" Grid.Column="0"
+                HeightRequest="1"/>
+
+            <ScrollView 
+                Grid.Row="3" 
+                MaximumHeightRequest="200">
 
                 <VerticalStackLayout>
 
                     <!--Chart settings-->
-                    <Grid Margin="10, 0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                    <toolkit:Expander x:Name="expander">
+                        <toolkit:Expander.Header>
+                            <Label Text=" ▼ Chart Settings" FontAttributes="Bold" Padding="10">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label"
+                                                 Binding="{Binding Source={x:Reference expander}, Path=IsExpanded}"
+                                                 Value="True">
+                                        <Setter Property="Text" Value=" ▲ Chart Settings:"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </toolkit:Expander.Header>
 
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                        <Grid Margin="20, 0, 20, 10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                        <!--Direction radio buttons-->
-                        <Label 
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!--Direction radio buttons-->
+                            <Label 
                             Grid.Row="0"
                             Grid.Column="0"
                             Text="Dir:  "
                             VerticalOptions="Center"/>
 
-                        <RadioButton 
+                            <RadioButton 
                             Grid.Row="0"
                             Grid.Column="1"
                             Margin="-5, 0"
@@ -106,7 +125,7 @@
                             GroupName="direction"
                             VerticalOptions="Center"/>
 
-                        <RadioButton 
+                            <RadioButton 
                             Grid.Row="0"
                             Grid.Column="2"
                             Content="{Binding LabelX}"
@@ -114,7 +133,7 @@
                             GroupName="direction"
                             VerticalOptions="Center"/>
 
-                        <RadioButton 
+                            <RadioButton 
                             Grid.Row="0"
                             Grid.Column="3"
                             Content="{Binding LabelY}"
@@ -122,7 +141,7 @@
                             GroupName="direction"
                             VerticalOptions="Center"/>
 
-                        <RadioButton 
+                            <RadioButton 
                             Grid.Row="0"
                             Grid.Column="4"
                             Content="{Binding LabelZ}"
@@ -130,14 +149,14 @@
                             GroupName="direction"
                             VerticalOptions="Center"/>
 
-                        <!--Type radio buttons-->
-                        <Label 
+                            <!--Type radio buttons-->
+                            <Label 
                             Grid.Row="1"
                             Grid.Column="0"
                             Text="Val:  "
                             VerticalOptions="Center"/>
 
-                        <RadioButton 
+                            <RadioButton 
                             Grid.Row="1"
                             Grid.Column="1"
                             Margin="-5, 0"
@@ -145,14 +164,14 @@
                             IsChecked="{Binding TypeDisplacement}"
                             GroupName="type"/>
 
-                        <RadioButton 
+                            <RadioButton 
                             Grid.Row="1"
                             Grid.Column="2"
                             Content="Vel"
                             IsChecked="{Binding TypeVelocity}"
                             GroupName="type"/>
 
-                        <RadioButton 
+                            <RadioButton 
                             Grid.Row="1"
                             Grid.Column="3"
                             Content="Accel" 
@@ -160,49 +179,50 @@
                             IsChecked="{Binding TypeAcceleration}"
                             GroupName="type"/>
 
-                        <HorizontalStackLayout
+                            <HorizontalStackLayout
                             Grid.Row="2"
                             Grid.Column="0"
                             Grid.ColumnSpan="5">
 
-                            <Label
+                                <Label
                                 Text="Coordinates: "
                                 VerticalOptions="Center"/>
 
-                            <RadioButton 
+                                <RadioButton 
                                 Content="Internal"
                                 IsChecked="{Binding InternalCoordinates}"
                                 GroupName="coordinates"/>
 
-                            <RadioButton 
+                                <RadioButton 
                                 Content="Global" 
                                 IsChecked="{Binding GlobalCoordinates}"
                                 GroupName="coordinates"/>
 
-                        </HorizontalStackLayout>
+                            </HorizontalStackLayout>
 
-                        <HorizontalStackLayout
+                            <HorizontalStackLayout
                             Grid.Row="3"
                             Grid.Column="0"
                             Grid.ColumnSpan="5">
 
-                            <Label
-                                Text="Vertical scale: "
+                                <Label
+                                Text="Vertical Axis: "
                                 VerticalOptions="Center"/>
 
-                            <RadioButton 
+                                <RadioButton 
                                 Content="Linear"
                                 IsChecked="{Binding LinearChart}"
                                 GroupName="scale"/>
 
-                            <RadioButton 
+                                <RadioButton 
                                 Content="Log" 
                                 IsChecked="{Binding LogChart}"
                                 GroupName="scale"/>
 
-                        </HorizontalStackLayout>
+                            </HorizontalStackLayout>
 
-                    </Grid>
+                        </Grid>
+                    </toolkit:Expander>
 
                     <!--Chart data-->
                     <CollectionView ItemsSource="{Binding Charts}" SelectionMode="None">
