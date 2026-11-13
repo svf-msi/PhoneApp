@@ -8,11 +8,6 @@ namespace VibSense.Views;
 
 public partial class LivePage : ContentPage
 {
-
-//#if ANDROID
-//    ScreenOrientation defaultOrientation = Platform.CurrentActivity.RequestedOrientation;
-//#endif
-
     public LivePage(LiveViewModel vm)
 	{
 		InitializeComponent();

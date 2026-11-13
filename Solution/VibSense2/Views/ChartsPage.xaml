@@ -79,6 +79,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <Grid.ColumnDefinitions>
@@ -177,6 +178,27 @@
                                 Content="Global" 
                                 IsChecked="{Binding GlobalCoordinates}"
                                 GroupName="coordinates"/>
+
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="5">
+
+                            <Label
+                                Text="Vertical scale: "
+                                VerticalOptions="Center"/>
+
+                            <RadioButton 
+                                Content="Linear"
+                                IsChecked="{Binding LinearChart}"
+                                GroupName="scale"/>
+
+                            <RadioButton 
+                                Content="Log" 
+                                IsChecked="{Binding LogChart}"
+                                GroupName="scale"/>
 
                         </HorizontalStackLayout>
 

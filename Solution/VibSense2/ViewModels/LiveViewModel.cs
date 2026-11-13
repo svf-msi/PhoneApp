@@ -260,6 +260,29 @@ namespace VibSense.ViewModels
             if (value) DataType = DataType.Acceleration;
         }
 
+        [ObservableProperty]
+        ChartType chartType;
+        partial void OnChartTypeChanged(ChartType value)
+        {
+            Preferences.Set(App.SettingChartType, (int)ChartType);
+            InitializeChart();
+            UpdateChart();
+        }
+
+        [ObservableProperty]
+        bool linearChart = true;
+        partial void OnLinearChartChanged(bool value)
+        {
+            if (value) ChartType = ChartType.Linear;
+        }
+
+        [ObservableProperty]
+        bool logChart = false;
+        partial void OnLogChartChanged(bool value)
+        {
+            if (value) ChartType = ChartType.Logarithmic;
+        }
+
         #endregion
 
         #endregion
@@ -698,10 +721,4 @@ namespace VibSense.ViewModels
 
         #endregion
     }
-
-    public enum Direction { Magnitude, X, Y, Z }
-
-    public enum DataType { Displacement, Velocity, Acceleration }
-
-    public enum Coordinates { Internal, Global }
 }

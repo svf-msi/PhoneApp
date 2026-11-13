@@ -191,6 +191,29 @@ namespace VibSense.ViewModels
             if (value) DataType = DataType.Acceleration;
         }
 
+        [ObservableProperty]
+        ChartType chartType;
+        partial void OnChartTypeChanged(ChartType value)
+        {
+            Preferences.Set(App.SettingChartType, (int)ChartType);
+            InitializeChart();
+            UpdateChart();
+        }
+
+        [ObservableProperty]
+        bool linearChart = true;
+        partial void OnLinearChartChanged(bool value)
+        {
+            if (value) ChartType = ChartType.Linear;
+        }
+
+        [ObservableProperty]
+        bool logChart = false;
+        partial void OnLogChartChanged(bool value)
+        {
+            if (value) ChartType = ChartType.Logarithmic;
+        }
+
         #endregion
 
         #endregion
@@ -257,19 +280,36 @@ namespace VibSense.ViewModels
             };
             XAxes = new Axis[] { XAxis };
 
-            YAxis = new Axis
-            {
-                Name = DataType == DataType.Displacement ? "Displacement(pk-pk)" :
-                    DataType == DataType.Velocity ? "Velocity(rms)" : "Acceleration(G pk)",
-                TextSize = 18,
-                NamePadding = new LiveChartsCore.Drawing.Padding(0, 5, 0, -10),
-                NamePaint = new SolidColorPaint(new SKColor(60, 60, 60)),
-                LabelsPaint = new SolidColorPaint(new SKColor(60, 60, 60)),
-                SeparatorsPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
-                SubseparatorsPaint = new SolidColorPaint(new SKColor(160, 160, 160)) { StrokeThickness = 0.5f },
-                TicksPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
-                Labeler = (value) => value.ToString("G2")
-            };
+            if (ChartType == ChartType.Logarithmic)
+                YAxis = new LogarithmicAxis(10)
+                {
+                    SeparatorsPaint = new SolidColorPaint
+                    {
+                        Color = SKColors.Black.WithAlpha(100),
+                        StrokeThickness = 1,
+                    },
+                    SubseparatorsPaint = new SolidColorPaint
+                    {
+                        Color = SKColors.Black.WithAlpha(50),
+                        StrokeThickness = 0.5f
+                    },
+                    SubseparatorsCount = 9,
+                    Labeler = (value) => Math.Pow(10, value).ToString("G2")
+                };
+            else
+                YAxis = new Axis
+                {
+                    Name = DataType == DataType.Displacement ? "Displacement(pk-pk)" :
+                        DataType == DataType.Velocity ? "Velocity(rms)" : "Acceleration(G pk)",
+                    TextSize = 18,
+                    NamePadding = new LiveChartsCore.Drawing.Padding(0, 5, 0, -10),
+                    NamePaint = new SolidColorPaint(new SKColor(60, 60, 60)),
+                    LabelsPaint = new SolidColorPaint(new SKColor(60, 60, 60)),
+                    SeparatorsPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
+                    SubseparatorsPaint = new SolidColorPaint(new SKColor(160, 160, 160)) { StrokeThickness = 0.5f },
+                    TicksPaint = new SolidColorPaint(new SKColor(90, 90, 90)) { StrokeThickness = 1 },
+                    Labeler = (value) => value.ToString("G2")
+                };
             YAxes = new Axis[] { YAxis };
             Lines = new ISeries[] { };
         }
@@ -282,6 +322,10 @@ namespace VibSense.ViewModels
             var units = Preferences.Get(App.SettingUnits, 0);
             IsMetric = units != 0;
             IsImperial = units == 0;
+
+            var chartType = Preferences.Get(App.SettingChartType, 0);
+            LinearChart = chartType == 0;
+            LogChart = chartType != 0;
 
             var coords = Preferences.Get(App.SettingCoordinates, 0);
             InternalCoordinates = coords == 0;
@@ -349,7 +393,7 @@ namespace VibSense.ViewModels
 
                     var values = UpdateData(chart);
                     var color = colors[i % colors.Count];
-                    series.Add(new LineSeries<ObservablePoint>
+                    series.Add(new LineSeries<ChartPoint>
                     {
                         Name = chart.Name,
                         Values = values,
@@ -364,17 +408,17 @@ namespace VibSense.ViewModels
             }
             Lines = series.ToArray();
 
-            if (IsImperial)
+            if (IsImperial && YAxis != null)
                 YAxis.Name = DataType == DataType.Displacement ? "Displacement(mil pk-pk)" :
                             DataType == DataType.Velocity ? "Velocity(in/s rms)" : "Acceleration(G pk)";
-            else
+            else if (YAxis != null)
                 YAxis.Name = DataType == DataType.Displacement ? "Displacement(μm pk-pk)" :
                             DataType == DataType.Velocity ? "Velocity(mm/s rms)" : "Acceleration(G pk)";
         }
 
-        List<ObservablePoint> UpdateData(ChartData chart)
+        List<ChartPoint> UpdateData(ChartData chart)
         {
-            var values = new List<ObservablePoint>();
+            var values = new List<ChartPoint>();
             if (chart?.Data == null || chart.Data.Count == 0) return values;
 
             var scale = DataType == DataType.Displacement ? 9.8 * 2e6 / (IsImperial ? 25.4 : 1) :
@@ -401,7 +445,13 @@ namespace VibSense.ViewModels
                 {
                     value /= Math.Pow(2 * Math.PI * freq, 2);
                 }
-                values.Add(new ObservablePoint(freq, value * scale));
+                if (value > 0)
+                {
+                    if (ChartType == ChartType.Linear)
+                        values.Add(new ChartPoint(freq, value * scale));
+                    else
+                        values.Add(new ChartPoint(freq, Math.Log10(value * scale)));
+                }
             }
             return values;
         }
@@ -527,5 +577,17 @@ namespace VibSense.ViewModels
 
         #endregion
 
+    }
+
+    public class ChartPoint
+    {
+        public double X { get; set; }
+
+        public double Y { get; set; }
+
+        public ChartPoint(double x, double y)
+        {
+            X = x; Y = y;
+        }
     }
 }
